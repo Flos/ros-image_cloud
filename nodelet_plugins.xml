@@ -1,0 +1,14 @@
+<library path="lib/libimage_cloud_nodelet">
+  <class name="image_cloud/Image_cloud_nodelet" type="image_cloud::Image_cloud_nodelet" base_class_type="nodelet::Nodelet">
+  <description>
+  				Bla
+  </description>
+  </class>
+</library>
+<library path="lib/libtest_nodelet">
+  <class name="example_pkg/MyNodeletClass" type="example_pkg::MyNodeletClass" base_class_type="nodelet::Nodelet">
+  <description>
+  This is my nodelet.
+  </description>
+  </class>
+</library>

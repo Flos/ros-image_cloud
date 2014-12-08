@@ -1,0 +1,14 @@
+<launch>
+  <node pkg="nodelet" type="nodelet" name="image_and_pcl_manager"  args="manager" output="screen">
+  	<param name="num_worker_threads" type="int" value="1" />
+  </node>
+  
+  <node pkg="nodelet" type="nodelet" name="blablabla" args="load image_cloud/Image_cloud_nodelet image_and_pcl_manager" output="screen">
+  	<param name="sub_pcl" type="string" value="/velodyne/cloud" />
+  	<param name="sub_img" type="string" value="/ladybug5/camera4/raw_rect" />
+  	<param name="sub_img_info" type="string" value="/ladybug5/camera4/camera_info" />
+  	<param name="filter"  type="string" value="filterbla" />
+  	<param name="image_frame_id"  type="string" value="ladybug_camera4" />
+  </node>
+  
+</launch>
