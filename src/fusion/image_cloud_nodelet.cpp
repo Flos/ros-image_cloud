@@ -36,7 +36,6 @@ Image_cloud_nodelet::onInit() {
 		return;
 	}
 
-
 	if(subscribe_topic_img_info_.empty()) {
 		ROS_ERROR_NAMED(node_name_, "no camera_info subscribe topic defined");
 		return;
@@ -47,8 +46,6 @@ Image_cloud_nodelet::onInit() {
 		return;
 	}
 
-
-
 	//Filter messages
 	int queue_size = 30;
 	image_sub = new message_filters::Subscriber<sensor_msgs::Image>(nh, subscribe_topic_img_, queue_size);
@@ -58,6 +55,11 @@ Image_cloud_nodelet::onInit() {
 	// ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
 	sync = new message_filters::Synchronizer<Image_to_cloud_sync>(Image_to_cloud_sync(queue_size), *image_sub, *image_info_sub, *pointcloud_sub);
 	sync->registerCallback(boost::bind(&Image_cloud_nodelet::callback, this, _1, _2, _3));
+
+	pub_cloud_ =  nh.advertise<PointCloudColor>(publish_pcl_topic_.c_str(), 1);
+
+	it_ = new image_transport::ImageTransport(nh);
+	pub_ = it_->advertise("/image_scan", 1);
 }
 
 
@@ -102,8 +104,8 @@ Image_cloud_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image,
 	};
 
 
-	ROS_INFO_NAMED(node_name_,"pointcloud w: %i \th: %i \t\ttime: %i.%i",input_msg_cloud_ptr->width, input_msg_cloud_ptr->height, input_msg_cloud_ptr->header.stamp.sec, input_msg_cloud_ptr->header.stamp.nsec );
-	//ROS_INFO_NAMED(node_name_,"pointcloud w: %i \th: %i \t\ttime: %lu",input_msg_cloud_ptr->width, input_msg_cloud_ptr->height, input_msg_cloud_ptr->header.stamp );
+	ROS_INFO_NAMED(node_name_,"pointcloud2 w: %i \th: %i \t\ttime: %i.%i",input_msg_cloud_ptr->width, input_msg_cloud_ptr->height, input_msg_cloud_ptr->header.stamp.sec, input_msg_cloud_ptr->header.stamp.nsec );
+	//ROS_INFO_NAMED(node_name_,"pointcloud2 w: %i \th: %i \t\ttime: %lu",input_msg_cloud_ptr->width, input_msg_cloud_ptr->height, input_msg_cloud_ptr->header.stamp );
 	ROS_INFO_NAMED(node_name_,"image      w: %i \th: %i \ttime: %i.%i",input_msg_image->width, input_msg_image->height, input_msg_image->header.stamp.sec, input_msg_image->header.stamp.nsec );
 
 	pcl::PointCloud<pcl::PointXYZ> cloud;
@@ -123,12 +125,82 @@ Image_cloud_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image,
 		     return;
 	}
 
-	// todo: Filder pcl for speed up?
+	// todo: Filter pcl for speed up?
 
 
 	// todo: look up colors for pointcloud
 
-	ROS_INFO_NAMED(node_name_,"callback end");
+	// If we are here we can start
+	camera_model.fromCameraInfo(input_msg_image_info);
+
+	ROS_INFO_NAMED(node_name_,"camera_model:  tx: %f, ty: %f, cx: %f, cy: %f, fx: %f, fy: %f ", camera_model.Tx(), camera_model.Ty(), camera_model.cx(), camera_model.cy(), camera_model.fx(), camera_model.fy() );
+
+	PointCloudColor::Ptr msg (new PointCloudColor);
+
+	cv::Point2d point_image;
+	cv::Vec3b color;
+
+   cv_bridge::CvImagePtr cv_ptr;
+   cv_bridge::CvImagePtr cv_shared_ptr;
+   try{
+	   cv_ptr = cv_bridge::toCvCopy(input_msg_image, input_msg_image->encoding);
+	   cv_shared_ptr = cv_bridge::toCvCopy(input_msg_image, input_msg_image->encoding);
+   }
+   catch (cv_bridge::Exception& e)
+   {
+	   ROS_ERROR("cv_bridge exception: %s", e.what());
+	   return;
+   }
+
+   int i = 0;
+   BOOST_FOREACH (const pcl::PointXYZ& pt, cloud.points) {
+		// look up 3D position
+		// printf ("\t(%f, %f, %f)\n", pt.x, pt.y, pt.z);
+		// project to 2D Image
+	   if( pt.z > 0){
+			point_image = camera_model.project3dToPixel(cv::Point3d(pt.x, pt.y, pt.z));
+
+
+
+			if( ( point_image.x > 0 &&  point_image.x < input_msg_image->width )
+				&& ( point_image.y > 0 &&  point_image.y < input_msg_image->height )
+				)
+			{
+				// Get image Color
+
+				color = cv_shared_ptr->image.at<cv::Vec3b>(point_image);
+				if( color.val[0] != 255
+					&& color.val[1] != 255
+					&& color.val[2] != 255
+					)
+				{
+					//debug
+					cv::circle(cv_ptr->image, point_image, 1, cv::Scalar(200,1,1));
+
+					//ROS_INFO_NAMED(node_name_,"blend");
+					pcl::PointXYZRGB color_point(color.val[2], color.val[1], color.val[0]);
+					color_point.x = pt.x;
+					color_point.y = pt.y;
+					color_point.z = pt.z;
+					msg->points.push_back(color_point);
+					++i;
+				}
+				//printf ("image: \t(%f, %f)\n", point_image.x, point_image.y);
+			}
+			// add colored pixel to cloud_color
+	   }
+   }
+
+   msg->header.stamp = cloud.header.stamp;
+   msg->header.frame_id = image_frame_id_.c_str();
+   msg->height = 1;
+   msg->width = i;
+
+   pub_cloud_.publish(msg);
+   pub_.publish(cv_ptr->toImageMsg());
+
+   ROS_INFO_NAMED(node_name_,"cloud_color  w: %i \th: %i \ttime: %lu",msg->width, msg->height, msg->header.stamp );
+   ROS_INFO_NAMED(node_name_,"callback end");
 }
 
 Image_cloud_nodelet::~Image_cloud_nodelet(){

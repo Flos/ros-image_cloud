@@ -6,6 +6,7 @@ project(image_cloud)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   image_geometry
+  image_transport
   pcl_conversions
   pcl_ros
   cv_bridge
@@ -39,7 +40,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES image_cloud
-  CATKIN_DEPENDS image_geometry pcl_conversions pcl_ros OpenCV PCL boost cv_bridge nodelet roscpp rospy rostime sensor_msgs std_msgs tf
+  CATKIN_DEPENDS image_geometry image_transport pcl_conversions pcl_ros OpenCV PCL boost cv_bridge nodelet roscpp rospy rostime sensor_msgs std_msgs tf
   DEPENDS system_lib
 )
 

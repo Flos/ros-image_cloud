@@ -38,11 +38,13 @@
 #include <message_filters/sync_policies/approximate_time.h>
 
 #include <sensor_msgs/Image.h>
+#include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/PointCloud2.h>
 
 namespace image_cloud {
 
 typedef sensor_msgs::PointCloud2 PointCloud;
+typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloudColor;
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::CameraInfo,PointCloud> Image_to_cloud_sync;
 
 
@@ -58,6 +60,7 @@ private:
 	message_filters::Subscriber<PointCloud>* pointcloud_sub;
 	message_filters::Synchronizer<Image_to_cloud_sync>* sync;
 	ros::Subscriber sub_;
+	ros::Publisher pub_cloud_;
 
 	image_transport::ImageTransport *it_;
 	image_transport::Publisher pub_;
