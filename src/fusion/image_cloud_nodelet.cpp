@@ -101,27 +101,32 @@ Image_cloud_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image,
 		return;
 	};
 
-	// If we are here we can start
-	//camera_model.fromCameraInfo(input_msg_image_info);
-
-	//camera_model.project3dToPixel()
 
 	ROS_INFO_NAMED(node_name_,"pointcloud w: %i \th: %i \t\ttime: %i.%i",input_msg_cloud_ptr->width, input_msg_cloud_ptr->height, input_msg_cloud_ptr->header.stamp.sec, input_msg_cloud_ptr->header.stamp.nsec );
 	//ROS_INFO_NAMED(node_name_,"pointcloud w: %i \th: %i \t\ttime: %lu",input_msg_cloud_ptr->width, input_msg_cloud_ptr->height, input_msg_cloud_ptr->header.stamp );
 	ROS_INFO_NAMED(node_name_,"image      w: %i \th: %i \ttime: %i.%i",input_msg_image->width, input_msg_image->height, input_msg_image->header.stamp.sec, input_msg_image->header.stamp.nsec );
 
-//	pcl::PCLPointCloud2 cloud2;
-//	pcl_conversions::toPCL(*input_msg_cloud_ptr, cloud2);
-//
-//	pcl::PointCloud<pcl::PointXYZ> cloud;
-//	pcl::fromPCLPointCloud2(cloud2, cloud);
-//
-//
-//	if (!pcl_ros::transformPointCloud("/odom", cloud, cloud, listener_pointcloud_transform)) {
-//			NODELET_WARN("Cannot transform point cloud to the fixed frame %s.", "/odom");
-//	     return;
-//	}
+	pcl::PointCloud<pcl::PointXYZ> cloud;
+	pcl::fromROSMsg(*input_msg_cloud_ptr,cloud);
 
+	// Transform to odom
+	// todo: Transform at pcl time to odom
+	if (!pcl_ros::transformPointCloud("/odom", cloud, cloud, listener_pointcloud_transform)) {
+			NODELET_WARN("Cannot transform point cloud to the fixed frame %s.", "/odom");
+	     return;
+	}
+
+	// Transform to image_frame_id
+	// todo: Transform at image time to image_frame_id
+	if (!pcl_ros::transformPointCloud(image_frame_id_.c_str(), cloud, cloud, listener_pointcloud_transform)) {
+				NODELET_WARN("Cannot transform point cloud to the fixed frame %s.", image_frame_id_.c_str());
+		     return;
+	}
+
+	// todo: Filder pcl for speed up?
+
+
+	// todo: look up colors for pointcloud
 
 	ROS_INFO_NAMED(node_name_,"callback end");
 }
