@@ -5,8 +5,8 @@
   </description>
   </class>
 </library>
-<library path="lib/libtest_nodelet">
-  <class name="example_pkg/MyNodeletClass" type="example_pkg::MyNodeletClass" base_class_type="nodelet::Nodelet">
+<library path="lib/libimage_enhancement">
+  <class name="image_cloud/Image_enhancement" type="image_cloud::Image_enhancement" base_class_type="nodelet::Nodelet">
   <description>
   This is my nodelet.
   </description>
