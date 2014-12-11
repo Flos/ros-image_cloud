@@ -19,22 +19,19 @@
 #include <tf/transform_broadcaster.h>
 #include "nodelet/nodelet.h"
 
+#include "opencv_helper.hpp"
 #include <cv_bridge/cv_bridge.h>
-#include <opencv/cv.h>
-#include <opencv2/core/core.hpp>
-#include <opencv2/ocl/ocl.hpp>
 #include <eigen3/Eigen/Core>
-
 
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 
 namespace image_cloud {
 
-class Image_enhancement : public nodelet::Nodelet {
+class Clahe : public nodelet::Nodelet {
 public:
 	virtual void onInit();
-	virtual ~Image_enhancement();
+	virtual ~Clahe();
 	virtual void callback(const sensor_msgs::ImageConstPtr& input_msg_image);
 
 private:
@@ -45,9 +42,11 @@ private:
 	std::string node_name_;
 	std::string subscribe_topic_;
 	std::string publish_topic_;
-	std::string filter_;
+	double cliplimit_;
 
 	ros::NodeHandle nh;
+
+
 };
 } /* end namespace */
 

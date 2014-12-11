@@ -79,17 +79,24 @@ target_link_libraries(image_cloud_nodelet
   ${catkin_LIBRARIES}
 )
 
-## Declare a cpp library
-add_library(image_enhancement
-  src/image_enhancement/image_enhancement.cpp
+add_library(brightness
+  src/image_enhancement/brightness.cpp
+)
+target_link_libraries(brightness
+  ${catkin_LIBRARIES}
 )
 
-## Add cmake target dependencies of the executable/library
-## as an example, message headers may need to be generated before nodes
-# add_dependencies(image_enhancement image_cloud_generate_messages_cpp)
+add_library(clahe
+  src/image_enhancement/clahe.cpp
+)
+target_link_libraries(clahe
+  ${catkin_LIBRARIES}
+)
 
-## Specify libraries to link a library or executable target against
-target_link_libraries(image_enhancement
+add_library(gamma
+  src/image_enhancement/gamma.cpp
+)
+target_link_libraries(gamma
   ${catkin_LIBRARIES}
 )
 

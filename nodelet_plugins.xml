@@ -5,10 +5,26 @@
   </description>
   </class>
 </library>
-<library path="lib/libimage_enhancement">
-  <class name="image_cloud/Image_enhancement" type="image_cloud::Image_enhancement" base_class_type="nodelet::Nodelet">
+<library path="lib/libbrightness">
+  <class name="image_cloud/Brightness" type="image_cloud::Brightness" base_class_type="nodelet::Nodelet">
   <description>
-  This is my nodelet.
+  		enhance brightness
+  </description>
+  </class>
+</library>
+</library>
+<library path="lib/libclahe">
+  <class name="image_cloud/Clahe" type="image_cloud::Clahe" base_class_type="nodelet::Nodelet">
+  <description>
+  		enhance contrast using clahe
+  </description>
+  </class>
+</library>
+</library>
+<library path="lib/libgamma">
+  <class name="image_cloud/Gamma" type="image_cloud::Gamma" base_class_type="nodelet::Nodelet">
+  <description>
+  		enhance gamma
   </description>
   </class>
 </library>

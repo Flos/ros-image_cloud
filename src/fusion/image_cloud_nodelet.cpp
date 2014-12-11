@@ -67,6 +67,10 @@ void
 Image_cloud_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image, const sensor_msgs::CameraInfoConstPtr &input_msg_image_info, const PointCloud::ConstPtr &input_msg_cloud_ptr){
 	ROS_INFO_NAMED(node_name_,"callback");
 
+	if(pub_cloud_.getNumSubscribers() == 0 && pub_.getNumSubscribers() == 0 ){ // dont do anything if no one is interessted
+		return;
+	}
+
 	if(input_msg_cloud_ptr->height == 0 || input_msg_cloud_ptr->width == 0){
 		ROS_DEBUG_NAMED(node_name_, "input cloud empty");
 		return;
@@ -121,8 +125,8 @@ Image_cloud_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image,
 	// Transform to image_frame_id
 	// todo: Transform at image time to image_frame_id
 	if (!pcl_ros::transformPointCloud(image_frame_id_.c_str(), cloud, cloud, listener_pointcloud_transform)) {
-				NODELET_WARN("Cannot transform point cloud to the fixed frame %s.", image_frame_id_.c_str());
-		     return;
+			NODELET_WARN("Cannot transform point cloud to the fixed frame %s.", image_frame_id_.c_str());
+		 return;
 	}
 
 	// todo: Filter pcl for speed up?
@@ -152,15 +156,14 @@ Image_cloud_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image,
 	   return;
    }
 
+   int min_color_val = 8;
    int i = 0;
    BOOST_FOREACH (const pcl::PointXYZ& pt, cloud.points) {
 		// look up 3D position
 		// printf ("\t(%f, %f, %f)\n", pt.x, pt.y, pt.z);
 		// project to 2D Image
-	   if( pt.z > 0){
+	   if( pt.z > 1){ // min distance from camera 1m
 			point_image = camera_model.project3dToPixel(cv::Point3d(pt.x, pt.y, pt.z));
-
-
 
 			if( ( point_image.x > 0 &&  point_image.x < input_msg_image->width )
 				&& ( point_image.y > 0 &&  point_image.y < input_msg_image->height )
@@ -169,13 +172,13 @@ Image_cloud_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image,
 				// Get image Color
 
 				color = cv_shared_ptr->image.at<cv::Vec3b>(point_image);
-				if( color.val[0] != 255
-					&& color.val[1] != 255
-					&& color.val[2] != 255
+				if( color.val[0] > min_color_val	// todo replace this with image a image map
+					&& color.val[1] > min_color_val
+					&& color.val[2] > min_color_val
 					)
 				{
 					//debug
-					cv::circle(cv_ptr->image, point_image, 1, cv::Scalar(200,1,1));
+					cv::circle(cv_ptr->image, point_image, 1, cv::Scalar(1,200,1));
 
 					//ROS_INFO_NAMED(node_name_,"blend");
 					pcl::PointXYZRGB color_point(color.val[2], color.val[1], color.val[0]);
@@ -184,6 +187,9 @@ Image_cloud_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image,
 					color_point.z = pt.z;
 					msg->points.push_back(color_point);
 					++i;
+				}
+				else{
+					cv::circle(cv_ptr->image, point_image, 1, cv::Scalar(1,1,200));
 				}
 				//printf ("image: \t(%f, %f)\n", point_image.x, point_image.y);
 			}
