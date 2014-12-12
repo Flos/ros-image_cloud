@@ -80,7 +80,6 @@ private:
 	image_geometry::PinholeCameraModel camera_model;
 
 	tf::TransformListener listener_pointcloud_transform;
-	tf::StampedTransform tf_pointcloud_to_camera_position;
 
 };
 } /* end namespace */
