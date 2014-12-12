@@ -72,6 +72,7 @@ private:
 	std::string publish_pcl_topic_;
 	std::string filter_;
 	std::string image_frame_id_;
+	std::string reference_frame_id_;
 	int min_color_val_;
 
 	ros::NodeHandle nh;
