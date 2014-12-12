@@ -17,6 +17,7 @@ Image_cloud_nodelet::onInit() {
 	nh.param<std::string>("pub", publish_pcl_topic_, subscribe_topic_pcl_ + "_color");
 	nh.param<std::string>("filter", filter_, "default");
 	nh.param<std::string>("image_frame_id", image_frame_id_, "");
+	nh.param<int>("min_color", min_color_val_, 8);
 
 
 	// 2. Info
@@ -25,7 +26,7 @@ Image_cloud_nodelet::onInit() {
 	ROS_INFO_NAMED(node_name_, "sub_img: \t%s", subscribe_topic_img_.c_str());
 	ROS_INFO_NAMED(node_name_, "sub_img_info: \t%s", subscribe_topic_img_info_.c_str());
 	ROS_INFO_NAMED(node_name_, "pub:\t\t%s", publish_pcl_topic_.c_str());
-	ROS_INFO_NAMED(node_name_, "filter: \t%s", filter_.c_str());
+	ROS_INFO_NAMED(node_name_, "min_color: \t%i", min_color_val_);
 
 	if(!image_frame_id_.empty()){
 		ROS_INFO_NAMED(node_name_, "override image frame id: \t%s", image_frame_id_.c_str());
@@ -93,21 +94,6 @@ Image_cloud_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image,
 			ros::Duration(5.0)
 			);
 
-	//	TF pcl to odom frame, time stamp pcl
-	//  TF pcl to camera frame, time stamp camera
-
-	try{
-		listener_pointcloud_transform.lookupTransform(image_frame_id_.c_str(), //target frame
-				input_msg_cloud_ptr->header.frame_id.c_str(), //source frame
-				input_msg_image->header.stamp, // time
-				tf_pointcloud_to_camera_position  // result tf
-				);
-
-	}catch(tf::ExtrapolationException &e){
-		return;
-	};
-
-
 	ROS_INFO_NAMED(node_name_,"pointcloud2 w: %i \th: %i \t\ttime: %i.%i",input_msg_cloud_ptr->width, input_msg_cloud_ptr->height, input_msg_cloud_ptr->header.stamp.sec, input_msg_cloud_ptr->header.stamp.nsec );
 	//ROS_INFO_NAMED(node_name_,"pointcloud2 w: %i \th: %i \t\ttime: %lu",input_msg_cloud_ptr->width, input_msg_cloud_ptr->height, input_msg_cloud_ptr->header.stamp );
 	ROS_INFO_NAMED(node_name_,"image      w: %i \th: %i \ttime: %i.%i",input_msg_image->width, input_msg_image->height, input_msg_image->header.stamp.sec, input_msg_image->header.stamp.nsec );
@@ -122,17 +108,14 @@ Image_cloud_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image,
 	     return;
 	}
 
+	// Todo: check if Transform at image time to image_frame_id is right
+	cloud.header.stamp = input_msg_image->header.stamp.toNSec();
+
 	// Transform to image_frame_id
-	// todo: Transform at image time to image_frame_id
 	if (!pcl_ros::transformPointCloud(image_frame_id_.c_str(), cloud, cloud, listener_pointcloud_transform)) {
 			NODELET_WARN("Cannot transform point cloud to the fixed frame %s.", image_frame_id_.c_str());
 		 return;
 	}
-
-	// todo: Filter pcl for speed up?
-
-
-	// todo: look up colors for pointcloud
 
 	// If we are here we can start
 	camera_model.fromCameraInfo(input_msg_image_info);
@@ -156,7 +139,6 @@ Image_cloud_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image,
 	   return;
    }
 
-   int min_color_val = 8;
    int i = 0;
    BOOST_FOREACH (const pcl::PointXYZ& pt, cloud.points) {
 		// look up 3D position
@@ -172,9 +154,9 @@ Image_cloud_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image,
 				// Get image Color
 
 				color = cv_shared_ptr->image.at<cv::Vec3b>(point_image);
-				if( color.val[0] > min_color_val	// todo replace this with image a image map
-					&& color.val[1] > min_color_val
-					&& color.val[2] > min_color_val
+				if( color.val[0] > min_color_val_	// todo replace this with image a image map
+					&& color.val[1] > min_color_val_
+					&& color.val[2] > min_color_val_
 					)
 				{
 					//debug
