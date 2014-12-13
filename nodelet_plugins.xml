@@ -5,6 +5,13 @@
   </description>
   </class>
 </library>
+<library path="lib/libpcl_to_image">
+  <class name="image_cloud/Pcl_to_image_nodelet" type="image_cloud::Pcl_to_image_nodelet" base_class_type="nodelet::Nodelet">
+  <description>
+  		project pcl pointcloud to image using camera info service for camera parameters
+  </description>
+  </class>
+</library>
 <library path="lib/libbrightness">
   <class name="image_cloud/Brightness" type="image_cloud::Brightness" base_class_type="nodelet::Nodelet">
   <description>
