@@ -33,6 +33,10 @@ Image_cloud_nodelet::onInit() {
 		ROS_INFO_NAMED(node_name_, "override image frame id: \t%s", image_frame_id_.c_str());
 	}
 
+	if(!reference_frame_id_.empty()){
+			ROS_INFO_NAMED(node_name_, "publish cloud transformed to reference frame: \t%s", reference_frame_id_.c_str());
+	}
+
 	if(subscribe_topic_img_.empty()) {
 		ROS_ERROR_NAMED(node_name_, "no img subscribe topic defined");
 		return;
@@ -82,12 +86,16 @@ Image_cloud_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image,
 		return;
 	}
 
+
 	//Look up transform for cameraladybug_camera4
 
-	if(image_frame_id_.empty()){
+	if(image_frame_id_.empty()){ //set default image_frame_id
 		image_frame_id_ = input_msg_image->header.frame_id;
 	}
 
+	if(reference_frame_id_.empty()){ //set default reference frame id
+			   reference_frame_id_ = image_frame_id_;
+    }
 
 	listener_pointcloud_transform.waitForTransform(image_frame_id_.c_str(), //target frame
 			input_msg_cloud_ptr->header.frame_id.c_str(), //source frame
