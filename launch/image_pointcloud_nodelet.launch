@@ -3,30 +3,24 @@
   	<param name="num_worker_threads" type="int" value="4" />
   </node>
   
-  <node pkg="nodelet" type="nodelet" name="image_enhancement_4clahe" args="load image_cloud/Clahe image_and_pcl_manager" output="screen">
+  <node pkg="nodelet" type="nodelet" name="image_enhancement_4blur" args="load image_cloud/Blur image_and_pcl_manager" output="screen">
   	<param name="sub" type="string" value="/ladybug5/camera4/raw_rect" />
-  	<param name="pub" type="string" value="/ladybug5/camera4/raw_rect_clahe" />
-  	<param name="cliplimit"  type="double" value="4" />
+  	<param name="pub" type="string" value="/ladybug5/camera4/raw_rect_blur" />
+  	<param name="filter"  type="int" value="2" />
+  	<param name="kernel"  type="int" value="5" />
   </node>
-  
+    
   <node pkg="nodelet" type="nodelet" name="image_enhancement_4gamma" args="load image_cloud/Gamma image_and_pcl_manager" output="screen">
-  	<param name="sub" type="string" value="/ladybug5/camera4/raw_rect" />
+  	<param name="sub" type="string" value="/ladybug5/camera4/raw_rect_blur" />
   	<param name="pub" type="string" value="/ladybug5/camera4/raw_rect_gamma" />
   	<param name="gamma"  type="double" value="2.2" />
   </node>
   
-  <node pkg="nodelet" type="nodelet" name="image_enhancement_4brightness" args="load image_cloud/Brightness image_and_pcl_manager" output="screen">
-  	<param name="sub" type="string" value="/ladybug5/camera4/raw_rect" />
-  	<param name="pub" type="string" value="/ladybug5/camera4/raw_rect_brightness" />
-  	<param name="alpha"  type="double" value="4" />
-  	<param name="beta"   type="double" value="5" />
-  </node>
-  
-  <node pkg="nodelet" type="nodelet" name="blablabla" args="load image_cloud/Image_cloud_nodelet image_and_pcl_manager" output="screen">
+  <node pkg="nodelet" type="nodelet" name="image_pcl_fusion" args="load image_cloud/Image_cloud_nodelet image_and_pcl_manager" output="screen">
   	<param name="sub_pcl" type="string" value="/velodyne/cloud" />
   	<param name="sub_img" type="string" value="/ladybug5/camera4/raw_rect_gamma" />
   	<param name="sub_img_info" type="string" value="/ladybug5/camera4/camera_info" />
-  	<param name="filter"  type="string" value="filterbla" />
+  	<param name="reference_frame_id"  type="string" value="/base_link" />
   	<param name="image_frame_id"  type="string" value="ladybug_camera4" />
   </node>
   

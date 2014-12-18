@@ -106,6 +106,13 @@ target_link_libraries(gamma
   ${catkin_LIBRARIES}
 )
 
+add_library(blur
+  src/image_enhancement/blur.cpp
+)
+target_link_libraries(blur
+  ${catkin_LIBRARIES}
+)
+
 ## Declare a cpp library
 #add_library(test_nodelet
 #  src/test/test.cpp

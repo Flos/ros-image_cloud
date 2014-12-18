@@ -35,3 +35,10 @@
   </description>
   </class>
 </library>
+<library path="lib/libblur">
+  <class name="image_cloud/Blur" type="image_cloud::Blur" base_class_type="nodelet::Nodelet">
+  <description>
+  		blur image
+  </description>
+  </class>
+</library>
