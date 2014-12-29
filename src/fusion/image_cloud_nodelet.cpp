@@ -17,7 +17,7 @@ Image_cloud_nodelet::onInit() {
 	nh.param<std::string>("pub", publish_pcl_topic_, subscribe_topic_pcl_ + "_color");
 	nh.param<std::string>("filter", filter_, "default");
 	nh.param<std::string>("image_frame_id", image_frame_id_, "");
-	nh.param<std::string>("reference_frame", reference_frame_id_, "");
+	nh.param<std::string>("reference_frame_id", reference_frame_id_, "");
 	nh.param<int>("min_color", min_color_val_, 8);
 
 
@@ -189,17 +189,21 @@ Image_cloud_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image,
    }
 
    msg->header.stamp = cloud.header.stamp;
-   msg->header.frame_id = reference_frame_id_;
+   msg->header.frame_id = image_frame_id_;
    msg->height = 1;
    msg->width = i;
 
 
+   ROS_INFO_NAMED(node_name_,"1");
    if (!boost::equals(reference_frame_id_, image_frame_id_))
    {
+	   ROS_INFO_NAMED(node_name_,"2");
+
 	   if (!pcl_ros::transformPointCloud(reference_frame_id_.c_str(), *msg, *msg, listener_pointcloud_transform)) {
 	   			NODELET_WARN("Cannot transform point cloud to the reference frame %s.", reference_frame_id_.c_str());
 	   		 return;
 	   	}
+	   ROS_INFO_NAMED(node_name_,"3");
    }
 
    pub_cloud_.publish(msg);
