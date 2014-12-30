@@ -42,3 +42,10 @@
   </description>
   </class>
 </library>
+<library path="lib/libedge">
+  <class name="image_cloud/Edge_detector_nodelet" type="image_cloud::Edge_detector_nodelet" base_class_type="nodelet::Nodelet">
+  <description>
+  		image edge detector
+  </description>
+  </class>
+</library>

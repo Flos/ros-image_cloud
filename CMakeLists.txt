@@ -74,6 +74,15 @@ target_link_libraries(image_cloud_nodelet
   ${catkin_LIBRARIES}
 )
 
+## image feature Nodelets
+add_library(edge
+  src/image_features/edge_detector_nodelet.cpp
+)
+
+target_link_libraries(edge
+  ${catkin_LIBRARIES}
+)
+
 ## Calibration Nodelets
 add_library(pcl_to_image
   src/calibration/pcl_to_image_nodelet.cpp
