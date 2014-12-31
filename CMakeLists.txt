@@ -32,7 +32,9 @@ find_package(Boost REQUIRED COMPONENTS system)
 #add dynamic reconfigure api
 #find_package(catkin REQUIRED dynamic_reconfigure)
 generate_dynamic_reconfigure_options(
+  cfg/dilate.cfg
   cfg/edge_detector.cfg
+  cfg/erode.cfg
 )
 
 ###################################
@@ -69,7 +71,7 @@ endif (NOT PCL_FOUND)
 # include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
-  include
+  include/image_cloud
 )
 
 ## Fusion Nodelets
@@ -130,6 +132,32 @@ add_library(blur
   src/image_enhancement/blur.cpp
 )
 target_link_libraries(blur
+  ${catkin_LIBRARIES}
+)
+
+# Erode
+add_library(erode
+  src/image_enhancement/erode.cpp
+)
+
+add_dependencies(erode 
+  ${PROJECT_NAME}_gencfg
+)
+
+target_link_libraries(erode
+  ${catkin_LIBRARIES}
+)
+
+# Diletate
+add_library(dilate
+  src/image_enhancement/dilate.cpp
+)
+
+add_dependencies(dilate 
+  ${PROJECT_NAME}_gencfg
+)
+
+target_link_libraries(dilate
   ${catkin_LIBRARIES}
 )
 
