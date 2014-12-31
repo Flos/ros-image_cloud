@@ -1,4 +1,4 @@
-#include "image_cloud/image_enhancement/clahe.h"
+#include "image_enhancement/clahe.h"
 #include <pluginlib/class_list_macros.h>
 
 // watch the capitalization carefully

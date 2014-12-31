@@ -1,4 +1,4 @@
-#include "image_cloud/image_enhancement/blur.h"
+#include "image_enhancement/blur.h"
 #include <pluginlib/class_list_macros.h>
 
 // watch the capitalization carefully
