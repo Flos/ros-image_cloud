@@ -26,6 +26,9 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 
+#include <dynamic_reconfigure/server.h>
+#include <image_cloud/edge_detectorConfig.h>
+
 namespace image_cloud {
 
 class Edge_detector_nodelet : public nodelet::Nodelet {
@@ -33,11 +36,17 @@ public:
 	Edge_detector_nodelet();
 	virtual void onInit();
 	virtual void callback(const sensor_msgs::ImageConstPtr& input_msg_image);
+	virtual void reconfigure_callback(image_cloud::edge_detectorConfig &config, uint32_t level);
 	virtual ~Edge_detector_nodelet();
 private:
-	image_transport::ImageTransport *it_;
+	boost::shared_ptr<image_transport::ImageTransport> it_;
 	image_transport::Subscriber sub_;
 	image_transport::Publisher pub_;
+
+	typedef image_cloud::edge_detectorConfig Config;
+	typedef dynamic_reconfigure::Server<Config> ReconfigureServer;
+	boost::shared_ptr<ReconfigureServer> reconfigure_server_;
+	Config config_;
 
 	std::string node_name_;
 	std::string subscribe_topic_;
@@ -49,6 +58,8 @@ private:
 	bool publish_color_;
 
 	ros::NodeHandle nh;
+
+	void reset_image_transport();
 };
 
 } /* namespace ladybug */

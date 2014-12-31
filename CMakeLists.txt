@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   cv_bridge
   nodelet
+  dynamic_reconfigure
   roscpp
   rospy
   rostime
@@ -27,6 +28,12 @@ find_package(Boost REQUIRED COMPONENTS system)
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 # catkin_python_setup()
+
+#add dynamic reconfigure api
+#find_package(catkin REQUIRED dynamic_reconfigure)
+generate_dynamic_reconfigure_options(
+  cfg/edge_detector.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -77,6 +84,10 @@ target_link_libraries(image_cloud_nodelet
 ## image feature Nodelets
 add_library(edge
   src/image_features/edge_detector_nodelet.cpp
+)
+
+add_dependencies(edge 
+	  ${PROJECT_NAME}_gencfg
 )
 
 target_link_libraries(edge

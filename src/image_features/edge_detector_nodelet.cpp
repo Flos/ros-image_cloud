@@ -13,38 +13,40 @@ PLUGINLIB_DECLARE_CLASS(image_cloud, Edge_detector_nodelet, image_cloud::Edge_de
 
 namespace image_cloud {
 
+void Edge_detector_nodelet::reset_image_transport() {
+//	try{	sub_.shutdown(); 	}catch(std::exception &e){}
+//	try{	pub_.shutdown(); 	}catch(std::exception &e){}
+}
+
 void
 Edge_detector_nodelet::onInit() {
 	NODELET_DEBUG("Initializing nodelet...");
 	nh = getPrivateNodeHandle();
 	nh.param<std::string>("name", node_name_, "image_features_edge");
-	nh.param<std::string>("sub", subscribe_topic_, "");
-	nh.param<std::string>("pub", publish_topic_, subscribe_topic_ + "_edge");
-	nh.param<int>("kernel", kernel_size_, 5);
-	nh.param<int>("filter", filter_, 0);
-	nh.param<int>("threshold1", threshold1_, 50);
-	nh.param<int>("threshold2", threshold2_, 200);
-	nh.param<bool>("color", publish_color_ , false);
 
+//	//ist this needed?
+	nh.param<std::string>("subscribe_topic", config_.subscribe_topic, "");
+	nh.param<std::string>("publish_topic", config_.publish_topic, config_.subscribe_topic + "_edge");
+//	nh.param<int>("kernel", config_.kernel_size, 5);
+//	nh.param<int>("filter", config_.filter, 0);
+//	nh.param<int>("threshold1", config_.threshold1, 50);
+//	nh.param<int>("threshold2", config_.threshold2, 200);
+//	nh.param<bool>("color", config_.publish_color, false);
+//
+//	// 2. Info
+//	if(config_.subscribe_topic.empty()) {
+//		ROS_ERROR_NAMED(node_name_, "no img subscribe topic defined");
+//	}
 
-	// 2. Info
-	ROS_INFO_NAMED(node_name_, "name:\t%s", node_name_.c_str());
-	ROS_INFO_NAMED(node_name_, "sub:\t%s", subscribe_topic_.c_str());
-	ROS_INFO_NAMED(node_name_, "pub:\t%s", publish_topic_.c_str());
-	ROS_INFO_NAMED(node_name_, "kernel: \t%i", kernel_size_);
-	ROS_INFO_NAMED(node_name_, "filter: \t%i", filter_);
-	ROS_INFO_NAMED(node_name_, "threshold1: \t%i", threshold1_);
-	ROS_INFO_NAMED(node_name_, "threshold2: \t%i", threshold2_);
-	ROS_INFO_NAMED(node_name_, "color: \t%i", publish_color_);
-
-	if(subscribe_topic_.empty()) {
-		ROS_ERROR_NAMED(node_name_, "no img subscribe topic defined");
-		return;
-	}
-
-	it_ = new image_transport::ImageTransport(nh);
-	sub_ = it_->subscribe(subscribe_topic_, 1, &Edge_detector_nodelet::callback, this);
-	pub_ = it_->advertise(publish_topic_, 1);
+	it_.reset(new image_transport::ImageTransport(nh));
+	sub_ = it_->subscribe(config_.subscribe_topic, 1,
+			&Edge_detector_nodelet::callback, this);
+	pub_ = it_->advertise(config_.publish_topic, 1);
+//
+	// Set up dynamic reconfigure
+	reconfigure_server_.reset(new ReconfigureServer(nh));
+	ReconfigureServer::CallbackType f = boost::bind(&Edge_detector_nodelet::reconfigure_callback, this, _1, _2);
+	reconfigure_server_->setCallback(f);
 }
 
 void
@@ -66,23 +68,24 @@ Edge_detector_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_imag
 	cv::Mat src_gray, dst_gray, dst_color;
 
 	cvtColor( cv_ptr->image, src_gray, CV_BGR2GRAY );
-
-	switch(filter_){
-		case 0:
-			Canny( src_gray, dst_gray, threshold1_, threshold2_, kernel_size_ );
-			//Canny( detected_edges, detected_edges, lowThreshold, lowThreshold*ratio, kernel_size );
-
-			break;
-	    case 1:
-			//cv::Laplacian( cv_ptr->image, image_blur.image, cv::Size( kernel_size_, kernel_size_ ), cv::Point(-1,-1) );
-			break;
-	    default :
-	    	ROS_ERROR_NAMED(node_name_, "Filter not implemented, select filter between 0 and 3:");
+	try{
+		switch(filter_){
+			case 0:
+				cv::Canny( src_gray, dst_gray, config_.threshold1, config_.threshold2, config_.kernel_size );
+				break;
+			case 1:
+				cv::Laplacian( src_gray, dst_gray, CV_16S, config_.kernel_size, 1 , 0 );
+				break;
+			default :
+				ROS_ERROR_NAMED(node_name_, "Filter not implemented, select filter between 0 and 3:");
+		}
+	}catch (cv::Exception &e){
+		ROS_ERROR_NAMED(node_name_,"cv_bridge exception: %s", e.what());
 	}
 
 	cv_bridge::CvImage image_edge;
 
-	if(publish_color_){
+	if(config_.publish_color){
 		 cvtColor(dst_gray, dst_color, CV_GRAY2BGR);
 		 image_edge = cv_bridge::CvImage(cv_ptr->header, input_msg_image->encoding, dst_color);
 	}
@@ -95,9 +98,30 @@ Edge_detector_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_imag
 	ROS_INFO_NAMED(node_name_,"callback end");
 }
 
+void
+Edge_detector_nodelet::reconfigure_callback(Config &config, uint32_t level) {
+  ROS_INFO_NAMED(node_name_, "Reconfigure Request");
+
+  ROS_INFO_NAMED(node_name_, "name:\t%s", node_name_.c_str());
+  ROS_INFO_NAMED(node_name_, "subscribe_topic:\t%s", config.subscribe_topic.c_str());
+  ROS_INFO_NAMED(node_name_, "publish_topic:\t%s", config.publish_topic.c_str());
+  ROS_INFO_NAMED(node_name_, "kernel_size: \t%i", config.kernel_size);
+  ROS_INFO_NAMED(node_name_, "filter: \t%i", config.filter);
+  ROS_INFO_NAMED(node_name_, "threshold1: \t%i", config.threshold1);
+  ROS_INFO_NAMED(node_name_, "threshold2: \t%i", config.threshold2);
+  ROS_INFO_NAMED(node_name_, "publish_color: \t%s", config.publish_color ? "true" : "false");
+
+  if(config.subscribe_topic != config_.subscribe_topic
+ 	  || config.publish_topic != config_.publish_topic)
+  {
+	  ROS_INFO_NAMED(node_name_, "restarting image transport");
+ 	  reset_image_transport();
+  }
+  config_ = config;
+}
+
 Edge_detector_nodelet::Edge_detector_nodelet() {
 	// TODO Auto-generated constructor stub
-	it_ = 0;
 	kernel_size_ = 0;
 	filter_ = 0;
 	threshold1_ = 0;
