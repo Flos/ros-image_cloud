@@ -49,13 +49,6 @@ private:
 	Config config_;
 
 	std::string node_name_;
-	std::string subscribe_topic_;
-	std::string publish_topic_;
-	int filter_;
-	int kernel_size_;
-	int threshold1_;
-	int threshold2_;
-	bool publish_color_;
 
 	ros::NodeHandle nh;
 

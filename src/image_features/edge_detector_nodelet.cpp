@@ -67,11 +67,17 @@ Edge_detector_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_imag
 
 	cv::Mat src_gray, dst_gray, dst_color;
 
-	cvtColor( cv_ptr->image, src_gray, CV_BGR2GRAY );
+	if(input_msg_image->encoding == sensor_msgs::image_encodings::MONO8){
+		src_gray = cv_ptr->image;
+	}
+	else{
+		cvtColor( cv_ptr->image, src_gray, CV_BGR2GRAY );
+	}
+
 	try{
-		switch(filter_){
+		switch(config_.filter){
 			case 0:
-				cv::Canny( src_gray, dst_gray, config_.threshold1, config_.threshold2, config_.kernel_size );
+				cv::Canny( src_gray, dst_gray, config_.threshold1, config_.threshold2, config_.kernel_size, config_.L2gradient );
 				break;
 			case 1:
 				cv::Laplacian( src_gray, dst_gray, CV_16S, config_.kernel_size, 1 , 0 );
@@ -107,8 +113,8 @@ Edge_detector_nodelet::reconfigure_callback(Config &config, uint32_t level) {
   ROS_INFO_NAMED(node_name_, "publish_topic:\t%s", config.publish_topic.c_str());
   ROS_INFO_NAMED(node_name_, "kernel_size: \t%i", config.kernel_size);
   ROS_INFO_NAMED(node_name_, "filter: \t%i", config.filter);
-  ROS_INFO_NAMED(node_name_, "threshold1: \t%i", config.threshold1);
-  ROS_INFO_NAMED(node_name_, "threshold2: \t%i", config.threshold2);
+  ROS_INFO_NAMED(node_name_, "threshold1: \t%f", config.threshold1);
+  ROS_INFO_NAMED(node_name_, "threshold2: \t%f", config.threshold2);
   ROS_INFO_NAMED(node_name_, "publish_color: \t%s", config.publish_color ? "true" : "false");
 
   if(config.subscribe_topic != config_.subscribe_topic
@@ -122,11 +128,6 @@ Edge_detector_nodelet::reconfigure_callback(Config &config, uint32_t level) {
 
 Edge_detector_nodelet::Edge_detector_nodelet() {
 	// TODO Auto-generated constructor stub
-	kernel_size_ = 0;
-	filter_ = 0;
-	threshold1_ = 0;
-	threshold2_ = 0;
-	publish_color_ = 0;
 }
 
 Edge_detector_nodelet::~Edge_detector_nodelet() {
