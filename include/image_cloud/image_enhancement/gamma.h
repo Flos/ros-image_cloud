@@ -26,26 +26,30 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 
+#include <dynamic_reconfigure/server.h>
+#include <image_cloud/gammaConfig.h>
+
 namespace image_cloud {
 
 class Gamma : public nodelet::Nodelet {
+	typedef image_cloud::gammaConfig Config;
+	typedef dynamic_reconfigure::Server<Config> ReconfigureServer;
 public:
 	virtual void onInit();
 	virtual ~Gamma();
 	virtual void callback(const sensor_msgs::ImageConstPtr& input_msg_image);
+	virtual void reconfigure_callback(Config &config, uint32_t level);
 
 private:
-	image_transport::ImageTransport *it_;
+	boost::shared_ptr<image_transport::ImageTransport> it_;
 	image_transport::Subscriber sub_;
 	image_transport::Publisher pub_;
 
+	boost::shared_ptr<ReconfigureServer> reconfigure_server_;
+	Config config_;
+
 	std::string node_name_;
-	std::string subscribe_topic_;
-	std::string publish_topic_;
-	double gamma_;
-
 	ros::NodeHandle nh;
-
 
 };
 } /* end namespace */

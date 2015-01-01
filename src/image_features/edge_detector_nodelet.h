@@ -51,8 +51,6 @@ private:
 	std::string node_name_;
 
 	ros::NodeHandle nh;
-
-	void reset_image_transport();
 };
 
 } /* namespace ladybug */

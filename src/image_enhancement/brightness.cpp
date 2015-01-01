@@ -11,26 +11,13 @@ Brightness::onInit() {
 	NODELET_DEBUG("Initializing nodelet...");
 	nh = getPrivateNodeHandle();
 	nh.param<std::string>("name", node_name_, "image_enhancement_brightness");
-	nh.param<std::string>("sub", subscribe_topic_, "");
-	nh.param<std::string>("pub", publish_topic_, subscribe_topic_ + "_brightness");
-	nh.param<double>("alpha", alpha_, 4);
-	nh.param<double>("beta", beta_, 0);
+	nh.param<std::string>("subscribe_topic", config_.subscribe_topic, "");
+	nh.param<std::string>("publish_topic", config_.publish_topic, config_.subscribe_topic + "_Dilate");
 
-	// 2. Info
-	ROS_INFO_NAMED(node_name_, "name:\t%s", node_name_.c_str());
-	ROS_INFO_NAMED(node_name_, "sub:\t%s", subscribe_topic_.c_str());
-	ROS_INFO_NAMED(node_name_, "pub:\t%s", publish_topic_.c_str());
-	ROS_INFO_NAMED(node_name_, "alpha: \t%f", alpha_);
-	ROS_INFO_NAMED(node_name_, "beta: \t%f", beta_);
-
-	if(subscribe_topic_.empty()) {
-		ROS_ERROR_NAMED(node_name_, "no img subscribe topic defined");
-		return;
-	}
-
-	it_ = new image_transport::ImageTransport(nh);
-	sub_ = it_->subscribe(subscribe_topic_, 1, &Brightness::callback, this);
-	pub_ = it_->advertise(publish_topic_, 1);
+	it_.reset(new image_transport::ImageTransport(nh));
+	sub_ = it_->subscribe(config_.subscribe_topic, 1,
+			&Brightness::callback, this);
+	pub_ = it_->advertise(config_.publish_topic, 1);
 }
 
 void
@@ -50,15 +37,38 @@ Brightness::callback(const sensor_msgs::ImageConstPtr& input_msg_image){
 	}
 
 	//Brightness
-	cv_ptr->image = brightness(cv_ptr->image, alpha_, beta_);
+	cv_ptr->image = brightness(cv_ptr->image, config_.alpha, config_.beta);
 
 	pub_.publish(cv_ptr->toImageMsg());
 
 	ROS_INFO_NAMED(node_name_,"callback end");
 }
 
+void
+Brightness::reconfigure_callback(Config &config, uint32_t level) {
+	// Info
+	ROS_INFO_NAMED(node_name_, "name:\t%s", node_name_.c_str());
+	ROS_INFO_NAMED(node_name_, "sub:\t%s", config.subscribe_topic.c_str());
+	ROS_INFO_NAMED(node_name_, "pub:\t%s", config.publish_topic.c_str());
+	ROS_INFO_NAMED(node_name_, "kernel: \t%f", config.alpha);
+	ROS_INFO_NAMED(node_name_, "filter: \t%f", config.beta);
+
+	if(config.subscribe_topic != config_.subscribe_topic){
+	  sub_ = it_->subscribe(config.subscribe_topic, 1,
+				&Brightness::callback, this);
+	  ROS_INFO_NAMED(node_name_, "Subscribe topic changed from %s to %s", config_.subscribe_topic.c_str(), config.subscribe_topic.c_str());
+	  //
+	}
+
+	if(config.publish_topic != config_.publish_topic)
+	{
+	  pub_ = it_->advertise(config.publish_topic, 1);
+	  ROS_INFO_NAMED(node_name_, "Publish topic changed from %s to %s", config_.publish_topic.c_str(), config.publish_topic.c_str());
+	}
+	config_ = config;
+}
+
 Brightness::~Brightness(){
-		delete it_;
 	}
 
 } /* end namespace */

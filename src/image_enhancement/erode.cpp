@@ -78,10 +78,17 @@ Erode::reconfigure_callback(Config &config, uint32_t level) {
   ROS_INFO_NAMED(node_name_, "erosion_size: \t%i", config.erosion_size);
   ROS_INFO_NAMED(node_name_, "element_form: \t%i", config.element_form);
 
-  if(config.subscribe_topic != config_.subscribe_topic
- 	  || config.publish_topic != config_.publish_topic)
+  if(config.subscribe_topic != config_.subscribe_topic){
+  	  sub_ = it_->subscribe(config.subscribe_topic, 1,
+  	  			&Erode::callback, this);
+  	  ROS_INFO_NAMED(node_name_, "Subscribe topic changed from %s to %s", config_.subscribe_topic.c_str(), config.subscribe_topic.c_str());
+  	  //
+  }
+
+  if(config.publish_topic != config_.publish_topic)
   {
-	  ROS_ERROR_NAMED(node_name_, "restarting of node needed");
+	  pub_ = it_->advertise(config.publish_topic, 1);
+	  ROS_INFO_NAMED(node_name_, "Publish topic changed from %s to %s", config_.publish_topic.c_str(), config.publish_topic.c_str());
   }
 
   int erosion_type = 0;

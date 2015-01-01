@@ -11,27 +11,13 @@ Blur::onInit() {
 	NODELET_DEBUG("Initializing nodelet...");
 	nh = getPrivateNodeHandle();
 	nh.param<std::string>("name", node_name_, "image_enhancement_blur");
-	nh.param<std::string>("sub", subscribe_topic_, "");
-	nh.param<std::string>("pub", publish_topic_, subscribe_topic_ + "_blur");
-	nh.param<int>("kernel", kernel_size_, 5);
-	nh.param<int>("filter", filter_, 0);
+	nh.param<std::string>("subscribe_topic", config_.subscribe_topic, "");
+	nh.param<std::string>("publish_topic", config_.publish_topic, config_.subscribe_topic + "_erode");
 
-
-	// 2. Info
-	ROS_INFO_NAMED(node_name_, "name:\t%s", node_name_.c_str());
-	ROS_INFO_NAMED(node_name_, "sub:\t%s", subscribe_topic_.c_str());
-	ROS_INFO_NAMED(node_name_, "pub:\t%s", publish_topic_.c_str());
-	ROS_INFO_NAMED(node_name_, "kernel: \t%i", kernel_size_);
-	ROS_INFO_NAMED(node_name_, "filter: \t%i", filter_);
-
-	if(subscribe_topic_.empty()) {
-		ROS_ERROR_NAMED(node_name_, "no img subscribe topic defined");
-		return;
-	}
-
-	it_ = new image_transport::ImageTransport(nh);
-	sub_ = it_->subscribe(subscribe_topic_, 1, &Blur::callback, this);
-	pub_ = it_->advertise(publish_topic_, 1);
+	it_.reset(new image_transport::ImageTransport(nh));
+	sub_ = it_->subscribe(config_.subscribe_topic, 1,
+			&Blur::callback, this);
+	pub_ = it_->advertise(config_.publish_topic, 1);
 }
 
 void
@@ -56,21 +42,22 @@ Blur::callback(const sensor_msgs::ImageConstPtr& input_msg_image){
 	cv_bridge::CvImage image_blur(cv_ptr->header, input_msg_image->encoding, image);
 
 
-	switch(filter_){
+	switch(config_.filter){
 		case 0:
-			cv::bilateralFilter ( cv_ptr->image, image_blur.image, kernel_size_, kernel_size_*2, kernel_size_/2 );
+			cv::bilateralFilter ( cv_ptr->image, image_blur.image, config_.kernel_size, config_.kernel_size*2, config_.kernel_size/2 );
 			break;
 	    case 1:
-			cv::blur( cv_ptr->image, image_blur.image, cv::Size( kernel_size_, kernel_size_ ), cv::Point(-1,-1) );
+			cv::blur( cv_ptr->image, image_blur.image, cv::Size( config_.kernel_size, config_.kernel_size ), cv::Point(-1,-1) );
 			break;
 	    case 2:
-			cv::GaussianBlur( cv_ptr->image, image_blur.image, cv::Size( kernel_size_, kernel_size_ ), 0, 0 );
+			cv::GaussianBlur( cv_ptr->image, image_blur.image, cv::Size( config_.kernel_size, config_.kernel_size ), 0, 0 );
 			break;
 	    case 3:
-	    	cv::medianBlur ( cv_ptr->image, image_blur.image, kernel_size_ );
+	    	cv::medianBlur ( cv_ptr->image, image_blur.image, config_.kernel_size );
 	    	break;
 	    default :
 	    	ROS_ERROR_NAMED(node_name_, "Filter not implemented, select filter between 0 and 3:");
+	    	return;
 	}
 
 	pub_.publish(image_blur.toImageMsg());
@@ -78,8 +65,31 @@ Blur::callback(const sensor_msgs::ImageConstPtr& input_msg_image){
 	ROS_INFO_NAMED(node_name_,"callback end");
 }
 
+void
+Blur::reconfigure_callback(Config &config, uint32_t level) {
+	// Info
+	ROS_INFO_NAMED(node_name_, "name:\t%s", node_name_.c_str());
+	ROS_INFO_NAMED(node_name_, "sub:\t%s", config.subscribe_topic.c_str());
+	ROS_INFO_NAMED(node_name_, "pub:\t%s", config.publish_topic.c_str());
+	ROS_INFO_NAMED(node_name_, "kernel: \t%i", config.kernel_size);
+	ROS_INFO_NAMED(node_name_, "filter: \t%i", config.filter);
+
+	if(config.subscribe_topic != config_.subscribe_topic){
+	  sub_ = it_->subscribe(config.subscribe_topic, 1,
+				&Blur::callback, this);
+	  ROS_INFO_NAMED(node_name_, "Subscribe topic changed from %s to %s", config_.subscribe_topic.c_str(), config.subscribe_topic.c_str());
+	  //
+	}
+
+	if(config.publish_topic != config_.publish_topic)
+	{
+	  pub_ = it_->advertise(config.publish_topic, 1);
+	  ROS_INFO_NAMED(node_name_, "Publish topic changed from %s to %s", config_.publish_topic.c_str(), config.publish_topic.c_str());
+	}
+	config_ = config;
+}
+
 Blur::~Blur(){
-		delete it_;
 	}
 
 } /* end namespace */

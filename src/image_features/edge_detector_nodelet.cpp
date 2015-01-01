@@ -13,30 +13,13 @@ PLUGINLIB_DECLARE_CLASS(image_cloud, Edge_detector_nodelet, image_cloud::Edge_de
 
 namespace image_cloud {
 
-void Edge_detector_nodelet::reset_image_transport() {
-//	try{	sub_.shutdown(); 	}catch(std::exception &e){}
-//	try{	pub_.shutdown(); 	}catch(std::exception &e){}
-}
-
 void
 Edge_detector_nodelet::onInit() {
 	NODELET_DEBUG("Initializing nodelet...");
 	nh = getPrivateNodeHandle();
 	nh.param<std::string>("name", node_name_, "image_features_edge");
-
-//	//ist this needed?
 	nh.param<std::string>("subscribe_topic", config_.subscribe_topic, "");
 	nh.param<std::string>("publish_topic", config_.publish_topic, config_.subscribe_topic + "_edge");
-//	nh.param<int>("kernel", config_.kernel_size, 5);
-//	nh.param<int>("filter", config_.filter, 0);
-//	nh.param<int>("threshold1", config_.threshold1, 50);
-//	nh.param<int>("threshold2", config_.threshold2, 200);
-//	nh.param<bool>("color", config_.publish_color, false);
-//
-//	// 2. Info
-//	if(config_.subscribe_topic.empty()) {
-//		ROS_ERROR_NAMED(node_name_, "no img subscribe topic defined");
-//	}
 
 	it_.reset(new image_transport::ImageTransport(nh));
 	sub_ = it_->subscribe(config_.subscribe_topic, 1,
@@ -117,11 +100,17 @@ Edge_detector_nodelet::reconfigure_callback(Config &config, uint32_t level) {
   ROS_INFO_NAMED(node_name_, "threshold2: \t%f", config.threshold2);
   ROS_INFO_NAMED(node_name_, "publish_color: \t%s", config.publish_color ? "true" : "false");
 
-  if(config.subscribe_topic != config_.subscribe_topic
- 	  || config.publish_topic != config_.publish_topic)
+  if(config.subscribe_topic != config_.subscribe_topic){
+  	  sub_ = it_->subscribe(config.subscribe_topic, 1,
+  	  			&Edge_detector_nodelet::callback, this);
+  	  ROS_INFO_NAMED(node_name_, "Subscribe topic changed from %s to %s", config_.subscribe_topic.c_str(), config.subscribe_topic.c_str());
+  	  //
+  }
+
+  if(config.publish_topic != config_.publish_topic)
   {
-	  ROS_INFO_NAMED(node_name_, "restarting image transport");
- 	  reset_image_transport();
+  	  pub_ = it_->advertise(config.publish_topic, 1);
+  	  ROS_INFO_NAMED(node_name_, "Publish topic changed from %s to %s", config_.publish_topic.c_str(), config.publish_topic.c_str());
   }
   config_ = config;
 }

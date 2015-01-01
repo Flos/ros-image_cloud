@@ -32,9 +32,13 @@ find_package(Boost REQUIRED COMPONENTS system)
 #add dynamic reconfigure api
 #find_package(catkin REQUIRED dynamic_reconfigure)
 generate_dynamic_reconfigure_options(
+  cfg/blur.cfg
+  cfg/brightness.cfg
+  cfg/clahe.cfg
   cfg/dilate.cfg
   cfg/edge_detector.cfg
   cfg/erode.cfg
+  cfg/gamma.cfg
 )
 
 ###################################
@@ -114,12 +118,22 @@ target_link_libraries(brightness
   ${catkin_LIBRARIES}
 )
 
+add_dependencies(brightness 
+	  ${PROJECT_NAME}_gencfg
+)
+
+
 add_library(clahe
   src/image_enhancement/clahe.cpp
 )
 target_link_libraries(clahe
   ${catkin_LIBRARIES}
 )
+
+add_dependencies(clahe 
+	  ${PROJECT_NAME}_gencfg
+)
+
 
 add_library(gamma
   src/image_enhancement/gamma.cpp
@@ -128,11 +142,19 @@ target_link_libraries(gamma
   ${catkin_LIBRARIES}
 )
 
+add_dependencies(gamma 
+	  ${PROJECT_NAME}_gencfg
+)
+
 add_library(blur
   src/image_enhancement/blur.cpp
 )
 target_link_libraries(blur
   ${catkin_LIBRARIES}
+)
+
+add_dependencies(blur 
+	  ${PROJECT_NAME}_gencfg
 )
 
 # Erode
