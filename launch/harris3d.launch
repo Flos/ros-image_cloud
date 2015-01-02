@@ -1,0 +1,19 @@
+<launch>
+  <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen">
+  	<param name="num_worker_threads" type="int" value="4" />
+  </node>
+  
+  <node pkg="nodelet" type="nodelet" name="harris3d" args="load image_cloud/Harris3d_nodelet pcl_manager" output="screen">
+  	<param name="subscribe_topic" 	value="/velodyne/cloud" />
+  	<param name="publish_topic" 	value="/velodyne/cloud_harris3d" />
+  </node>
+  
+  <node pkg="nodelet" type="nodelet" name="pcl_to_image" args="load image_cloud/Pcl_to_image_nodelet pcl_manager" output="screen">
+  	<param name="sub_pcl" type="string" value="/velodyne/cloud_harris3d" />
+  	<param name="sub_img_info" type="string" value="/ladybug5/camera4/camera_info" />
+  	<param name="image_frame_id"  type="string" value="ladybug_camera4" />
+  	<param name="resize_x"  type="double" value="1" />
+  	<param name="resize_y"  type="double" value="1" />
+  </node>
+  
+</launch>

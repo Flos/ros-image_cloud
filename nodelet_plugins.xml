@@ -63,3 +63,10 @@
   </description>
   </class>
 </library>
+<library path="lib/libharris3d">
+  <class name="image_cloud/Harris3d_nodelet" type="image_cloud::Harris3d_nodelet" base_class_type="nodelet::Nodelet">
+  <description>
+  			Harris 3d pcl edge detector
+  </description>
+  </class>
+</library>

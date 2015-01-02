@@ -39,6 +39,7 @@ generate_dynamic_reconfigure_options(
   cfg/edge_detector.cfg
   cfg/erode.cfg
   cfg/gamma.cfg
+  cfg/harris3d.cfg
 )
 
 ###################################
@@ -97,6 +98,19 @@ add_dependencies(edge
 )
 
 target_link_libraries(edge
+  ${catkin_LIBRARIES}
+)
+
+## pcl feature Nodelets
+add_library(harris3d
+  src/pcl_features/harris3d_nodelet.cpp
+)
+
+add_dependencies(harris3d
+	  ${PROJECT_NAME}_gencfg
+)
+
+target_link_libraries(harris3d
   ${catkin_LIBRARIES}
 )
 
