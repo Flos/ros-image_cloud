@@ -1,4 +1,4 @@
-#include "image_cloud/calibration/image_cloud_nodelet.h"
+#include "calibration/image_cloud_nodelet.h"
 #include <pluginlib/class_list_macros.h>
 
 // watch the capitalization carefully
