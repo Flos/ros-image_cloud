@@ -18,6 +18,11 @@ Blur::onInit() {
 	sub_ = it_->subscribe(config_.subscribe_topic, 1,
 			&Blur::callback, this);
 	pub_ = it_->advertise(config_.publish_topic, 1);
+
+	// Set up dynamic reconfigure
+	reconfigure_server_.reset(new ReconfigureServer(nh));
+	ReconfigureServer::CallbackType f = boost::bind(&Blur::reconfigure_callback, this, _1, _2);
+	reconfigure_server_->setCallback(f);
 }
 
 void
@@ -56,7 +61,7 @@ Blur::callback(const sensor_msgs::ImageConstPtr& input_msg_image){
 	    	cv::medianBlur ( cv_ptr->image, image_blur.image, config_.kernel_size );
 	    	break;
 	    default :
-	    	ROS_ERROR_NAMED(node_name_, "Filter not implemented, select filter between 0 and 3:");
+	    	ROS_ERROR_NAMED(node_name_, "Filter not implemented, select filter between 0 and 3: instead of %d", config_.filter);
 	    	return;
 	}
 

@@ -18,6 +18,11 @@ Brightness::onInit() {
 	sub_ = it_->subscribe(config_.subscribe_topic, 1,
 			&Brightness::callback, this);
 	pub_ = it_->advertise(config_.publish_topic, 1);
+
+	// Set up dynamic reconfigure
+	reconfigure_server_.reset(new ReconfigureServer(nh));
+	ReconfigureServer::CallbackType f = boost::bind(&Brightness::reconfigure_callback, this, _1, _2);
+	reconfigure_server_->setCallback(f);
 }
 
 void
