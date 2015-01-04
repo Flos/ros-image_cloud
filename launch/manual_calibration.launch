@@ -1,0 +1,6 @@
+<launch>
+  <node name="manual_calibration"             pkg="image_cloud" type="manual_calibration">
+  	<param name="parent_frame" type="string" value="ladybug_camera4" />
+  	<param name="child_frame" type="string" value="ladybug_camera4_calibration" />
+  </node>
+</launch>

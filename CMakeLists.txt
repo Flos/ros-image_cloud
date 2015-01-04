@@ -40,6 +40,7 @@ generate_dynamic_reconfigure_options(
   cfg/erode.cfg
   cfg/gamma.cfg
   cfg/harris3d.cfg
+  cfg/manual_calibration.cfg
 )
 
 ###################################
@@ -121,6 +122,22 @@ add_library(pcl_to_image
 
 target_link_libraries(pcl_to_image
   ${catkin_LIBRARIES}
+)
+
+add_dependencies(pcl_to_image 
+	  ${PROJECT_NAME}_gencfg
+)
+
+add_executable(manual_calibration
+  src/calibration/manual_calibration.cpp
+)
+
+target_link_libraries(manual_calibration
+  ${catkin_LIBRARIES}
+)
+
+add_dependencies(manual_calibration 
+	  ${PROJECT_NAME}_gencfg
 )
 
 
