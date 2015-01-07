@@ -22,19 +22,19 @@ Image_cloud_nodelet::onInit() {
 
 
 	// 2. Info
-	ROS_INFO_NAMED(node_name_, "name:\t\t%s", node_name_.c_str());
-	ROS_INFO_NAMED(node_name_, "sub_pcl: \t%s", subscribe_topic_pcl_.c_str());
-	ROS_INFO_NAMED(node_name_, "sub_img: \t%s", subscribe_topic_img_.c_str());
-	ROS_INFO_NAMED(node_name_, "sub_img_info: \t%s", subscribe_topic_img_info_.c_str());
-	ROS_INFO_NAMED(node_name_, "pub:\t\t%s", publish_pcl_topic_.c_str());
-	ROS_INFO_NAMED(node_name_, "min_color: \t%i", min_color_val_);
+	NODELET_DEBUG("name:\t\t%s", node_name_.c_str());
+	NODELET_DEBUG("sub_pcl: \t%s", subscribe_topic_pcl_.c_str());
+	NODELET_DEBUG("sub_img: \t%s", subscribe_topic_img_.c_str());
+	NODELET_DEBUG("sub_img_info: \t%s", subscribe_topic_img_info_.c_str());
+	NODELET_DEBUG("pub:\t\t%s", publish_pcl_topic_.c_str());
+	NODELET_DEBUG("min_color: \t%i", min_color_val_);
 
 	if(!image_frame_id_.empty()){
-		ROS_INFO_NAMED(node_name_, "override image frame id: \t%s", image_frame_id_.c_str());
+		NODELET_INFO("override image frame id: \t%s", image_frame_id_.c_str());
 	}
 
 	if(!reference_frame_id_.empty()){
-			ROS_INFO_NAMED(node_name_, "publish cloud transformed to reference frame: \t%s", reference_frame_id_.c_str());
+		NODELET_INFO("publish cloud transformed to reference frame: \t%s", reference_frame_id_.c_str());
 	}
 
 	if(subscribe_topic_img_.empty()) {
@@ -78,11 +78,11 @@ Image_cloud_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image,
 	}
 
 	if(input_msg_cloud_ptr->height == 0 || input_msg_cloud_ptr->width == 0){
-		ROS_DEBUG_NAMED(node_name_, "input cloud empty");
+		NODELET_DEBUG("input cloud empty");
 		return;
 	}
 	if(input_msg_image->height == 0 || input_msg_image->width == 0){
-		ROS_DEBUG_NAMED(node_name_, "input image empty");
+		NODELET_DEBUG("input image empty");
 		return;
 	}
 

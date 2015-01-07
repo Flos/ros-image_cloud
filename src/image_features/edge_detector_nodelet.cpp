@@ -34,7 +34,7 @@ Edge_detector_nodelet::onInit() {
 
 void
 Edge_detector_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image){
-	ROS_INFO_NAMED(node_name_,"callback");
+	NODELET_DEBUG("callback");
 
 	if(pub_.getNumSubscribers() == 0) return;
 
@@ -84,33 +84,33 @@ Edge_detector_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_imag
 
 	pub_.publish(image_edge.toImageMsg());
 
-	ROS_INFO_NAMED(node_name_,"callback end");
+	NODELET_DEBUG("callback end");
 }
 
 void
 Edge_detector_nodelet::reconfigure_callback(Config &config, uint32_t level) {
-  ROS_INFO_NAMED(node_name_, "Reconfigure Request");
+  NODELET_INFO( "Reconfigure Request");
 
-  ROS_INFO_NAMED(node_name_, "name:\t%s", node_name_.c_str());
-  ROS_INFO_NAMED(node_name_, "subscribe_topic:\t%s", config.subscribe_topic.c_str());
-  ROS_INFO_NAMED(node_name_, "publish_topic:\t%s", config.publish_topic.c_str());
-  ROS_INFO_NAMED(node_name_, "kernel_size: \t%i", config.kernel_size);
-  ROS_INFO_NAMED(node_name_, "filter: \t%i", config.filter);
-  ROS_INFO_NAMED(node_name_, "threshold1: \t%f", config.threshold1);
-  ROS_INFO_NAMED(node_name_, "threshold2: \t%f", config.threshold2);
-  ROS_INFO_NAMED(node_name_, "publish_color: \t%s", config.publish_color ? "true" : "false");
+  NODELET_INFO( "name:\t%s", node_name_.c_str());
+  NODELET_INFO( "subscribe_topic:\t%s", config.subscribe_topic.c_str());
+  NODELET_INFO( "publish_topic:\t%s", config.publish_topic.c_str());
+  NODELET_INFO( "kernel_size: \t%i", config.kernel_size);
+  NODELET_INFO( "filter: \t%i", config.filter);
+  NODELET_INFO( "threshold1: \t%f", config.threshold1);
+  NODELET_INFO( "threshold2: \t%f", config.threshold2);
+  NODELET_INFO( "publish_color: \t%s", config.publish_color ? "true" : "false");
 
   if(config.subscribe_topic != config_.subscribe_topic){
   	  sub_ = it_->subscribe(config.subscribe_topic, 1,
   	  			&Edge_detector_nodelet::callback, this);
-  	  ROS_INFO_NAMED(node_name_, "Subscribe topic changed from %s to %s", config_.subscribe_topic.c_str(), config.subscribe_topic.c_str());
+  	  NODELET_INFO( "Subscribe topic changed from %s to %s", config_.subscribe_topic.c_str(), config.subscribe_topic.c_str());
   	  //
   }
 
   if(config.publish_topic != config_.publish_topic)
   {
   	  pub_ = it_->advertise(config.publish_topic, 1);
-  	  ROS_INFO_NAMED(node_name_, "Publish topic changed from %s to %s", config_.publish_topic.c_str(), config.publish_topic.c_str());
+  	  NODELET_INFO( "Publish topic changed from %s to %s", config_.publish_topic.c_str(), config.publish_topic.c_str());
   }
   config_ = config;
 }

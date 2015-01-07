@@ -32,7 +32,7 @@ Harris3d_nodelet::onInit() {
 
 void
 Harris3d_nodelet::callback(const PointCloud::ConstPtr &input_msg_cloud_ptr){
-	ROS_INFO_NAMED(node_name_,"callback");
+	NODELET_DEBUG("callback");
 
 	if(pub_.getNumSubscribers() == 0) return;
 
@@ -53,14 +53,14 @@ Harris3d_nodelet::callback(const PointCloud::ConstPtr &input_msg_cloud_ptr){
 	pcl::PointCloud<pcl::PointXYZI>::Ptr keypoints(new pcl::PointCloud<pcl::PointXYZI>());
 	detector.compute(*keypoints);
 
-	ROS_INFO_NAMED(node_name_, "In: %lu, keypoints: %lu", cloud.size(), keypoints->size());
+	NODELET_INFO( "In: %lu, keypoints: %lu", cloud.size(), keypoints->size());
 
 //	pcl::PointCloud<pcl::PointXYZ>::Ptr keypoints3D(new pcl::PointCloud<pcl::PointXYZ>());
 //	pcl::PointXYZ tmp;
 //	double max = 0,min=0;
 //
 //	for(pcl::PointCloud<pcl::PointXYZI>::iterator i = keypoints->begin(); i!= keypoints->end(); i++){
-//		tmp = pcl::PointXYZ((*i).x,(*i).y,(*i).z);
+//		tmp = pcl::PointXYZ((*i).x,(*i).y,(*i).zne);
 //		if ((*i).intensity>max ){
 //			std::cout << (*i) << " coords: " << (*i).x << ";" << (*i).y << ";" << (*i).z << std::endl;
 //			max = (*i).intensity;
@@ -78,20 +78,20 @@ Harris3d_nodelet::callback(const PointCloud::ConstPtr &input_msg_cloud_ptr){
 	out.header = input_msg_cloud_ptr->header;
 	pub_.publish(out);
 
-	ROS_INFO_NAMED(node_name_,"callback end");
+	NODELET_DEBUG("callback end");
 }
 
 void
 Harris3d_nodelet::reconfigure_callback(Config &config, uint32_t level) {
-	ROS_INFO_NAMED(node_name_, "Reconfigure Request");
-	ROS_INFO_NAMED(node_name_, "name:\t%s", node_name_.c_str());
-	ROS_INFO_NAMED(node_name_, "subscribe_topic:\t%s", config.subscribe_topic.c_str());
-	ROS_INFO_NAMED(node_name_, "publish_topic:\t%s", config.publish_topic.c_str());
-	ROS_INFO_NAMED(node_name_, "threshold: \t%f", config.threshold);
-	ROS_INFO_NAMED(node_name_, "radius: \t%f", config.radius);
-	ROS_INFO_NAMED(node_name_, "radius_search: \t%f", config.radius_search);
-	ROS_INFO_NAMED(node_name_, "non_max_supression: \t%s", config.non_max_supression ? "true" : "false");
-	ROS_INFO_NAMED(node_name_, "refine: \t%s", config.refine ? "true" : "false");
+	NODELET_INFO( "Reconfigure Request");
+	NODELET_INFO( "name:\t%s", node_name_.c_str());
+	NODELET_INFO( "subscribe_topic:\t%s", config.subscribe_topic.c_str());
+	NODELET_INFO( "publish_topic:\t%s", config.publish_topic.c_str());
+	NODELET_INFO( "threshold: \t%f", config.threshold);
+	NODELET_INFO( "radius: \t%f", config.radius);
+	NODELET_INFO( "radius_search: \t%f", config.radius_search);
+	NODELET_INFO( "non_max_supression: \t%s", config.non_max_supression ? "true" : "false");
+	NODELET_INFO( "refine: \t%s", config.refine ? "true" : "false");
 
 	detector.setNonMaxSupression(config.non_max_supression);
 	detector.setRadius(config.radius);
@@ -103,14 +103,14 @@ Harris3d_nodelet::reconfigure_callback(Config &config, uint32_t level) {
 
 	if(config.subscribe_topic != config_.subscribe_topic){
 	  sub_ = nh_.subscribe(config.subscribe_topic, 1, &Harris3d_nodelet::callback, this);
-	  ROS_INFO_NAMED(node_name_, "Subscribe topic changed from %s to %s", config_.subscribe_topic.c_str(), config.subscribe_topic.c_str());
+	  NODELET_INFO( "Subscribe topic changed from %s to %s", config_.subscribe_topic.c_str(), config.subscribe_topic.c_str());
 	  //
 	}
 
 	if(config.publish_topic != config_.publish_topic)
 	{
 	  pub_ = nh_.advertise<PointCloud>(config_.publish_topic.c_str(), 1);
-	  ROS_INFO_NAMED(node_name_, "Publish topic changed from %s to %s", config_.publish_topic.c_str(), config.publish_topic.c_str());
+	  NODELET_INFO( "Publish topic changed from %s to %s", config_.publish_topic.c_str(), config.publish_topic.c_str());
 	}
 	config_ = config;
 }

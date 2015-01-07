@@ -27,7 +27,7 @@ Blur::onInit() {
 
 void
 Blur::callback(const sensor_msgs::ImageConstPtr& input_msg_image){
-	ROS_INFO_NAMED(node_name_,"callback");
+	NODELET_DEBUG("callback");
 
 	if(pub_.getNumSubscribers() == 0) return;
 
@@ -67,29 +67,29 @@ Blur::callback(const sensor_msgs::ImageConstPtr& input_msg_image){
 
 	pub_.publish(image_blur.toImageMsg());
 
-	ROS_INFO_NAMED(node_name_,"callback end");
+	NODELET_DEBUG("callback end");
 }
 
 void
 Blur::reconfigure_callback(Config &config, uint32_t level) {
 	// Info
-	ROS_INFO_NAMED(node_name_, "name:\t%s", node_name_.c_str());
-	ROS_INFO_NAMED(node_name_, "sub:\t%s", config.subscribe_topic.c_str());
-	ROS_INFO_NAMED(node_name_, "pub:\t%s", config.publish_topic.c_str());
-	ROS_INFO_NAMED(node_name_, "kernel: \t%i", config.kernel_size);
-	ROS_INFO_NAMED(node_name_, "filter: \t%i", config.filter);
+	NODELET_INFO("name:\t%s", node_name_.c_str());
+	NODELET_INFO("sub:\t%s", config.subscribe_topic.c_str());
+	NODELET_INFO("pub:\t%s", config.publish_topic.c_str());
+	NODELET_INFO("kernel: \t%i", config.kernel_size);
+	NODELET_INFO("filter: \t%i", config.filter);
 
 	if(config.subscribe_topic != config_.subscribe_topic){
 	  sub_ = it_->subscribe(config.subscribe_topic, 1,
 				&Blur::callback, this);
-	  ROS_INFO_NAMED(node_name_, "Subscribe topic changed from %s to %s", config_.subscribe_topic.c_str(), config.subscribe_topic.c_str());
+	  NODELET_INFO("Subscribe topic changed from %s to %s", config_.subscribe_topic.c_str(), config.subscribe_topic.c_str());
 	  //
 	}
 
 	if(config.publish_topic != config_.publish_topic)
 	{
 	  pub_ = it_->advertise(config.publish_topic, 1);
-	  ROS_INFO_NAMED(node_name_, "Publish topic changed from %s to %s", config_.publish_topic.c_str(), config.publish_topic.c_str());
+	  NODELET_INFO("Publish topic changed from %s to %s", config_.publish_topic.c_str(), config.publish_topic.c_str());
 	}
 	config_ = config;
 }

@@ -35,7 +35,7 @@ Erode::onInit() {
 
 void
 Erode::callback(const sensor_msgs::ImageConstPtr& input_msg_image){
-	ROS_INFO_NAMED(node_name_,"callback");
+	NODELET_DEBUG("callback");
 
 	if(pub_.getNumSubscribers() == 0) return;
 
@@ -65,30 +65,30 @@ Erode::callback(const sensor_msgs::ImageConstPtr& input_msg_image){
 
 
 	pub_.publish(image_edge.toImageMsg());
-	ROS_INFO_NAMED(node_name_,"callback end");
+	NODELET_DEBUG("callback end");
 }
 
 void
 Erode::reconfigure_callback(Config &config, uint32_t level) {
-  ROS_INFO_NAMED(node_name_, "Reconfigure Request");
+  NODELET_INFO( "Reconfigure Request");
 
-  ROS_INFO_NAMED(node_name_, "name:\t%s", node_name_.c_str());
-  ROS_INFO_NAMED(node_name_, "subscribe_topic:\t%s", config.subscribe_topic.c_str());
-  ROS_INFO_NAMED(node_name_, "publish_topic:\t%s", config.publish_topic.c_str());
-  ROS_INFO_NAMED(node_name_, "erosion_size: \t%i", config.erosion_size);
-  ROS_INFO_NAMED(node_name_, "element_form: \t%i", config.element_form);
+  NODELET_INFO( "name:\t%s", node_name_.c_str());
+  NODELET_INFO( "subscribe_topic:\t%s", config.subscribe_topic.c_str());
+  NODELET_INFO( "publish_topic:\t%s", config.publish_topic.c_str());
+  NODELET_INFO( "erosion_size: \t%i", config.erosion_size);
+  NODELET_INFO( "element_form: \t%i", config.element_form);
 
   if(config.subscribe_topic != config_.subscribe_topic){
   	  sub_ = it_->subscribe(config.subscribe_topic, 1,
   	  			&Erode::callback, this);
-  	  ROS_INFO_NAMED(node_name_, "Subscribe topic changed from %s to %s", config_.subscribe_topic.c_str(), config.subscribe_topic.c_str());
+  	  NODELET_INFO( "Subscribe topic changed from %s to %s", config_.subscribe_topic.c_str(), config.subscribe_topic.c_str());
   	  //
   }
 
   if(config.publish_topic != config_.publish_topic)
   {
 	  pub_ = it_->advertise(config.publish_topic, 1);
-	  ROS_INFO_NAMED(node_name_, "Publish topic changed from %s to %s", config_.publish_topic.c_str(), config.publish_topic.c_str());
+	  NODELET_INFO( "Publish topic changed from %s to %s", config_.publish_topic.c_str(), config.publish_topic.c_str());
   }
 
   int erosion_type = 0;
