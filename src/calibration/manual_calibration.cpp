@@ -16,6 +16,7 @@ Manual_calibration::onInit() {
 	config_.pitch = 0;
 	config_.yaw = 0;
 	nh = ros::NodeHandle("~");
+	//tfListener.reset(new tf2_ros::TransformListener(tfBuffer));
 	initParams();
 
 //  JointState would be a better solution instead of publishing transforms, but floating links currently don't work properly
@@ -33,7 +34,7 @@ Manual_calibration::initParams(){
 	nh.param<std::string>("parent_frame", config_.parent_frame, "");
 	nh.param<std::string>("child_frame", config_.child_frame, "");
 	nh.param<std::string>("name", node_name_, "joint_calibration");
-	nh.param<std::string>("publish_topic", pub_topic_, "joint_camera_calibration");
+	//nh.param<std::string>("publish_topic", pub_topic_, "joint_camera_calibration");
 	params();
 }
 
@@ -68,22 +69,42 @@ Manual_calibration::params(){
 //	msg_.position.push_back(config_.pitch);
 //	msg_.position.push_back(config_.yaw);
 
-	transform.setOrigin(tf::Vector3(config_.x, config_.y, config_.z));
-	tf::Quaternion q;
+	transformStamped.header.frame_id = config_.parent_frame;
+	transformStamped.child_frame_id = config_.child_frame;
+	transformStamped.transform.translation.x = config_.x;
+	transformStamped.transform.translation.y = config_.y;
+	transformStamped.transform.translation.z = config_.z;
+	tf2::Quaternion q;
 	q.setRPY(config_.roll, config_.pitch, config_.yaw);
-	transform.setRotation(q);
+	transformStamped.transform.rotation.x = q.x();
+	transformStamped.transform.rotation.y = q.y();
+	transformStamped.transform.rotation.z = q.z();
+	transformStamped.transform.rotation.w = q.w();
 }
 
 void
 Manual_calibration::loop(){
-	ros::Rate rate(24);
+	ROS_INFO_NAMED(node_name_, "loop start");
+	ros::Rate rate(50);
 	while(nh.ok()){
-		br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), config_.parent_frame, config_.child_frame));
+		//geometry_msgs::TransformStamped lookupTransformStamped;
+		try{
+			//ROS_INFO_NAMED(node_name_, "loop");
+			//lookupTransformStamped = tfBuffer.lookupTransform(config_.parent_frame,"ladybug_center", ros::Time(0));
+			//ROS_INFO_NAMED(node_name_, "loop");
+			transformStamped.header.stamp = ros::Time::now();
+			br.sendTransform(transformStamped);
+		}catch (tf2::TransformException &ex) {
+		      ROS_WARN("%s",ex.what());
+		      ros::Duration(1).sleep();
+		      continue;
+		}
+
 		//pub.publish(msg_);
 		ros::spinOnce();
 		rate.sleep();
-
 	}
+	ROS_WARN_NAMED(node_name_, "loop end");
 }
 
 void
@@ -102,6 +123,8 @@ Manual_calibration::~Manual_calibration(){
 int main(int argc, char **argv){
 	ros::init(argc, argv, "manual_calibration");
 	image_cloud::Manual_calibration manual_transform;
+	ROS_INFO_NAMED("maunal_calibration", "start");
 	manual_transform.onInit();
 	manual_transform.loop();
+	ROS_INFO_NAMED("maunal_calibration", "done");
 }
