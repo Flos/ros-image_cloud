@@ -66,7 +66,8 @@ public:
 	virtual void callback(const sensor_msgs::CameraInfoConstPtr &input_msg_image_info, const PointCloud::ConstPtr &input_msg_cloud);
 	virtual void reconfigure_callback(Config &config, uint32_t level);
 	virtual void init_params();
-	virtual void init_pubsub();
+	virtual void init_sub();
+	virtual void init_pub();
 	virtual void params();
 	virtual void extract_intensity(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, cv_bridge::CvImage& image_pcl, cv_bridge::CvImage& image_depth);
 	virtual void extract_normals(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, cv_bridge::CvImage& image_pcl, cv_bridge::CvImage& image_depth);
@@ -95,8 +96,6 @@ private:
 	image_geometry::PinholeCameraModel camera_model;
 
 	tf::TransformListener listener_pointcloud_transform;
-
-
 };
 } /* end namespace */
 

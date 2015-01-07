@@ -14,9 +14,9 @@ Pcl_to_image_nodelet::onInit() {
 
 	init_params();
 
+	init_sub();
 	it_.reset( new image_transport::ImageTransport(nh));
-	init_pubsub();
-
+	init_pub();
 
 	// Set up dynamic reconfigure
 	reconfigure_server_.reset(new ReconfigureServer(nh));
@@ -49,35 +49,48 @@ Pcl_to_image_nodelet::init_params(){
 void
 Pcl_to_image_nodelet::params(){
 	// Info
-	ROS_INFO_NAMED(node_name_, "name:\t\t%s", node_name_.c_str());
+	NODELET_INFO( "name:\t\t%s", node_name_.c_str());
 
-	ROS_INFO_NAMED(node_name_, "subscribe_topic_pcl:\t%s", config_.subscribe_topic_pcl.c_str());
-	ROS_INFO_NAMED(node_name_, "subscribe_topic_img_info:\t%s", config_.subscribe_topic_img_info.c_str());
-	ROS_INFO_NAMED(node_name_, "publish_topic: \t%s", config_.publish_topic.c_str());
-	ROS_INFO_NAMED(node_name_, "image_tf_frame_id:\t%s", config_.image_tf_frame_id.c_str());
+	NODELET_INFO( "subscribe_topic_pcl:\t%s", config_.subscribe_topic_pcl.c_str());
+	NODELET_INFO( "subscribe_topic_img_info:\t%s", config_.subscribe_topic_img_info.c_str());
+	NODELET_INFO( "publish_topic: \t%s", config_.publish_topic.c_str());
+	NODELET_INFO( "image_tf_frame_id:\t%s", config_.image_tf_frame_id.c_str());
 
-	ROS_INFO_NAMED(node_name_, "use_reference: \t %s", config_.use_reference, config_.use_reference ? "true" : "false" );
-	ROS_INFO_NAMED(node_name_, "reference_frame:\t%s:", config_.reference_frame.c_str());
-	ROS_INFO_NAMED(node_name_, "point_size:\t%i", config_.point_size);
-	ROS_INFO_NAMED(node_name_, "resize_faktor_x:\t%f", config_.resize_faktor_x);
-	ROS_INFO_NAMED(node_name_, "resize_faktor_y:\t%f", config_.resize_faktor_y);
+	//NODELET_INFO( "use_reference: \t %s", config_.use_reference, config_.use_reference ? "true" : "false" );
+	NODELET_INFO( "reference_frame:\t%s:", config_.reference_frame.c_str());
+	NODELET_INFO( "point_size:\t%i", config_.point_size);
+	NODELET_INFO( "resize_faktor_x:\t%f", config_.resize_faktor_x);
+	NODELET_INFO( "resize_faktor_y:\t%f", config_.resize_faktor_y);
 
-	ROS_INFO_NAMED(node_name_, "queue_size:\t%i", config_.queue_size);
-	ROS_INFO_NAMED(node_name_, "normal_search_radius:\t%f", config_.normal_search_radius);
-	ROS_INFO_NAMED(node_name_, "feature:\t%i", config_.feature);
+	NODELET_INFO( "queue_size:\t%i", config_.queue_size);
+	NODELET_INFO( "normal_search_radius:\t%f", config_.normal_search_radius);
+	NODELET_INFO( "feature:\t%i", config_.feature);
+}
+
+void Pcl_to_image_nodelet::init_sub() {
+	NODELET_INFO( "init_sub");
+//	image_info_sub.reset();
+//	pointcloud_sub.reset();
+//	sync.reset();
+	image_info_sub.reset(
+			new message_filters::Subscriber<sensor_msgs::CameraInfo>(nh,
+					config_.subscribe_topic_img_info, config_.queue_size));
+	pointcloud_sub.reset(
+			new message_filters::Subscriber<PointCloud>(nh,
+					config_.subscribe_topic_pcl, config_.queue_size));
+	// ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
+	sync.reset(
+			new message_filters::Synchronizer<Image_to_cloud_sync>(
+					Image_to_cloud_sync(config_.queue_size), *image_info_sub,
+					*pointcloud_sub));
+	sync->registerCallback(
+			boost::bind(&Pcl_to_image_nodelet::callback, this, _1, _2));
 }
 
 void
-Pcl_to_image_nodelet::init_pubsub() {
-	ROS_INFO_NAMED(node_name_, "init_pubsub");
+Pcl_to_image_nodelet::init_pub() {
+	NODELET_INFO("init_pub");
 	//Filter messages
-	image_info_sub.reset( new message_filters::Subscriber<sensor_msgs::CameraInfo>(nh, config_.subscribe_topic_img_info, config_.queue_size));
-	pointcloud_sub.reset( new message_filters::Subscriber<PointCloud>(nh, config_.subscribe_topic_pcl, config_.queue_size));
-
-	// ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
-	sync.reset( new message_filters::Synchronizer<Image_to_cloud_sync>(Image_to_cloud_sync(config_.queue_size), *image_info_sub, *pointcloud_sub));
-	sync->registerCallback(boost::bind(&Pcl_to_image_nodelet::callback, this, _1, _2));
-
 	pub_ = it_->advertise(config_.publish_topic.c_str(), 1);
 	pub_depth_ = it_->advertise(config_.publish_topic + "_depth", 1);
 	//pub_range_ = it_->advertise(config_.subscribe_topic_pcl + "_depth", 1);
@@ -85,23 +98,34 @@ Pcl_to_image_nodelet::init_pubsub() {
 
 void
 Pcl_to_image_nodelet::reconfigure_callback(Config &config, uint32_t level){
-	ROS_INFO_NAMED(node_name_, "reconfiguration_callback");
+	NODELET_INFO("reconfiguration_callback");
 	config_lock_.lock();
-	bool reset = false;
+	bool reset_sub = false;
+	bool reset_pub = false;
 
 	if(config.subscribe_topic_pcl != config_.subscribe_topic_pcl
-		|| config.publish_topic != config_.publish_topic
 		|| config.subscribe_topic_img_info != config_.subscribe_topic_img_info
 		)
 	 {
-		reset = true;
+		reset_sub = true;
 	 }
+
+	if(config.publish_topic != config_.publish_topic){
+		reset_pub = true;
+	}
 
 	 config_ = config;
 	 params();
 
-	 if(reset){
-		 init_pubsub();
+	 if(reset_sub){
+		 // TODO: Fix boost::lock_error on init_sub() after reconfiguration
+		 // Error Message: Reconfigure callback failed with exception boost::lock_error
+		 NODELET_WARN("Changing subscriber not implemented, change subscriber in launch file and restart node");
+		 //init_sub();
+	 }
+
+	 if(reset_pub){
+		 init_pub();
 	 }
 	 config_lock_.unlock();
 }
@@ -146,7 +170,7 @@ void Pcl_to_image_nodelet::extract_normals(pcl::PointCloud<pcl::PointXYZI>::Ptr 
 							&& point_image.y < image_pcl.image.rows )
 			)
 			{
-				// Get image Color
+				// Get image Colors
 				cv::circle(image_pcl.image, point_image, config_.point_size, cv::Scalar(pt.data_n[0]/3 + pt.data_n[1]/3 + pt.data_n[2]/3 ), -1);
 				cv::circle(image_depth.image, point_image, config_.point_size, cv::Scalar(pt.z), -1);
 			}
@@ -199,16 +223,20 @@ void Pcl_to_image_nodelet::extract_intensity_and_normals(pcl::PointCloud<pcl::Po
 void
 Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_image_info, const PointCloud::ConstPtr &input_msg_cloud_ptr){
 	NODELET_DEBUG("callback");
+
 	if( pub_.getNumSubscribers() == 0 ){ // dont do anything if no one is interessted
 		return;
 	}
 
 	if(input_msg_cloud_ptr->height == 0 || input_msg_cloud_ptr->width == 0){
-		ROS_DEBUG_NAMED(node_name_, "input cloud empty");
+		NODELET_DEBUG("input cloud empty");
 		return;
 	}
 
-	config_lock_.lock();
+	if(!config_lock_.try_lock()){
+			NODELET_WARN("callback locked");
+			return;
+	}
 
 	//Look up transform for cameraladybug_camera4
 	if(config_.image_tf_frame_id.empty()){
@@ -224,6 +252,7 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
 	)
 	{
 		NODELET_WARN("no valid transform from %s to %s", input_msg_cloud_ptr->header.frame_id.c_str(), config_.image_tf_frame_id.c_str() );
+		config_lock_.unlock();
 		return;
 	}
 
@@ -238,7 +267,8 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
 		// todo: Transform at pcl time to odom
 		if (!pcl_ros::transformPointCloud( config_.reference_frame, cloud, cloud, listener_pointcloud_transform)) {
 				NODELET_WARN("Cannot transform point cloud to the fixed frame %s", config_.reference_frame.c_str());
-			 return;
+				config_lock_.unlock();
+				return;
 		}
 	}
 
@@ -248,7 +278,8 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
 	// Transform to image_frame_id
 	if (!pcl_ros::transformPointCloud(config_.image_tf_frame_id.c_str(), cloud, cloud, listener_pointcloud_transform)) {
 			NODELET_WARN("Cannot transform point cloud to the fixed frame %s", config_.image_tf_frame_id.c_str());
-		 return;
+			config_lock_.unlock();
+			return;
 	}
 
 	// If we are here we can start with the projection
@@ -283,10 +314,10 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
 		}
 	}catch(std::exception &e){
 		NODELET_ERROR("Exception: %s", e.what());
+		config_lock_.unlock();
 		return;
 	}
 
-	config_lock_.unlock();
    pub_.publish(image_pcl.toImageMsg());
    pub_depth_.publish(image_depth.toImageMsg());
 
@@ -320,7 +351,8 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
 //
 //   //pub_range_.publish(range_image);
 
-   ROS_DEBUG_NAMED(node_name_,"callback end");
+   NODELET_DEBUG("callback end");
+   config_lock_.unlock();
 }
 
 Pcl_to_image_nodelet::~Pcl_to_image_nodelet(){
