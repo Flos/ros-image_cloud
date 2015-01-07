@@ -41,6 +41,7 @@ generate_dynamic_reconfigure_options(
   cfg/gamma.cfg
   cfg/harris3d.cfg
   cfg/manual_calibration.cfg
+  cfg/pcl_image.cfg
 )
 
 ###################################
