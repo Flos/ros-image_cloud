@@ -1,12 +1,12 @@
 /*
- * image_pointcloud_nodelet.h
+ * calibration_manual.h
  *
  *  Created on: 11.08.2014
  *      Author: fnolden
  */
 
-#ifndef CALIBRATION_MANUAL_NODELET_H_
-#define CALIBRATION_MANUAL_NODELET_H_
+#ifndef CALIBRATION_MANUAL_H_
+#define CALIBRATION_MANUAL_H_
 
 #include "ros/ros.h"
 #include <sstream>
@@ -15,7 +15,6 @@
 #include <iostream>
 #include <functional>
 
-//#include <sensor_msgs/JointState.h>
 #include <geometry_msgs/Transform.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -25,8 +24,6 @@
 
 #include <dynamic_reconfigure/server.h>
 #include <image_cloud/manual_calibrationConfig.h>
-//#include "nodelet/nodelet.h"
-
 
 namespace image_cloud {
 
@@ -42,20 +39,14 @@ public:
 	virtual void params();
 private:
 	ros::NodeHandle nh;
-	//ros::Publisher pub;
 	std::string node_name_;
-	//std::string pub_topic_;
 
-	//tf2_ros::Buffer tfBuffer;
-	//boost::shared_ptr<tf2_ros::TransformListener> tfListener;
 	tf2_ros::TransformBroadcaster br;
 	geometry_msgs::TransformStamped transformStamped;
-	//tf2_ros::Transform transform;
 
 	Config config_;
 	boost::shared_ptr<ReconfigureServer> reconfigure_server_;
-	//sensor_msgs::JointState msg_;
 };
 } /* end namespace */
 
-#endif /* IMAGE_CLOUD_NODELET_H_ */
+#endif /* calibration_manual */
