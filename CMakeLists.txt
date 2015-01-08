@@ -32,13 +32,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 #add dynamic reconfigure api
 #find_package(catkin REQUIRED dynamic_reconfigure)
 generate_dynamic_reconfigure_options(
-  cfg/blur.cfg
-  cfg/brightness.cfg
-  cfg/clahe.cfg
-  cfg/dilate.cfg
   cfg/edge_detector.cfg
-  cfg/erode.cfg
-  cfg/gamma.cfg
   cfg/harris3d.cfg
   cfg/manual_calibration.cfg
   cfg/pcl_image.cfg
@@ -128,102 +122,6 @@ target_link_libraries(pcl_to_image
 add_dependencies(pcl_to_image 
 	  ${PROJECT_NAME}_gencfg
 )
-
-add_executable(manual_calibration
-  src/calibration/manual_calibration.cpp
-)
-
-target_link_libraries(manual_calibration
-  ${catkin_LIBRARIES}
-)
-
-add_dependencies(manual_calibration 
-	  ${PROJECT_NAME}_gencfg
-)
-
-
-# Image enhancement Nodelets
-add_library(brightness
-  src/image_enhancement/brightness.cpp
-)
-target_link_libraries(brightness
-  ${catkin_LIBRARIES}
-)
-
-add_dependencies(brightness 
-	  ${PROJECT_NAME}_gencfg
-)
-
-
-add_library(clahe
-  src/image_enhancement/clahe.cpp
-)
-target_link_libraries(clahe
-  ${catkin_LIBRARIES}
-)
-
-add_dependencies(clahe 
-	  ${PROJECT_NAME}_gencfg
-)
-
-
-add_library(gamma
-  src/image_enhancement/gamma.cpp
-)
-target_link_libraries(gamma
-  ${catkin_LIBRARIES}
-)
-
-add_dependencies(gamma 
-	  ${PROJECT_NAME}_gencfg
-)
-
-add_library(blur
-  src/image_enhancement/blur.cpp
-)
-target_link_libraries(blur
-  ${catkin_LIBRARIES}
-)
-
-add_dependencies(blur 
-	  ${PROJECT_NAME}_gencfg
-)
-
-# Erode
-add_library(erode
-  src/image_enhancement/erode.cpp
-)
-
-add_dependencies(erode 
-  ${PROJECT_NAME}_gencfg
-)
-
-target_link_libraries(erode
-  ${catkin_LIBRARIES}
-)
-
-# Diletate
-add_library(dilate
-  src/image_enhancement/dilate.cpp
-)
-
-add_dependencies(dilate 
-  ${PROJECT_NAME}_gencfg
-)
-
-target_link_libraries(dilate
-  ${catkin_LIBRARIES}
-)
-
-## Declare a cpp library
-#add_library(test_nodelet
-#  src/test/test.cpp
-#)
-
-## Specify libraries to link a library or executable target against
-#target_link_libraries(test_nodelet
-#  ${catkin_LIBRARIES}
-#)
 
 #############
 ## Install ##

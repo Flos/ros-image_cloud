@@ -12,57 +12,6 @@
   </description>
   </class>
 </library>
-<library path="lib/libbrightness">
-  <class name="image_cloud/Brightness" type="image_cloud::Brightness" base_class_type="nodelet::Nodelet">
-  <description>
-  		enhance brightness
-  </description>
-  </class>
-</library>
-</library>
-<library path="lib/libclahe">
-  <class name="image_cloud/Clahe" type="image_cloud::Clahe" base_class_type="nodelet::Nodelet">
-  <description>
-  		enhance contrast using clahe
-  </description>
-  </class>
-</library>
-</library>
-<library path="lib/libgamma">
-  <class name="image_cloud/Gamma" type="image_cloud::Gamma" base_class_type="nodelet::Nodelet">
-  <description>
-  		enhance gamma
-  </description>
-  </class>
-</library>
-<library path="lib/libblur">
-  <class name="image_cloud/Blur" type="image_cloud::Blur" base_class_type="nodelet::Nodelet">
-  <description>
-  		blur image
-  </description>
-  </class>
-</library>
-<library path="lib/liberode">
-  <class name="image_cloud/Erode" type="image_cloud::Erode" base_class_type="nodelet::Nodelet">
-  <description>
-  		erode image
-  </description>
-  </class>
-</library>
-<library path="lib/libdilate">
-  <class name="image_cloud/Dilate" type="image_cloud::Dilate" base_class_type="nodelet::Nodelet">
-  <description>
-  		Dilate image
-  </description>
-  </class>
-</library>
-<library path="lib/libedge">
-  <class name="image_cloud/Edge_detector_nodelet" type="image_cloud::Edge_detector_nodelet" base_class_type="nodelet::Nodelet">
-  <description>
-  		image edge detector
-  </description>
-  </class>
-</library>
 <library path="lib/libharris3d">
   <class name="image_cloud/Harris3d_nodelet" type="image_cloud::Harris3d_nodelet" base_class_type="nodelet::Nodelet">
   <description>
