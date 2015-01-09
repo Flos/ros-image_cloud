@@ -34,7 +34,6 @@ find_package(Boost REQUIRED COMPONENTS system)
 generate_dynamic_reconfigure_options(
   cfg/edge_detector.cfg
   cfg/harris3d.cfg
-  cfg/manual_calibration.cfg
   cfg/pcl_image.cfg
 )
 
