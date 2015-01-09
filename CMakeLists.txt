@@ -35,6 +35,7 @@ generate_dynamic_reconfigure_options(
   cfg/edge_detector.cfg
   cfg/harris3d.cfg
   cfg/pcl_image.cfg
+  cfg/sync_remap.cfg
 )
 
 ###################################
@@ -89,7 +90,7 @@ add_library(edge
 )
 
 add_dependencies(edge 
-	  ${PROJECT_NAME}_gencfg
+  ${PROJECT_NAME}_gencfg
 )
 
 target_link_libraries(edge
@@ -102,7 +103,7 @@ add_library(harris3d
 )
 
 add_dependencies(harris3d
-	  ${PROJECT_NAME}_gencfg
+  ${PROJECT_NAME}_gencfg
 )
 
 target_link_libraries(harris3d
@@ -119,7 +120,21 @@ target_link_libraries(pcl_to_image
 )
 
 add_dependencies(pcl_to_image 
-	  ${PROJECT_NAME}_gencfg
+  ${PROJECT_NAME}_gencfg
+)
+
+
+## Sync Nodelets
+add_library(sync_remap
+  src/sync/remap.cpp
+)
+
+target_link_libraries(sync_remap
+  ${catkin_LIBRARIES}
+)
+
+add_dependencies(sync_remap 
+  ${PROJECT_NAME}_gencfg
 )
 
 #############

@@ -1,0 +1,24 @@
+<launch>
+	<arg name="subscribe_topic_pcl"/>
+	<arg name="subscribe_topic_image"/>
+	<arg name="subscribe_topic_image_info" 	default="$(arg subscribe_topic_image)_info"/>
+	<arg name="publish_topic_pcl"			default="$(arg subscribe_topic_pcl)/selected"/>
+	<arg name="publish_topic_image"			default="$(arg subscribe_topic_image)/selected"/>
+	<arg name="publish_topic_image_info"	default="$(arg publish_topic_image)_info"/>
+	<arg name="nodelet_manager" 			default="nodelet_manager"/>
+	<arg name="name"						default="sync_remapper"/>
+	<arg name="republish_pointcloud"		default="true" />	
+    
+  <node pkg="nodelet" type="nodelet" name="$(arg name)" args="load image_cloud/Remap $(arg nodelet_manager)" output="screen">
+  	<param name="subscribe_topic_pcl" 			type="string" value="$(arg subscribe_topic_pcl)" />
+  	<param name="subscribe_topic_image" 		type="string" value="$(arg subscribe_topic_image)" />
+  	<param name="subscribe_topic_image_info" 	type="string" value="$(arg subscribe_topic_image_info)" />
+  	
+  	<param name="publish_topic_pcl" 		type="string" value="$(arg publish_topic_pcl)" />
+  	<param name="publish_topic_image" 		type="string" value="$(arg publish_topic_image)" />
+  	<param name="publish_topic_image_info" 	type="string" value="$(arg publish_topic_image_info)" />
+  	
+  	<param name="republish_pointcloud" 		type="bool" value="$(arg republish_pointcloud)" />
+  </node>
+  
+</launch>

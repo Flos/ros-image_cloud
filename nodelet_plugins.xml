@@ -26,3 +26,10 @@
   </description>
   </class>
 </library>
+<library path="lib/libsync_remap">
+  <class name="image_cloud/Remap" type="image_cloud::Remap" base_class_type="nodelet::Nodelet">
+  <description>
+  		syncronized remap
+  </description>
+  </class>
+</library>
