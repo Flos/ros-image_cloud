@@ -70,6 +70,7 @@ private:
 	std::string subscribe_topic_img_;
 	std::string subscribe_topic_img_info_;
 	std::string publish_pcl_topic_;
+	std::string publish_img_topic_;
 	std::string filter_;
 	std::string image_frame_id_;
 	std::string reference_frame_id_;
@@ -79,7 +80,7 @@ private:
 
 	image_geometry::PinholeCameraModel camera_model;
 
-	tf::TransformListener listener_pointcloud_transform;
+	boost::shared_ptr<tf::TransformListener> listener_pointcloud_transform;
 
 };
 } /* end namespace */

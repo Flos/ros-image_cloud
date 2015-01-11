@@ -22,6 +22,7 @@ Pcl_to_image_nodelet::onInit() {
 	reconfigure_server_.reset(new ReconfigureServer(nh));
 	ReconfigureServer::CallbackType f = boost::bind(&Pcl_to_image_nodelet::reconfigure_callback, this, _1, _2);
 	reconfigure_server_->setCallback(f);
+	listener_pointcloud_transform.reset(new tf::TransformListener(nh, ros::Duration(config_.tf_buffer_length), true));
 }
 
 void
@@ -36,6 +37,7 @@ Pcl_to_image_nodelet::init_params(){
 	nh.param<bool>("use_reference", config_.use_reference, false);
 	nh.param<std::string>("reference_frame", config_.reference_frame, "");
 	nh.param<int>("point_size", config_.point_size, 1);
+	nh.param<int>("tf_buffer_length", config_.tf_buffer_length, 10);
 	nh.param<double>("resize_faktor_x", config_.resize_faktor_x, 1);
 	nh.param<double>("resize_faktor_y", config_.resize_faktor_y, 1);
 
@@ -59,6 +61,7 @@ Pcl_to_image_nodelet::params(){
 	//NODELET_INFO( "use_reference: \t %s", config_.use_reference, config_.use_reference ? "true" : "false" );
 	NODELET_INFO( "reference_frame:\t%s:", config_.reference_frame.c_str());
 	NODELET_INFO( "point_size:\t%i", config_.point_size);
+	NODELET_INFO( "tf_buffer_length:\t%i", config_.tf_buffer_length);
 	NODELET_INFO( "resize_faktor_x:\t%f", config_.resize_faktor_x);
 	NODELET_INFO( "resize_faktor_y:\t%f", config_.resize_faktor_y);
 
@@ -222,20 +225,21 @@ void Pcl_to_image_nodelet::extract_intensity_and_normals(pcl::PointCloud<pcl::Po
 
 void
 Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_image_info, const PointCloud::ConstPtr &input_msg_cloud_ptr){
-	NODELET_DEBUG("callback");
+	NODELET_DEBUG("Pcl_to_image_nodelet: callback");
 
-	if( pub_.getNumSubscribers() == 0 ){ // dont do anything if no one is interessted
+	if( pub_.getNumSubscribers() == 0
+			&& pub_depth_.getNumSubscribers() == 0){ // don't do anything if no one is interested
 		return;
 	}
 
 	if(input_msg_cloud_ptr->height == 0 || input_msg_cloud_ptr->width == 0){
-		NODELET_DEBUG("input cloud empty");
+		NODELET_WARN("input cloud empty");
 		return;
 	}
 
 	if(!config_lock_.try_lock()){
-			NODELET_WARN("callback locked");
-			return;
+		NODELET_WARN("callback locked");
+		return;
 	}
 
 	//Look up transform for cameraladybug_camera4
@@ -243,15 +247,18 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
 		config_.image_tf_frame_id = input_msg_image_info->header.frame_id;
 	}
 
-
-	if(!listener_pointcloud_transform.waitForTransform(config_.image_tf_frame_id.c_str(), //target frame
+	std::string tf_error_msg;
+	if(!listener_pointcloud_transform->waitForTransform(config_.image_tf_frame_id.c_str(), //target frame
 														input_msg_cloud_ptr->header.frame_id.c_str(), //source frame
 														input_msg_image_info->header.stamp, // target time
-														ros::Duration(5.0)
+														//ros::Time(0),
+														ros::Duration(5.0),
+														ros::Duration(0.1),
+														&tf_error_msg
 														)
 	)
 	{
-		NODELET_WARN("no valid transform from %s to %s", input_msg_cloud_ptr->header.frame_id.c_str(), config_.image_tf_frame_id.c_str() );
+		NODELET_WARN("%s", tf_error_msg.c_str() );
 		config_lock_.unlock();
 		return;
 	}
@@ -265,7 +272,7 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
 	{
 		// Transform to odom
 		// todo: Transform at pcl time to odom
-		if (!pcl_ros::transformPointCloud( config_.reference_frame, cloud, cloud, listener_pointcloud_transform)) {
+		if (!pcl_ros::transformPointCloud( config_.reference_frame, cloud, cloud, *listener_pointcloud_transform)) {
 				NODELET_WARN("Cannot transform point cloud to the fixed frame %s", config_.reference_frame.c_str());
 				config_lock_.unlock();
 				return;
@@ -275,12 +282,14 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
 	// Todo: check if Transform at image time to image_frame_id is right
 	cloud.header.stamp = input_msg_image_info->header.stamp.toNSec();
 
+
 	// Transform to image_frame_id
-	if (!pcl_ros::transformPointCloud(config_.image_tf_frame_id.c_str(), cloud, cloud, listener_pointcloud_transform)) {
+	if (!pcl_ros::transformPointCloud(config_.image_tf_frame_id.c_str(), cloud, cloud, *listener_pointcloud_transform)) {
 			NODELET_WARN("Cannot transform point cloud to the fixed frame %s", config_.image_tf_frame_id.c_str());
 			config_lock_.unlock();
 			return;
 	}
+
 
 	// If we are here we can start with the projection
 	sensor_msgs::CameraInfo cam_info(*input_msg_image_info);
@@ -298,6 +307,7 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
 
 	cv::Mat mat_image_depth = cv::Mat::zeros(input_msg_image_info->height*config_.resize_faktor_y, input_msg_image_info->width*config_.resize_faktor_x, CV_8UC1);
 	cv_bridge::CvImage image_depth(input_msg_image_info->header, sensor_msgs::image_encodings::MONO8, mat_image_depth);
+
 
 	try{
 		switch(config_.feature){
