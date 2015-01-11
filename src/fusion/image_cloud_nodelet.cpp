@@ -104,11 +104,20 @@ Image_cloud_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image,
 			   reference_frame_id_ = image_frame_id_;
     }
 
-	listener_pointcloud_transform->waitForTransform(image_frame_id_.c_str(), //target frame
+	std::string tf_error;
+	if(listener_pointcloud_transform->waitForTransform(image_frame_id_.c_str(), //target frame
 			input_msg_cloud_ptr->header.frame_id.c_str(), //source frame
 			input_msg_image->header.stamp, // target time
-			ros::Duration(5.0)
-			);
+			ros::Duration(5.0),
+			ros::Duration(0.01),
+			&tf_error
+			)
+	)
+	{
+		NODELET_WARN("%s: tf_error %s", node_name_.c_str(), tf_error.c_str());
+		return;
+	}
+
 
 	ROS_INFO_NAMED(node_name_,"pointcloud2 w: %i \th: %i \t\ttime: %i.%i",input_msg_cloud_ptr->width, input_msg_cloud_ptr->height, input_msg_cloud_ptr->header.stamp.sec, input_msg_cloud_ptr->header.stamp.nsec );
 	//ROS_INFO_NAMED(node_name_,"pointcloud2 w: %i \th: %i \t\ttime: %lu",input_msg_cloud_ptr->width, input_msg_cloud_ptr->height, input_msg_cloud_ptr->header.stamp );
