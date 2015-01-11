@@ -9,16 +9,19 @@ namespace image_cloud {
 void
 Image_cloud_nodelet::onInit() {
 	NODELET_DEBUG("Initializing nodelet...");
+
 	nh = getPrivateNodeHandle();
 	nh.param<std::string>("name", node_name_, "image2pointcloud_nodelet");
 	nh.param<std::string>("sub_pcl", subscribe_topic_pcl_, "");
 	nh.param<std::string>("sub_img", subscribe_topic_img_, "");
 	nh.param<std::string>("sub_img_info", subscribe_topic_img_info_, "");
-	nh.param<std::string>("pub", publish_pcl_topic_, subscribe_topic_pcl_ + "_color");
+	nh.param<std::string>("pub_img", publish_img_topic_, subscribe_topic_pcl_ + "_color");
+	nh.param<std::string>("pub_pcl", publish_pcl_topic_, subscribe_topic_img_ + "_color");
 	nh.param<std::string>("filter", filter_, "default");
 	nh.param<std::string>("image_frame_id", image_frame_id_, "");
 	nh.param<std::string>("reference_frame_id", reference_frame_id_, "");
 	nh.param<int>("min_color", min_color_val_, 8);
+	nh.param<int>("tf_buffer_length", tf_buffer_length_, 8);
 
 
 	// 2. Info
@@ -26,8 +29,10 @@ Image_cloud_nodelet::onInit() {
 	NODELET_DEBUG("sub_pcl: \t%s", subscribe_topic_pcl_.c_str());
 	NODELET_DEBUG("sub_img: \t%s", subscribe_topic_img_.c_str());
 	NODELET_DEBUG("sub_img_info: \t%s", subscribe_topic_img_info_.c_str());
-	NODELET_DEBUG("pub:\t\t%s", publish_pcl_topic_.c_str());
+	NODELET_DEBUG("pub_img:\t\t%s", publish_img_topic_.c_str());
+	NODELET_DEBUG("pub_pcl:\t\t%s", publish_pcl_topic_.c_str());
 	NODELET_DEBUG("min_color: \t%i", min_color_val_);
+	NODELET_DEBUG("tf_buffer_length: \t%i", tf_buffer_length_);
 
 	if(!image_frame_id_.empty()){
 		NODELET_INFO("override image frame id: \t%s", image_frame_id_.c_str());
@@ -62,10 +67,12 @@ Image_cloud_nodelet::onInit() {
 	sync = new message_filters::Synchronizer<Image_to_cloud_sync>(Image_to_cloud_sync(queue_size), *image_sub, *image_info_sub, *pointcloud_sub);
 	sync->registerCallback(boost::bind(&Image_cloud_nodelet::callback, this, _1, _2, _3));
 
+	listener_pointcloud_transform.reset(new tf::TransformListener(nh, ros::Duration(tf_buffer_length_), true));
+
 	pub_cloud_ =  nh.advertise<PointCloudColor>(publish_pcl_topic_.c_str(), 1);
 
 	it_ = new image_transport::ImageTransport(nh);
-	pub_ = it_->advertise("/image_scan", 1);
+	pub_ = it_->advertise(publish_img_topic_.c_str(), 1);
 }
 
 
@@ -97,7 +104,7 @@ Image_cloud_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image,
 			   reference_frame_id_ = image_frame_id_;
     }
 
-	listener_pointcloud_transform.waitForTransform(image_frame_id_.c_str(), //target frame
+	listener_pointcloud_transform->waitForTransform(image_frame_id_.c_str(), //target frame
 			input_msg_cloud_ptr->header.frame_id.c_str(), //source frame
 			input_msg_image->header.stamp, // target time
 			ros::Duration(5.0)
@@ -112,7 +119,7 @@ Image_cloud_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image,
 
 	// Transform to odom
 	// todo: Transform at pcl time to odom
-	if (!pcl_ros::transformPointCloud("/odom", cloud, cloud, listener_pointcloud_transform)) {
+	if (!pcl_ros::transformPointCloud("/odom", cloud, cloud, *listener_pointcloud_transform)) {
 			NODELET_WARN("Cannot transform point cloud to the fixed frame %s.", "/odom");
 	     return;
 	}
@@ -121,7 +128,7 @@ Image_cloud_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image,
 	cloud.header.stamp = input_msg_image->header.stamp.toNSec();
 
 	// Transform to image_frame_id
-	if (!pcl_ros::transformPointCloud(image_frame_id_.c_str(), cloud, cloud, listener_pointcloud_transform)) {
+	if (!pcl_ros::transformPointCloud(image_frame_id_.c_str(), cloud, cloud, *listener_pointcloud_transform)) {
 			NODELET_WARN("Cannot transform point cloud to the fixed frame %s.", image_frame_id_.c_str());
 		 return;
 	}
@@ -199,7 +206,7 @@ Image_cloud_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image,
    {
 	   ROS_INFO_NAMED(node_name_,"2");
 
-	   if (!pcl_ros::transformPointCloud(reference_frame_id_.c_str(), *msg, *msg, listener_pointcloud_transform)) {
+	   if (!pcl_ros::transformPointCloud(reference_frame_id_.c_str(), *msg, *msg, *listener_pointcloud_transform)) {
 	   			NODELET_WARN("Cannot transform point cloud to the reference frame %s.", reference_frame_id_.c_str());
 	   		 return;
 	   	}

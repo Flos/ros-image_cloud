@@ -74,7 +74,9 @@ private:
 	std::string filter_;
 	std::string image_frame_id_;
 	std::string reference_frame_id_;
+
 	int min_color_val_;
+	int tf_buffer_length_;
 
 	ros::NodeHandle nh;
 

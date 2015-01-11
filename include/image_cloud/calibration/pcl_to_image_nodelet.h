@@ -95,7 +95,7 @@ private:
 
 	image_geometry::PinholeCameraModel camera_model;
 
-	tf::TransformListener listener_pointcloud_transform;
+	boost::shared_ptr<tf::TransformListener> listener_pointcloud_transform;
 };
 } /* end namespace */
 
