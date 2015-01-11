@@ -1,0 +1,34 @@
+<launch>
+	<arg name="camera" 						default="4" />
+	<arg name="name"						default="image$(arg camera)_pcl_fusion"/>
+	<arg name="subscribe_topic_pcl" 		default="/velodyne/cloud" />
+  	<arg name="subscribe_topic_image"		default="/ladybug5/camera$(arg camera)/image_color_rect" />
+  	<arg name="subscribe_topic_image_info" 	default="/ladybug5/camera$(arg camera)/image_color_rect_info" />
+  	<arg name="image_tf_frame_id"			default="ladybug_camera$(arg camera)" />
+	<arg name="publish_pointcloud" 			default="$(arg subscribe_topic_image)_pointcloud"/>
+	<arg name="publish_image"	 			default="$(arg subscribe_topic_image)_pointcloud_image"/>
+	
+	<arg name="image_frame_id"				default="ladybug_camera$(arg camera)"/>
+	<arg name="reference_frame_id"			default="/odom"/>
+	<arg name="nodelet_manager" 			default="nodelet_manager"/>
+	
+	<!-- save images -->
+	<arg name="save"						default="true" />
+    <arg name="save_path" 					default="/home/fnolden/Bilder/exported/" />
+	
+	<node pkg="nodelet" type="nodelet" name="$(arg name)" args="load image_cloud/Image_cloud_nodelet $(arg nodelet_manager)">
+	  	<param name="sub_pcl" 				type="string" value="$(arg subscribe_topic_pcl)" />
+	  	<param name="sub_img" 				type="string" value="$(arg subscribe_topic_image)" />
+	  	<param name="sub_img_info" 			type="string" value="$(arg subscribe_topic_image_info)" />
+	  	<param name="pub_img"				type="string" value="$(arg publish_image)" />
+	  	<param name="pub_pcl"				type="string" value="$(arg publish_pointcloud)" />
+	  	<param name="image_frame_id"  		type="string" value="$(arg image_frame_id)" />
+	  	<param name="reference_frame_id"  	type="string" value="§(arg reference_frame_id)" />
+	</node>
+  
+   	<include if="$(arg save)" file="$(find fiddle)/launch/extract_image.launch">
+	  	<arg name="name" 	value="ex_$(arg camera)_fusion" />
+	  	<arg name="image" 	value="$(arg publish_image)" />	  	
+	  	<arg name="path"	value="$(arg save_path)" />
+	</include>
+</launch>
