@@ -1,5 +1,6 @@
 #include "fusion/fusion.h"
 #include <pluginlib/class_list_macros.h>
+#include <common/time.hpp>
 
 // watch the capitalization carefully
 PLUGINLIB_DECLARE_CLASS(image_cloud, Fusion, image_cloud::Fusion, nodelet::Nodelet)
@@ -21,7 +22,7 @@ Fusion::onInit() {
 	nh.param<std::string>("image_frame_id", image_frame_id_, "");
 	nh.param<std::string>("reference_frame_id", reference_frame_id_, "");
 	nh.param<int>("min_color", min_color_val_, 8);
-	nh.param<int>("tf_buffer_length", tf_buffer_length_, 8);
+	nh.param<int>("tf_buffer_length", tf_buffer_length_, 30);
 
 
 	// 2. Info
@@ -79,6 +80,7 @@ Fusion::onInit() {
 void
 Fusion::callback(const sensor_msgs::ImageConstPtr& input_msg_image, const sensor_msgs::CameraInfoConstPtr &input_msg_image_info, const PointCloud::ConstPtr &input_msg_cloud_ptr){
 	ROS_INFO_NAMED(node_name_,"callback");
+	time("fusion: ", input_msg_image_info->header, input_msg_cloud_ptr->header, true);
 
 	if(pub_cloud_.getNumSubscribers() == 0 && pub_.getNumSubscribers() == 0 ){ // dont do anything if no one is interessted
 		return;

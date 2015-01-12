@@ -8,7 +8,7 @@
 #ifndef PCL_TO_IMAGE_NODELET_H_
 #define PCL_TO_IMAGE_NODELET_H_
 
-#include "ros/ros.h"
+#include <ros/ros.h>
 #include <sstream>
 #include <string.h>
 #include <map>
