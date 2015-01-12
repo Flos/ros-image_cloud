@@ -1,13 +1,13 @@
-#include "calibration/image_cloud_nodelet.h"
+#include "fusion/fusion.h"
 #include <pluginlib/class_list_macros.h>
 
 // watch the capitalization carefully
-PLUGINLIB_DECLARE_CLASS(image_cloud, Image_cloud_nodelet, image_cloud::Image_cloud_nodelet, nodelet::Nodelet)
+PLUGINLIB_DECLARE_CLASS(image_cloud, Fusion, image_cloud::Fusion, nodelet::Nodelet)
 
 namespace image_cloud {
 
 void
-Image_cloud_nodelet::onInit() {
+Fusion::onInit() {
 	NODELET_DEBUG("Initializing nodelet...");
 
 	nh = getPrivateNodeHandle();
@@ -65,7 +65,7 @@ Image_cloud_nodelet::onInit() {
 
 	// ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
 	sync = new message_filters::Synchronizer<Image_to_cloud_sync>(Image_to_cloud_sync(queue_size), *image_sub, *image_info_sub, *pointcloud_sub);
-	sync->registerCallback(boost::bind(&Image_cloud_nodelet::callback, this, _1, _2, _3));
+	sync->registerCallback(boost::bind(&Fusion::callback, this, _1, _2, _3));
 
 	listener_pointcloud_transform.reset(new tf::TransformListener(nh, ros::Duration(tf_buffer_length_), true));
 
@@ -77,7 +77,7 @@ Image_cloud_nodelet::onInit() {
 
 
 void
-Image_cloud_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image, const sensor_msgs::CameraInfoConstPtr &input_msg_image_info, const PointCloud::ConstPtr &input_msg_cloud_ptr){
+Fusion::callback(const sensor_msgs::ImageConstPtr& input_msg_image, const sensor_msgs::CameraInfoConstPtr &input_msg_image_info, const PointCloud::ConstPtr &input_msg_cloud_ptr){
 	ROS_INFO_NAMED(node_name_,"callback");
 
 	if(pub_cloud_.getNumSubscribers() == 0 && pub_.getNumSubscribers() == 0 ){ // dont do anything if no one is interessted
@@ -229,7 +229,7 @@ Image_cloud_nodelet::callback(const sensor_msgs::ImageConstPtr& input_msg_image,
    ROS_INFO_NAMED(node_name_,"callback end");
 }
 
-Image_cloud_nodelet::~Image_cloud_nodelet(){
+Fusion::~Fusion(){
 		delete image_sub;
 		delete pointcloud_sub;
 		delete sync;

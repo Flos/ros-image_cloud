@@ -1,12 +1,12 @@
 /*
- * image_pointcloud_nodelet.h
+ * fusion.h
  *
  *  Created on: 11.08.2014
  *      Author: fnolden
  */
 
-#ifndef IMAGE_CLOUD_NODELET_H_
-#define IMAGE_CLOUD_NODELET_H_
+#ifndef FUSION_H_
+#define FUSION_H_
 
 #include "ros/ros.h"
 #include <sstream>
@@ -48,10 +48,10 @@ typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloudColor;
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::CameraInfo,PointCloud> Image_to_cloud_sync;
 
 
-class Image_cloud_nodelet : public nodelet::Nodelet {
+class Fusion : public nodelet::Nodelet {
 public:
 	virtual void onInit();
-	virtual ~Image_cloud_nodelet();
+	virtual ~Fusion();
 	virtual void callback(const sensor_msgs::ImageConstPtr& input_msg_image, const sensor_msgs::CameraInfoConstPtr &input_msg_image_info, const PointCloud::ConstPtr &input_msg_cloud);
 
 private:

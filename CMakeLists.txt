@@ -76,11 +76,11 @@ include_directories(
 )
 
 ## Fusion Nodelets
-add_library(image_cloud_nodelet
-  src/fusion/image_cloud_nodelet.cpp
+add_library(fusion
+  src/fusion/fusion.cpp
 )
 
-target_link_libraries(image_cloud_nodelet
+target_link_libraries(fusion
   ${catkin_LIBRARIES}
 )
 
