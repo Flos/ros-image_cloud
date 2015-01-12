@@ -1,6 +1,9 @@
 #include <ros/ros.h>
 #include <std_msgs/Header.h>
 
+#ifndef TIME_DEBUG_H_
+#define TIME_DEBUG_H_
+
 inline void
 time(std::string message, const std_msgs::Header &header, bool info=false){
 	ros::Time time = ros::Time::now();
@@ -40,3 +43,5 @@ time(std::string message, const std_msgs::Header &header,  const std_msgs::Heade
 		ROS_DEBUG("%s", copyOfStr.c_str());
 	}
 }
+
+#endif
