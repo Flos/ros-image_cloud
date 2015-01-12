@@ -11,6 +11,8 @@
 	<arg name="use_reference_frame"	default="0" />
 	<arg name="point_size"			default="1" />
 	<arg name="queue_size"			default="30" />
+	<arg name="tf_buffer_length"	default="30" />
+	
 	
     
   <node pkg="nodelet" type="nodelet" name="$(arg name)" args="load image_cloud/Pcl_to_image_nodelet $(arg nodelet_manager)" output="screen">
@@ -25,6 +27,7 @@
   	<param name="use_reference_frame"					value="$(arg use_reference_frame)" />
   	<param name="point_size"							value="$(arg point_size)" />
   	<param name="reference_frame"						value="$(arg reference_frame)" />
+  	<param name="tf_buffer_length"						value="$(arg tf_buffer_length)" />
   </node>
   
 </launch>
