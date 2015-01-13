@@ -69,12 +69,6 @@ public:
 	virtual void init_sub();
 	virtual void init_pub();
 	virtual void params();
-	virtual void extract_intensity(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, cv_bridge::CvImage& image_pcl, cv_bridge::CvImage& image_depth);
-	virtual void extract_normals(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, cv_bridge::CvImage& image_pcl, cv_bridge::CvImage& image_depth);
-	virtual void extract_intensity_and_normals(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, cv_bridge::CvImage& image_pcl, cv_bridge::CvImage& image_depth);
-	pcl::PointCloud<pcl::PointXYZINormal>::Ptr calculate_normals(
-			const pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud);
-
 private:
 	boost::shared_ptr<ReconfigureServer> reconfigure_server_;
 	boost::shared_ptr<message_filters::Subscriber<sensor_msgs::CameraInfo> > image_info_sub;
