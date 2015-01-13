@@ -5,6 +5,7 @@
   	<arg name="subscribe_topic_image"		default="/ladybug5/camera$(arg camera)/image_color_rect" />
   	<arg name="subscribe_topic_image_info" 	default="/ladybug5/camera$(arg camera)/image_color_rect_info" />
   	<arg name="image_tf_frame_id"			default="ladybug_camera$(arg camera)" />
+	<arg name="tf_buffer_length"			default="30" />
 	<arg name="publish_pointcloud" 			default="$(arg subscribe_topic_image)_pointcloud"/>
 	<arg name="publish_image"	 			default="$(arg subscribe_topic_image)_pointcloud_image"/>
 	
@@ -24,6 +25,7 @@
 	  	<param name="pub_pcl"				type="string" value="$(arg publish_pointcloud)" />
 	  	<param name="image_frame_id"  		type="string" value="$(arg image_frame_id)" />
 	  	<param name="reference_frame_id"  	type="string" value="$(arg reference_frame_id)" />
+  		<param name="tf_buffer_length"					  value="$(arg tf_buffer_length)" />
 	</node>
   
    	<include if="$(arg save)" file="$(find fiddle)/launch/extract_image.launch">
