@@ -23,7 +23,11 @@
 #define PCL_FEATURES_H_
 
 inline pcl::PointCloud<pcl::PointXYZINormal>::Ptr
-calculate_normals(const pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud, double normal_search_radius = 0.05) {
+calculate_normals(
+		const pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud,
+		double normal_search_radius = 0.05
+)
+{
 	pcl::search::KdTree<pcl::PointXYZI>::Ptr tree_n(
 			new pcl::search::KdTree<pcl::PointXYZI>());
 	// Estimate the normals of the cloud_xyz
@@ -38,7 +42,14 @@ calculate_normals(const pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud, double norm
 }
 
 inline void
-extract_intensity(const image_geometry::PinholeCameraModel &camera_model, pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, cv_bridge::CvImage& image_pcl, cv_bridge::CvImage& image_depth, int point_size = 1) {
+extract_intensity(
+		const image_geometry::PinholeCameraModel &camera_model,
+		pcl::PointCloud<pcl::PointXYZI>::Ptr cloud,
+		cv_bridge::CvImage& image_pcl,
+		cv_bridge::CvImage& image_depth,
+		int point_size = 1
+)
+{
 	cv::Point2d point_image;
 	BOOST_FOREACH (const pcl::PointXYZI& pt, (*cloud).points){
 	// look up 3D position
@@ -63,7 +74,15 @@ extract_intensity(const image_geometry::PinholeCameraModel &camera_model, pcl::P
 }
 
 inline void
-extract_normals(const image_geometry::PinholeCameraModel &camera_model, pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, cv_bridge::CvImage& image_pcl, cv_bridge::CvImage& image_depth, int point_size = 1, double normal_search_radius = 0.05) {
+extract_normals(
+		const image_geometry::PinholeCameraModel &camera_model,
+		pcl::PointCloud<pcl::PointXYZI>::Ptr cloud,
+		cv_bridge::CvImage& image_pcl,
+		cv_bridge::CvImage& image_depth,
+		int point_size = 1,
+		double normal_search_radius = 0.05
+)
+{
 	pcl::PointCloud<pcl::PointXYZINormal>::Ptr cloud_normals = calculate_normals(cloud, normal_search_radius);
 	cv::Point2d point_image;
 	BOOST_FOREACH (const pcl::PointXYZINormal& pt, (*cloud_normals).points){
@@ -89,7 +108,14 @@ extract_normals(const image_geometry::PinholeCameraModel &camera_model, pcl::Poi
 }
 
 inline void
-extract_intensity_and_normals(const image_geometry::PinholeCameraModel &camera_model, pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, cv_bridge::CvImage& image_pcl, cv_bridge::CvImage& image_depth, int point_size = 1, double normal_search_radius = 0.05) {
+extract_intensity_and_normals(
+		const image_geometry::PinholeCameraModel &camera_model,
+		pcl::PointCloud<pcl::PointXYZI>::Ptr cloud,
+		cv_bridge::CvImage& image_pcl,
+		cv_bridge::CvImage& image_depth,
+		int point_size = 1,
+		double normal_search_radius = 0.05
+) {
 	pcl::PointCloud<pcl::PointXYZINormal>::Ptr cloud_normals = calculate_normals(cloud, normal_search_radius);
 
 	cv::Point2d point_image;
