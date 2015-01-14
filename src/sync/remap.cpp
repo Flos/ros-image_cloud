@@ -64,7 +64,7 @@ namespace image_cloud {
 		if(config_.subscribe_topic_image.empty()){ NODELET_ERROR("subscribe_topic_image cannot be empty"); return;};
 		if(config_.subscribe_topic_image_info.empty()){ NODELET_ERROR("subscribe_topic_image_info cannot be empty"); return;};
 
-		pointcloud_sub.reset(
+		image_sub2.reset(
 				new message_filters::Subscriber<PointCloud>(nh_,
 						config_.subscribe_topic_pcl, config_.queue_size));
 		image_sub.reset(
@@ -80,7 +80,7 @@ namespace image_cloud {
 						Image_to_cloud_sync(config_.queue_size),
 							*image_sub,
 							*image_info_sub,
-							*pointcloud_sub
+							*image_sub2
 							)
 				);
 		sync->registerCallback(
@@ -95,7 +95,7 @@ namespace image_cloud {
 		if(config_.publish_topic_image_info.empty()) { NODELET_ERROR("publish_topic_image_info cannot be empty"); return;};
 
 
-		pub_cloud_ =  nh_.advertise<PointCloud>(config_.publish_topic_pcl.c_str(),1);
+		pub_image2_ =  nh_.advertise<PointCloud>(config_.publish_topic_pcl.c_str(),1);
 		pub_image_ = it_->advertise(config_.publish_topic_image.c_str(), 1);
 		pub_image_info_ = nh_.advertise<sensor_msgs::CameraInfo>(config_.publish_topic_image_info.c_str(),1);
 	}
@@ -143,7 +143,7 @@ namespace image_cloud {
 	Remap::callback(const sensor_msgs::ImageConstPtr& input_msg_image, const sensor_msgs::CameraInfoConstPtr &input_msg_image_info, const PointCloud::ConstPtr &input_msg_cloud_ptr){
 		config_lock_.lock();
 
-		if(config_.republish_pointcloud) pub_cloud_.publish(input_msg_cloud_ptr);
+		if(config_.republish_pointcloud) pub_image2_.publish(input_msg_cloud_ptr);
 
 		pub_image_.publish(input_msg_image);
 		pub_image_info_.publish(input_msg_image_info);

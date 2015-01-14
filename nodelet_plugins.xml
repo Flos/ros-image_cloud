@@ -33,3 +33,10 @@
   </description>
   </class>
 </library>
+<library path="lib/libsync_image">
+  <class name="image_cloud/Sync_image" type="image_cloud::Sync_image" base_class_type="nodelet::Nodelet">
+  <description>
+  		syncronized remap
+  </description>
+  </class>
+</library>

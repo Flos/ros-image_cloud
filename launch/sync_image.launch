@@ -1,0 +1,17 @@
+<launch>
+	<arg name="subscribe_topic_image1"/>
+	<arg name="subscribe_topic_image2"/> 	
+	<arg name="publish_topic_image1"			default="$(arg subscribe_topic_image)/selected"/>
+	<arg name="publish_topic_image2"			default="$(arg subscribe_topic_image)/selected"/>
+	<arg name="nodelet_manager" 				default="nodelet_manager"/>
+	<arg name="name"							default="sync_image"/>
+    
+  <node pkg="nodelet" type="nodelet" name="$(arg name)" args="load image_cloud/Remap $(arg nodelet_manager)" output="screen">
+  	<param name="subscribe_topic_image1" 	type="string" value="$(arg subscribe_topic_image1)" />
+  	<param name="subscribe_topic_image2" 	type="string" value="$(arg subscribe_topic_image2)" />
+  	
+  	<param name="publish_topic_image1" 		type="string" value="$(arg publish_topic_image1)" />
+  	<param name="publish_topic_image2" 		type="string" value="$(arg publish_topic_image2)" />
+   </node>
+  
+</launch>
