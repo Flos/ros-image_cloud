@@ -8,6 +8,8 @@
 #include <image_geometry/pinhole_camera_model.h>
 #include <sensor_msgs/PointCloud2.h>
 
+#include <common/small_helpers.hpp>
+
 #ifndef PCL_DEPTH_FILTER_H_
 #define PCL_DEPTH_FILTER_H_
 
@@ -135,10 +137,6 @@ filter_depth_discontinuity(
 	}
 }
 
-inline float point_distance(pcl::PointXYZI &point){
-	return sqrt((point.x* point.x)+(point.y* point.y)+(point.z* point.z));
-}
-
 inline void filter_depth_edges(
 		pcl::PointCloud<pcl::PointXY>::Ptr in_projected_points,
 		pcl::PointCloud<pcl::PointXYZI>::Ptr in_origin_points,
@@ -155,6 +153,8 @@ inline void filter_depth_edges(
 
 	unsigned int hits = 0;
 	unsigned int i_p = 0;
+	float cloud_intensity_min = 9999;
+	float cloud_intensity_max = 0;
 
 	BOOST_FOREACH (const pcl::PointXY& pt, in_projected_points->points){
 		pcl::PointXYZI* pt_ori = &in_origin_points->points.at(i_p);
@@ -171,36 +171,42 @@ inline void filter_depth_edges(
 		// look for neighbors where at least 1 is closer (Distance to origin) than the other
 		float pt_depth = pt_ori->z;
 		//float distance_selected = point_distance(*pt_ori);
-		float intensity_max = pt_ori->intensity ;
+		float intensity_max = pt_ori->intensity;
 
-		bool valid = false;
+		if(intensity_max < cloud_intensity_min) cloud_intensity_min = intensity_max;
+		if(intensity_max > cloud_intensity_max) cloud_intensity_max = intensity_max;
+
+		int valid = 0;
 
 		if (found_neighbors > 0) {
 
 			int nearest_neighbor = 0;
 
-			float distance = point_distance(in_origin_points->points.at(k_indices.at(0)));
-			//float distance = in_origin_points->points.at(k_indices.at(0)).z;
-
 			for(int i = 0; i < found_neighbors; i++){
-				if(in_origin_points->points.at(k_indices.at(i)).intensity > intensity_max) intensity_max = in_origin_points->points.at(k_indices.at(0)).intensity;
+
+				float intensity = in_origin_points->points.at(k_indices.at(i)).intensity;
+
+				if(intensity > intensity_max) intensity_max = intensity;
 
 				//float current_distance = point_distance(in_origin_points->points.at(k_indices.at(i)));
 				float current_distance = in_origin_points->points.at(k_indices.at(i)).z;
 
 				// 1. Is one of the neighbors closer than selected?
 				if( pt_depth - current_distance  >  0.5){
-						valid = true;
+					++valid;
+				}
+				if( !inRange(intensity, 30.0, pt_ori->intensity)){
+					++valid;
 				}
 			}
 
 		}
-		if(valid){
+		if(valid > 0){
 			cv::circle(image_pcl.image, cv::Point2f(pt.x, pt.y), point_size, cv::Scalar(intensity_max), -1);
 			hits++;
 		}
 	}
-	ROS_INFO("depth cloud: %d, hits: %d", in_projected_points->size(), hits);
+	ROS_INFO("depth cloud: %d, hits: %d imin: %f imax: %f", in_projected_points->size(), hits, cloud_intensity_min, cloud_intensity_max);
 }
 
 
