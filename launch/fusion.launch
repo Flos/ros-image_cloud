@@ -6,8 +6,8 @@
   	<arg name="subscribe_topic_image_info" 	default="/ladybug5/camera$(arg camera)/image_color_rect_info" />
   	<arg name="image_tf_frame_id"			default="ladybug_camera$(arg camera)" />
 	<arg name="tf_buffer_length"			default="30" />
-	<arg name="publish_pointcloud" 			default="$(arg subscribe_topic_image)_pointcloud"/>
-	<arg name="publish_image"	 			default="$(arg subscribe_topic_image)_pointcloud_image"/>
+	<arg name="publish_pointcloud" 			default="$(arg subscribe_topic_image)/fused$(arg subscribe_topic_pcl)/cloud"/>
+	<arg name="publish_image"	 			default="$(arg subscribe_topic_image)/fused$(arg subscribe_topic_pcl)/image"/>
 	
 	<arg name="image_frame_id"				default="ladybug_camera$(arg camera)"/>
 	<arg name="reference_frame_id"			default="/odom"/>
