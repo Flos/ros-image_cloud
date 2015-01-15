@@ -93,17 +93,12 @@ Fusion::onInit() {
 	NODELET_DEBUG("Initializing nodelet...");
 
 	nh = getPrivateNodeHandle();
-
 	get_param();
 	// Info
 	print();
-
 	init_sub();
-
 	init_transforms_listener();
-
 	init_pub();
-
 	// Set up dynamic reconfigure
 	reconfigure_server_.reset(new ReconfigureServer(nh));
 	ReconfigureServer::CallbackType f = boost::bind(&Fusion::reconfigure_callback, this, _1, _2);
@@ -129,9 +124,7 @@ Fusion::callback(const sensor_msgs::ImageConstPtr& input_msg_image, const sensor
 		return;
 	}
 
-
-	//Look up transform for cameraladybug_camera4
-
+	//Look up transform for cameraladybug_camera
 	if(config_.image_tf_frame_id.empty()){ //set default image_frame_id
 		config_.image_tf_frame_id = input_msg_image->header.frame_id;
 	}
@@ -155,12 +148,12 @@ Fusion::callback(const sensor_msgs::ImageConstPtr& input_msg_image, const sensor
 	}
 
 
-	//NODELET_DEBUG("pointcloud2 w: %i \th: %i \t\ttime: %i.%i",input_msg_cloud_ptr->width, input_msg_cloud_ptr->height, input_msg_cloud_ptr->header.stamp.sec, input_msg_cloud_ptr->header.stamp.nsec );
+	//NODELET_INFO("pointcloud2 w: %i \th: %i \t\ttime: %i.%i",input_msg_cloud_ptr->width, input_msg_cloud_ptr->height, input_msg_cloud_ptr->header.stamp.sec, input_msg_cloud_ptr->header.stamp.nsec );
 	//NODELET_DEBUG(node_name_,"pointcloud2 w: %i \th: %i \t\ttime: %lu",input_msg_cloud_ptr->width, input_msg_cloud_ptr->height, input_msg_cloud_ptr->header.stamp );
 	//NODELET_DEBUG("image      w: %i \th: %i \ttime: %i.%i",input_msg_image->width, input_msg_image->height, input_msg_image->header.stamp.sec, input_msg_image->header.stamp.nsec );
 
 	pcl::PointCloud<pcl::PointXYZ> cloud;
-	pcl::fromROSMsg(*input_msg_cloud_ptr,cloud);
+	pcl::fromROSMsg(*input_msg_cloud_ptr, cloud);
 
 	// Transform to odom
 	// todo: Transform at pcl time to odom
@@ -184,12 +177,6 @@ Fusion::callback(const sensor_msgs::ImageConstPtr& input_msg_image, const sensor
 	camera_model.fromCameraInfo(input_msg_image_info);
 
 	//NODELET_INFO("camera_model:  tx: %f, ty: %f, cx: %f, cy: %f, fx: %f, fy: %f ", camera_model.Tx(), camera_model.Ty(), camera_model.cx(), camera_model.cy(), camera_model.fx(), camera_model.fy() );
-
-	PointCloudColor::Ptr msg (new PointCloudColor);
-
-	cv::Point2d point_image;
-	cv::Vec3b color;
-
    cv_bridge::CvImagePtr cv_ptr;
    cv_bridge::CvImagePtr cv_shared_ptr;
    try{
@@ -202,43 +189,54 @@ Fusion::callback(const sensor_msgs::ImageConstPtr& input_msg_image, const sensor
 	   return;
    }
 
-   BOOST_FOREACH (const pcl::PointXYZ& pt, cloud.points) {
-	   if( pt.z > 1){ // min distance from camera 1m
-			point_image = camera_model.project3dToPixel(cv::Point3d(pt.x, pt.y, pt.z));
+	PointCloudColor::Ptr msg (new PointCloudColor);
 
-			// todo: check for view obstructed by robot
-			if( ( point_image.x > 0 &&  point_image.x < input_msg_image->width )
-				&& ( point_image.y > 0 &&  point_image.y < input_msg_image->height )
-				)
-			{
-				// Get image Color
 
-				color = cv_shared_ptr->image.at<cv::Vec3b>(point_image);
-				if( color.val[0] > config_.min_color
-					&& color.val[1] > config_.min_color
-					&& color.val[2] > config_.min_color
+	cv::Point2d point_image;
+	cv::Vec3b color;
+
+	try{
+
+	   BOOST_FOREACH (const pcl::PointXYZ& pt, cloud.points) {
+		   if( pt.z > 1){ // min distance from camera 1m
+				point_image = camera_model.project3dToPixel(cv::Point3d(pt.x, pt.y, pt.z));
+
+				// todo: check for view obstructed by robot
+				if( ( point_image.x > 0 &&  point_image.x < input_msg_image->width )
+					&& ( point_image.y > 0 &&  point_image.y < input_msg_image->height )
 					)
 				{
-					cv::circle(cv_ptr->image, point_image, 1, cv::Scalar(1,200,1));
+					// Get image Color
 
-					pcl::PointXYZRGB color_point(color.val[2], color.val[1], color.val[0]);
-					color_point.x = pt.x;
-					color_point.y = pt.y;
-					color_point.z = pt.z;
-					msg->points.push_back(color_point);
+					color = cv_shared_ptr->image.at<cv::Vec3b>(point_image);
+					if( color.val[0] > config_.min_color
+						&& color.val[1] > config_.min_color
+						&& color.val[2] > config_.min_color
+						)
+					{
+						cv::circle(cv_ptr->image, point_image, 1, cv::Scalar(1,200,1));
+
+						pcl::PointXYZRGB color_point(color.val[2], color.val[1], color.val[0]);
+						color_point.x = pt.x;
+						color_point.y = pt.y;
+						color_point.z = pt.z;
+						msg->points.push_back(color_point);
+					}
+					else{
+						cv::circle(cv_ptr->image, point_image, 1, cv::Scalar(1,1,200));
+					}
 				}
-				else{
-					cv::circle(cv_ptr->image, point_image, 1, cv::Scalar(1,1,200));
-				}
-			}
+		   }
 	   }
-   }
+	}catch(std::exception &e){
+		NODELET_WARN("fusion exception: %s", e.what());
+		return;
+	}
 
    msg->header.stamp = cloud.header.stamp;
    msg->header.frame_id = config_.image_tf_frame_id;
    msg->height = 1;
    msg->width = msg->points.size();
-
 
    if (!boost::equals(config_.reference_frame, config_.image_tf_frame_id))
    {
@@ -251,7 +249,7 @@ Fusion::callback(const sensor_msgs::ImageConstPtr& input_msg_image, const sensor
    pub_cloud_.publish(msg);
    pub_.publish(cv_ptr->toImageMsg());
 
-   NODELET_DEBUG("fusion cloud_color  w: %i \th: %i \ttime: %lu",msg->width, msg->height, msg->header.stamp );
+   NODELET_DEBUG("fusion cloud_color  w: %i \th: %i \ttime: %lu", msg->width, msg->height, msg->header.stamp );
 }
 
 void
