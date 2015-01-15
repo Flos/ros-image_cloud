@@ -30,6 +30,7 @@ namespace image_cloud {
 		nh_.param<std::string>("subscribe_topic_image2",  		config_.subscribe_topic_image2, "");
 		nh_.param<std::string>("publish_topic_image1",  		config_.publish_topic_image1, "");
 		nh_.param<std::string>("publish_topic_image2", 			config_.publish_topic_image2, "");
+		nh_.param<bool>		  ("publish_image2",				config_.publish_image2, true);
 
 		nh_.param<int>("queue_size", 							config_.queue_size, 30);
 
@@ -43,6 +44,7 @@ namespace image_cloud {
 		NODELET_INFO( "name:\t\t%s", 								node_name_.c_str());
 		NODELET_INFO( "subscribe_topic_image1:\t\t%s -> %s",	 	config_.subscribe_topic_image1.c_str(), 	config_.publish_topic_image1.c_str());
 		NODELET_INFO( "subscribe_topic_image2:\t\t%s -> %s", 		config_.subscribe_topic_image2.c_str(),		config_.publish_topic_image2.c_str());
+		NODELET_INFO( "publish_image2: \t\t\t%i",					config_.publish_image2);
 		NODELET_INFO( "queue_size:\t\t\t%i",						config_.queue_size);
 	}
 
@@ -128,7 +130,7 @@ namespace image_cloud {
 		config_lock_.lock();
 
 		pub_image_.publish(input1);
-		pub_image2_.publish(input2);
+		if(config_.publish_image2) pub_image2_.publish(input2);
 
 		config_lock_.unlock();
 	}
