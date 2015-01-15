@@ -93,7 +93,7 @@ extract_depth_discontinuity(
 			}
 		}
 	}
-	ROS_INFO("Hits: %d Hit_image: %d cloud: %d", hits, hits_image, in->size());
+	ROS_INFO("Hits: %u Hit_image: %u cloud: %lu", hits, hits_image, in->size());
 }
 
 
@@ -138,17 +138,18 @@ filter_depth_discontinuity(
 }
 
 inline void filter_depth_edges(
-		pcl::PointCloud<pcl::PointXY>::Ptr in_projected_points,
-		pcl::PointCloud<pcl::PointXYZI>::Ptr in_origin_points,
+		pcl::PointCloud<pcl::PointXY> &in_projected_points,
+		pcl::PointCloud<pcl::PointXYZI> &in_origin_points,
+		pcl::PointCloud<pcl::PointXYZI> &out_filtred,
 		cv_bridge::CvImage& image_pcl,
 		int neighbohrs_to_search = 2,
 		int point_size = 1
 )
 {
-	assert( in_projected_points->points.size() == in_origin_points->points.size());
+	assert( in_projected_points.points.size() == in_origin_points.points.size());
 
 	pcl::search::KdTree<pcl::PointXY>::Ptr tree_n( new pcl::search::KdTree<pcl::PointXY>() );
-	tree_n->setInputCloud(in_projected_points);
+	tree_n->setInputCloud(in_projected_points.makeShared());
 	tree_n->setEpsilon(0.5);
 
 	unsigned int hits = 0;
@@ -156,8 +157,8 @@ inline void filter_depth_edges(
 	float cloud_intensity_min = 9999;
 	float cloud_intensity_max = 0;
 
-	BOOST_FOREACH (const pcl::PointXY& pt, in_projected_points->points){
-		pcl::PointXYZI* pt_ori = &in_origin_points->points.at(i_p);
+	BOOST_FOREACH (const pcl::PointXY& pt, in_projected_points.points){
+		pcl::PointXYZI* pt_ori = &in_origin_points.points.at(i_p);
 		++i_p;
 
 		std::vector<int> k_indices;
@@ -184,12 +185,12 @@ inline void filter_depth_edges(
 
 			for(int i = 0; i < found_neighbors; i++){
 
-				float intensity = in_origin_points->points.at(k_indices.at(i)).intensity;
+				float intensity = in_origin_points.points.at(k_indices.at(i)).intensity;
 
 				if(intensity > intensity_max) intensity_max = intensity;
 
 				//float current_distance = point_distance(in_origin_points->points.at(k_indices.at(i)));
-				float current_distance = in_origin_points->points.at(k_indices.at(i)).z;
+				float current_distance = in_origin_points.points.at(k_indices.at(i)).z;
 
 				// 1. Is one of the neighbors closer than selected?
 				if( pt_depth - current_distance  >  0.5){
@@ -203,10 +204,11 @@ inline void filter_depth_edges(
 		}
 		if(valid > 0){
 			cv::circle(image_pcl.image, cv::Point2f(pt.x, pt.y), point_size, cv::Scalar(intensity_max), -1);
+			out_filtred.push_back(*pt_ori);
 			hits++;
 		}
 	}
-	ROS_INFO("depth cloud: %d, hits: %d imin: %f imax: %f", in_projected_points->size(), hits, cloud_intensity_min, cloud_intensity_max);
+	ROS_INFO("depth cloud: %lu, hits: %u imin: %f imax: %f", in_projected_points.size(), hits, cloud_intensity_min, cloud_intensity_max);
 }
 
 
@@ -256,7 +258,7 @@ inline void filter_depth_edges_easy(
 
 		}
 	}
-	ROS_INFO("easy cloud: %d, hits: %d", in_projected_points->size(), hits);
+	ROS_INFO("easy cloud: %lu, hits: %u", in_projected_points->size(), hits);
 }
 
 #endif

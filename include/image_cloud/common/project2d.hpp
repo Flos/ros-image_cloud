@@ -7,14 +7,14 @@
 inline void
 project_2d(
 		const image_geometry::PinholeCameraModel &camera_model,
-		const pcl::PointCloud<pcl::PointXYZI>::Ptr in,
+		const pcl::PointCloud<pcl::PointXYZI> &in,
 		pcl::PointCloud<pcl::PointXY> &out_2d,
 		pcl::PointCloud<pcl::PointXYZI> &out_3d,
 		unsigned int camera_width = 1024,
 		unsigned int camaer_height = 768
 		)
 {
-	BOOST_FOREACH (const pcl::PointXYZI& pt, in->points)
+	BOOST_FOREACH (const pcl::PointXYZI& pt, in.points)
 	{
 		if( pt.z > 1) { // min distance from camera 1m
 

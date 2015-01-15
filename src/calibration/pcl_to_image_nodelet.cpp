@@ -233,7 +233,9 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
 
 
 	pcl::PointCloud<pcl::PointXY> cloud2d;
-	pcl::PointCloud<pcl::PointXYZI> cloud3d_filtered;
+	pcl::PointCloud<pcl::PointXYZI> cloud3d_hit_image;
+	pcl::PointCloud<pcl::PointXYZI> cloud3d_filtred;
+	cloud3d_filtred.header = cloud.header;
 	try{
 		switch(config_.feature){
 			default:
@@ -242,14 +244,14 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
 				break;
 			case 1: // Normals
 				//extract_normals(camera_model, cloud.makeShared(), image_pcl, image_depth, config_.point_size, config_.normal_search_radius);
-				project_2d(camera_model, cloud.makeShared(), cloud2d, cloud3d_filtered, image_pcl.image.rows, image_pcl.image.cols );
-				filter_depth_edges_easy(cloud2d.makeShared(), cloud3d_filtered.makeShared(), image_pcl);
+				project_2d(camera_model, cloud, cloud2d, cloud3d_hit_image, image_pcl.image.rows, image_pcl.image.cols );
+				filter_depth_edges_easy(cloud2d.makeShared(), cloud3d_hit_image.makeShared(), image_pcl);
 				break;
 			case 2: // Intesity + Normals
 				//extract_intensity_and_normals(camera_model, cloud.makeShared(), image_pcl, image_depth, config_.point_size, config_.normal_search_radius);
 
-				project_2d(camera_model, cloud.makeShared(), cloud2d, cloud3d_filtered, image_pcl.image.rows, image_pcl.image.cols );
-				filter_depth_edges(cloud2d.makeShared(), cloud3d_filtered.makeShared(), image_pcl);
+				project_2d(camera_model, cloud, cloud2d, cloud3d_hit_image, image_pcl.image.rows, image_pcl.image.cols );
+				filter_depth_edges(cloud2d, cloud3d_hit_image, cloud3d_filtred, image_pcl );
 				break;
 			case 3: // depth discontinuity
 				extract_depth_discontinuity(camera_model, cloud.makeShared(), image_pcl, config_.point_size);
@@ -268,25 +270,22 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
    if(config_.use_reference && !config_.reference_frame.empty())
    	{
    		// Transform to odom
-   		if (!pcl_ros::transformPointCloud( config_.reference_frame, cloud3d_filtered, cloud3d_filtered, *listener_pointcloud_transform)) {
+   		if (!pcl_ros::transformPointCloud( config_.reference_frame, cloud3d_filtred, cloud3d_filtred, *listener_pointcloud_transform)) {
    				NODELET_ERROR("Cannot transform point cloud to the fixed frame %s", config_.reference_frame.c_str());
    				config_lock_.unlock();
    				return;
    		}
-
-   		cloud3d_filtered.header.frame_id = config_.reference_frame;
    	}
-   else{
-	   cloud3d_filtered.header.frame_id = config_.image_tf_frame_id;
-   }
 
    // dosent work! stamp is empty (0) after publish
    //cloud3d_filtered.header.stamp = input_msg_image_info->header.stamp.toNSec();
 
    PointCloud msg_cloud3d_filtred;
 
-   pcl::toROSMsg(cloud3d_filtered, msg_cloud3d_filtred);
+   pcl::toROSMsg(cloud3d_filtred, msg_cloud3d_filtred);
    msg_cloud3d_filtred.header.stamp = input_msg_image_info->header.stamp;
+   msg_cloud3d_filtred.height = 1;
+   msg_cloud3d_filtred.width = cloud3d_filtred.points.size();
 
    pub_cloud_.publish(msg_cloud3d_filtred);
 
