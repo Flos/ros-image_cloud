@@ -2,6 +2,8 @@
 #include <pluginlib/class_list_macros.h>
 #include <common/time.hpp>
 #include <common/pcl_features.hpp>
+#include <common/project2d.hpp>
+#include <common/depth_filter.hpp>
 
 // watch the capitalization carefully
 PLUGINLIB_DECLARE_CLASS(image_cloud, Pcl_to_image_nodelet, image_cloud::Pcl_to_image_nodelet, nodelet::Nodelet)
@@ -34,6 +36,7 @@ Pcl_to_image_nodelet::init_params(){
 	nh.param<std::string>("subscribe_topic_pcl", config_.subscribe_topic_pcl, "");
 	nh.param<std::string>("subscribe_topic_img_info",  config_.subscribe_topic_img_info, "");
 	nh.param<std::string>("publish_topic", config_.publish_topic, "");
+	nh.param<std::string>("publish_topic_pcl", config_.publish_topic_pcl, "");
 	nh.param<std::string>("image_tf_frame_id", config_.image_tf_frame_id, "");
 
 	nh.param<bool>("use_reference", config_.use_reference, false);
@@ -58,6 +61,7 @@ Pcl_to_image_nodelet::params(){
 	NODELET_INFO( "subscribe_topic_pcl:\t%s", config_.subscribe_topic_pcl.c_str());
 	NODELET_INFO( "subscribe_topic_img_info:\t%s", config_.subscribe_topic_img_info.c_str());
 	NODELET_INFO( "publish_topic: \t%s", config_.publish_topic.c_str());
+	NODELET_INFO( "publish_topic_pcl: \t%s", config_.publish_topic_pcl.c_str());
 	NODELET_INFO( "image_tf_frame_id:\t%s", config_.image_tf_frame_id.c_str());
 
 	//NODELET_INFO( "use_reference: \t %s", config_.use_reference, config_.use_reference ? "true" : "false" );
@@ -98,6 +102,7 @@ Pcl_to_image_nodelet::init_pub() {
 	//Filter messages
 	pub_ = it_->advertise(config_.publish_topic.c_str(), 1);
 	pub_depth_ = it_->advertise(config_.publish_topic + "_depth", 1);
+	pub_cloud_ = nh.advertise<PointCloud>(config_.publish_topic_pcl.c_str(),1);
 	//pub_range_ = it_->advertise(config_.subscribe_topic_pcl + "_depth", 1);
 }
 
@@ -115,7 +120,9 @@ Pcl_to_image_nodelet::reconfigure_callback(Config &config, uint32_t level){
 		reset_sub = true;
 	 }
 
-	if(config.publish_topic != config_.publish_topic){
+	if(config.publish_topic != config_.publish_topic
+		|| config.publish_topic_pcl != config_.publish_topic_pcl)
+	{
 		reset_pub = true;
 	}
 
@@ -225,6 +232,8 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
 	cv_bridge::CvImage image_depth(input_msg_image_info->header, sensor_msgs::image_encodings::MONO8, mat_image_depth);
 
 
+	pcl::PointCloud<pcl::PointXY> cloud2d;
+	pcl::PointCloud<pcl::PointXYZI> cloud3d_filtered;
 	try{
 		switch(config_.feature){
 			default:
@@ -232,10 +241,18 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
 				extract_intensity(camera_model, cloud.makeShared(), image_pcl, image_depth, config_.point_size);
 				break;
 			case 1: // Normals
-				extract_normals(camera_model, cloud.makeShared(), image_pcl, image_depth, config_.point_size, config_.normal_search_radius);
+				//extract_normals(camera_model, cloud.makeShared(), image_pcl, image_depth, config_.point_size, config_.normal_search_radius);
+				project_2d(camera_model, cloud.makeShared(), cloud2d, cloud3d_filtered, image_pcl.image.rows, image_pcl.image.cols );
+				filter_depth_edges_easy(cloud2d.makeShared(), cloud3d_filtered.makeShared(), image_pcl);
 				break;
 			case 2: // Intesity + Normals
-				extract_intensity_and_normals(camera_model, cloud.makeShared(), image_pcl, image_depth, config_.point_size, config_.normal_search_radius);
+				//extract_intensity_and_normals(camera_model, cloud.makeShared(), image_pcl, image_depth, config_.point_size, config_.normal_search_radius);
+
+				project_2d(camera_model, cloud.makeShared(), cloud2d, cloud3d_filtered, image_pcl.image.rows, image_pcl.image.cols );
+				filter_depth_edges(cloud2d.makeShared(), cloud3d_filtered.makeShared(), image_pcl);
+				break;
+			case 3: // depth discontinuity
+				extract_depth_discontinuity(camera_model, cloud.makeShared(), image_pcl, config_.point_size);
 				break;
 		}
 	}catch(std::exception &e){
@@ -247,35 +264,31 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
    pub_.publish(image_pcl.toImageMsg());
    pub_depth_.publish(image_depth.toImageMsg());
 
-   // range image
-   // Convert the cloud to range image.
 
+   if(config_.use_reference && !config_.reference_frame.empty())
+   	{
+   		// Transform to odom
+   		if (!pcl_ros::transformPointCloud( config_.reference_frame, cloud3d_filtered, cloud3d_filtered, *listener_pointcloud_transform)) {
+   				NODELET_ERROR("Cannot transform point cloud to the fixed frame %s", config_.reference_frame.c_str());
+   				config_lock_.unlock();
+   				return;
+   		}
 
+   		cloud3d_filtered.header.frame_id = config_.reference_frame;
+   	}
+   else{
+	   cloud3d_filtered.header.frame_id = config_.image_tf_frame_id;
+   }
 
-//   tf::Transform pose;
-//   Eigen::Affine3f sensorPose = Eigen::Affine3f(Eigen::Translation3f(cloud.sensor_origin_[0],
-//   								 cloud.sensor_origin_[1],
-//   								 cloud.sensor_origin_[2])) *
-//   								 Eigen::Affine3f(cloud.sensor_orientation_);
-//   	float noiseLevel = 0.0f, minimumRange = 0.0f;
-//   	pcl::RangeImagePlanar rangeImage;
-//   	rangeImage.createFromPointCloudWithFixedSize(cloud, image.rows, image.cols,
-//   			camera_model.cx(), camera_model.cy(),
-//   			camera_model.fx(), camera_model.fy(),
-//   			sensorPose, pcl::RangeImage::CAMERA_FRAME,
-//   			noiseLevel, minimumRange);
+   // dosent work! stamp is empty (0) after publish
+   //cloud3d_filtered.header.stamp = input_msg_image_info->header.stamp.toNSec();
 
-//   	sensor_msgs::Image range_image;
-//   //	pcl::toROSMsg(*input_msg_cloud_ptr, range_image);
-//
-//
-//   	// Border extractor object.
-////   	pcl::RangeImageBorderExtractor borderExtractor(&rangeImage);
-////
-////   	borderExtractor.compute(*borders);
-// //  	rangeImage.getImagePoint()
-//
-//   //pub_range_.publish(range_image);
+   PointCloud msg_cloud3d_filtred;
+
+   pcl::toROSMsg(cloud3d_filtered, msg_cloud3d_filtred);
+   msg_cloud3d_filtred.header.stamp = input_msg_image_info->header.stamp;
+
+   pub_cloud_.publish(msg_cloud3d_filtred);
 
    NODELET_DEBUG("callback end");
    config_lock_.unlock();

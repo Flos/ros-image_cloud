@@ -4,6 +4,7 @@
 	<arg name="subscribe_topic_image_info"	 />
 	<arg name="image_tf_frame_id"	default="" />
 	<arg name="publish_topic"		default="$(arg name)" />
+	<arg name="publish_topic_pcl"	default="$(arg subscribe_topic_pcl)/filter" />
 	<arg name="nodelet_manager"		default="nodelet_manager" />
 	<arg name="resize_faktor_x"		default="1" />
 	<arg name="resize_faktor_y"		default="1" />
@@ -12,6 +13,11 @@
 	<arg name="point_size"			default="1" />
 	<arg name="queue_size"			default="30" />
 	<arg name="tf_buffer_length"	default="30" />
+	<arg name="feature"				default="0"  />
+	
+	<arg name="save"				default="0"  />
+	<arg name="save_depth"			default="0"  />
+	<arg name="save_path"			default="~/Images"  />
 	
 	
     
@@ -19,6 +25,7 @@
   	<param name="subscribe_topic_pcl" 					value="$(arg subscribe_topic_pcl)" />
   	<param name="subscribe_topic_img_info" 				value="$(arg subscribe_topic_image_info)" />
   	<param name="publish_topic"							value="$(arg publish_topic)" />
+  	<param name="publish_topic_pcl"						value="$(arg publish_topic_pcl)" />
   	<param name="image_tf_frame_id"  					value="$(arg image_tf_frame_id)" />
   	<param name="resize_faktor_x"  		type="double"	value="$(arg resize_faktor_x)" />
   	<param name="resize_faktor_y"  		type="double" 	value="$(arg resize_faktor_y)" />
@@ -28,6 +35,19 @@
   	<param name="point_size"							value="$(arg point_size)" />
   	<param name="reference_frame"						value="$(arg reference_frame)" />
   	<param name="tf_buffer_length"						value="$(arg tf_buffer_length)" />
+  	<param name="feature"								value="$(arg feature)" />
   </node>
+  
+   <include if="$(arg save)" file="$(find fiddle)/launch/extract_image.launch">
+	  	<arg name="name" 	value="ex$(arg name)_save" />
+	  	<arg name="image" 	value="$(arg publish_topic)" />	  	
+	  	<arg name="path"	value="$(arg save_path)" />
+   </include>
+   
+   <include if="$(arg save_depth)" file="$(find fiddle)/launch/extract_image.launch">
+	  	<arg name="name" 	value="ex$(arg name)_save_depth" />
+	  	<arg name="image" 	value="$(arg publish_topic)_depth" />	  	
+	  	<arg name="path"	value="$(arg save_path)" />
+   </include>
   
 </launch>
