@@ -12,20 +12,22 @@
 	<arg name="image_frame_id"				default="ladybug_camera$(arg camera)"/>
 	<arg name="reference_frame_id"			default="/odom"/>
 	<arg name="nodelet_manager" 			default="nodelet_manager"/>
+	<arg name="queue_size" 					default="30" />
 	
 	<!-- save images -->
 	<arg name="save"						default="true" />
     <arg name="save_path" 					default="/home/fnolden/Bilder/exported/" />
 	
 	<node pkg="nodelet" type="nodelet" name="$(arg name)" args="load image_cloud/Fusion $(arg nodelet_manager)" output="screen">
-	  	<param name="sub_pcl" 				type="string" value="$(arg subscribe_topic_pcl)" />
-	  	<param name="sub_img" 				type="string" value="$(arg subscribe_topic_image)" />
-	  	<param name="sub_img_info" 			type="string" value="$(arg subscribe_topic_image_info)" />
-	  	<param name="pub_img"				type="string" value="$(arg publish_image)" />
-	  	<param name="pub_pcl"				type="string" value="$(arg publish_pointcloud)" />
-	  	<param name="image_frame_id"  		type="string" value="$(arg image_frame_id)" />
-	  	<param name="reference_frame_id"  	type="string" value="$(arg reference_frame_id)" />
-  		<param name="tf_buffer_length"					  value="$(arg tf_buffer_length)" />
+	  	<param name="subscribe_topic_pcl" 			type="string" value="$(arg subscribe_topic_pcl)" />
+	  	<param name="subscribe_topic_image" 		type="string" value="$(arg subscribe_topic_image)" />
+	  	<param name="subscribe_topic_image_info" 	type="string" value="$(arg subscribe_topic_image_info)" />
+	  	<param name="publish_topic_image"			type="string" value="$(arg publish_image)" />
+	  	<param name="publish_topic_pcl"				type="string" value="$(arg publish_pointcloud)" />
+	  	<param name="image_tf_frame_id"  			type="string" value="$(arg image_frame_id)" />
+	  	<param name="reference_frame"  				type="string" value="$(arg reference_frame_id)" />
+  		<param name="tf_buffer_length"							  value="$(arg tf_buffer_length)" />
+  		<param name="queue_size" 								  value="$(arg queue_size)" />
 	</node>
   
    	<include if="$(arg save)" file="$(find fiddle)/launch/extract_image.launch">

@@ -33,6 +33,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 #find_package(catkin REQUIRED dynamic_reconfigure)
 generate_dynamic_reconfigure_options(
   cfg/edge_detector.cfg
+  cfg/fusion.cfg
   cfg/harris3d.cfg
   cfg/pcl_image.cfg
   cfg/sync_image.cfg
@@ -83,6 +84,10 @@ add_library(fusion
 
 target_link_libraries(fusion
   ${catkin_LIBRARIES}
+)
+
+add_dependencies(fusion
+  ${PROJECT_NAME}_gencfg
 )
 
 ## image feature Nodelets

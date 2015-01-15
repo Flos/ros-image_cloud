@@ -41,49 +41,49 @@
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/PointCloud2.h>
 
+#include <dynamic_reconfigure/server.h>
+#include <image_cloud/fusionConfig.h>
+
 namespace image_cloud {
 
-typedef sensor_msgs::PointCloud2 PointCloud;
-typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloudColor;
-typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::CameraInfo,PointCloud> Image_to_cloud_sync;
-
-
 class Fusion : public nodelet::Nodelet {
+
+	typedef image_cloud::fusionConfig Config;
+	typedef dynamic_reconfigure::Server<Config> ReconfigureServer;
+	typedef sensor_msgs::PointCloud2 PointCloud;
+	typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloudColor;
+	typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::CameraInfo,PointCloud> Image_to_cloud_sync;
 public:
 	virtual void onInit();
 	virtual ~Fusion();
 	virtual void callback(const sensor_msgs::ImageConstPtr& input_msg_image, const sensor_msgs::CameraInfoConstPtr &input_msg_image_info, const PointCloud::ConstPtr &input_msg_cloud);
-
+	virtual void reconfigure_callback(Config &config, uint32_t level);
 private:
-	message_filters::Subscriber<sensor_msgs::Image>* image_sub;
-	message_filters::Subscriber<sensor_msgs::CameraInfo>* image_info_sub;
-	message_filters::Subscriber<PointCloud>* pointcloud_sub;
-	message_filters::Synchronizer<Image_to_cloud_sync>* sync;
+	boost::shared_ptr<message_filters::Subscriber<sensor_msgs::Image> > image_sub;
+	boost::shared_ptr<message_filters::Subscriber<sensor_msgs::CameraInfo> > image_info_sub;
+	boost::shared_ptr<message_filters::Subscriber<PointCloud> > pointcloud_sub;
+	boost::shared_ptr<message_filters::Synchronizer<Image_to_cloud_sync> > sync;
+
 	ros::Subscriber sub_;
 	ros::Publisher pub_cloud_;
 
-	image_transport::ImageTransport *it_;
+	boost::shared_ptr<image_transport::ImageTransport> it_;
 	image_transport::Publisher pub_;
 
 	std::string node_name_;
-	std::string subscribe_topic_pcl_;
-	std::string subscribe_topic_img_;
-	std::string subscribe_topic_img_info_;
-	std::string publish_pcl_topic_;
-	std::string publish_img_topic_;
-	std::string filter_;
-	std::string image_frame_id_;
-	std::string reference_frame_id_;
-
-	int min_color_val_;
-	int tf_buffer_length_;
-
 	ros::NodeHandle nh;
 
 	image_geometry::PinholeCameraModel camera_model;
 
 	boost::shared_ptr<tf::TransformListener> listener_pointcloud_transform;
+	boost::shared_ptr<ReconfigureServer> reconfigure_server_;
+	Config config_;
 
+	void get_param();
+	void print();
+	void init_sub();
+	void init_transforms_listener();
+	void init_pub();
 };
 } /* end namespace */
 
