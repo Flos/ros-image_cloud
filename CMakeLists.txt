@@ -129,6 +129,22 @@ add_dependencies(pcl_to_image
   ${PROJECT_NAME}_gencfg
 )
 
+## Other
+add_executable(gui
+  src/gui/node.cpp
+  src/gui/simple_gui.cpp
+  src/gui/filter_value.cpp
+)
+
+target_link_libraries(gui
+  ${catkin_LIBRARIES}
+)
+
+add_dependencies(gui 
+  ${PROJECT_NAME}_gencfg
+)
+
+
 
 ## Sync Nodelets
 add_library(sync_remap
