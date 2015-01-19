@@ -133,45 +133,50 @@ Fusion::callback(const sensor_msgs::ImageConstPtr& input_msg_image, const sensor
 		config_.reference_frame = config_.image_tf_frame_id;
     }
 
-	std::string tf_error;
-	if(!listener_pointcloud_transform->waitForTransform(config_.image_tf_frame_id.c_str(), //target frame
-														input_msg_cloud_ptr->header.frame_id.c_str(), //source frame
-														input_msg_image->header.stamp, // target time
-														ros::Duration(5.0),
-														ros::Duration(0.01),
-														&tf_error
-														)
-	)
+	pcl::PointCloud<pcl::PointXYZ> cloud;
+	pcl::fromROSMsg(*input_msg_cloud_ptr, cloud);
+
+
+	//Transform only if not already transformed
+	if( config_.image_tf_frame_id != input_msg_cloud_ptr->header.frame_id )
 	{
-		NODELET_WARN("%s: tf_error %s", node_name_.c_str(), tf_error.c_str());
-		return;
+
+		std::string tf_error;
+		if(!listener_pointcloud_transform->waitForTransform(config_.image_tf_frame_id.c_str(), //target frame
+															input_msg_cloud_ptr->header.frame_id.c_str(), //source frame
+															input_msg_image->header.stamp, // target time
+															ros::Duration(5.0),
+															ros::Duration(0.01),
+															&tf_error
+															)
+		)
+		{
+			NODELET_WARN("%s: tf_error %s", node_name_.c_str(), tf_error.c_str());
+			return;
+		}
+	}
+
+
+	if( input_msg_image->header.stamp != input_msg_cloud_ptr->header.stamp)
+	{
+
+		//pcl::transformPointCloud(cloud, cloud,  )
+
+		// Transform to odom
+		// todo: Transform at pcl time to odom
+		if (!boost::equals(config_.reference_frame, input_msg_cloud_ptr->header.frame_id)){
+			if (!pcl_ros::transformPointCloud(config_.reference_frame, cloud, cloud, *listener_pointcloud_transform)) {
+					NODELET_WARN("Cannot transform point cloud to the fixed frame %s.", config_.reference_frame.c_str());
+				 return;
+			}
+		}
+
 	}
 
 
 	//NODELET_INFO("pointcloud2 w: %i \th: %i \t\ttime: %i.%i",input_msg_cloud_ptr->width, input_msg_cloud_ptr->height, input_msg_cloud_ptr->header.stamp.sec, input_msg_cloud_ptr->header.stamp.nsec );
 	//NODELET_DEBUG(node_name_,"pointcloud2 w: %i \th: %i \t\ttime: %lu",input_msg_cloud_ptr->width, input_msg_cloud_ptr->height, input_msg_cloud_ptr->header.stamp );
 	//NODELET_DEBUG("image      w: %i \th: %i \ttime: %i.%i",input_msg_image->width, input_msg_image->height, input_msg_image->header.stamp.sec, input_msg_image->header.stamp.nsec );
-
-	pcl::PointCloud<pcl::PointXYZ> cloud;
-	pcl::fromROSMsg(*input_msg_cloud_ptr, cloud);
-
-	// Transform to odom
-	// todo: Transform at pcl time to odom
-	if (!boost::equals(config_.reference_frame, input_msg_cloud_ptr->header.frame_id)){
-		if (!pcl_ros::transformPointCloud(config_.reference_frame, cloud, cloud, *listener_pointcloud_transform)) {
-				NODELET_WARN("Cannot transform point cloud to the fixed frame %s.", config_.reference_frame.c_str());
-			 return;
-		}
-    }
-
-	// Todo: check if Transform at image time to image_frame_id is right
-	cloud.header.stamp = input_msg_image->header.stamp.toNSec();
-
-	// Transform to image_frame_id
-	if (!pcl_ros::transformPointCloud(config_.image_tf_frame_id.c_str(), cloud, cloud, *listener_pointcloud_transform)) {
-			NODELET_WARN("Cannot transform point cloud to the fixed frame %s.", config_.image_tf_frame_id.c_str());
-		 return;
-	}
 
 	// If we are here we can start
 	camera_model.fromCameraInfo(input_msg_image_info);
