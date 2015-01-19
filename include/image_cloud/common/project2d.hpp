@@ -1,8 +1,13 @@
 #include <pcl/common/common.h>
 #include <image_geometry/pinhole_camera_model.h>
+#include <common/small_helpers.hpp>
+#include <opencv2/core/core.hpp>
 
 #ifndef PROJECT_2D_H_
 #define PROJECT_2D_H_
+
+namespace project2d
+{
 
 inline void
 project_2d(
@@ -11,7 +16,7 @@ project_2d(
 		pcl::PointCloud<pcl::PointXY> &out_2d,
 		pcl::PointCloud<pcl::PointXYZI> &out_3d,
 		unsigned int camera_width = 1024,
-		unsigned int camaer_height = 768
+		unsigned int camera_height = 768
 		)
 {
 	BOOST_FOREACH (const pcl::PointXYZI& pt, in.points)
@@ -20,10 +25,8 @@ project_2d(
 
 			cv::Point2f point_image = camera_model.project3dToPixel(cv::Point3d(pt.x, pt.y, pt.z));
 
-			if( ( point_image.x > 0
-					&& point_image.x < camera_width )
-					&& ( point_image.y > 0
-					&& point_image.y < camaer_height )
+			if( between<int>(0, point_image.x, camera_width )
+				&& between<int>( 0, point_image.y, camera_height )
 			)
 			{
 				// Point in image push to 2d and 3d point
@@ -34,9 +37,110 @@ project_2d(
 				out_3d.push_back(pt);
 			}
 		}
-
 	}
-
 }
 
+
+
+enum Field{
+	INTENSITY,
+	DEPTH
+};
+
+
+template <typename PointT>
+void
+project_2d(
+		const image_geometry::PinholeCameraModel &camera_model,
+		const pcl::PointCloud<PointT> &in,
+		cv::Mat &image,
+		Field field = DEPTH,
+		int point_size = 1,
+		float min_distance = 1
+		)
+{
+	BOOST_FOREACH (const PointT& pt, in.points)
+	{
+		if( pt.z > min_distance) { // min distance from camera 1m
+
+			cv::Point2f point_image = camera_model.project3dToPixel(cv::Point3d(pt.x, pt.y, pt.z));
+
+			if( between<int>(0, point_image.x, image.rows )
+				&& between<int>( 0, point_image.y, image.cols )
+			)
+			{
+				switch(field){
+					default:
+					case DEPTH:
+							cv::circle(image, point_image, point_size, cv::Scalar(pt.z), -1);
+						break;
+					case INTENSITY:
+							cv::circle(image, point_image, point_size, cv::Scalar(pt.intensity), -1);
+						break;
+				}
+			}
+		}
+	}
+}
+
+template <typename PointT>
+void
+project_2d(
+		const image_geometry::PinholeCameraModel &camera_model,
+		pcl::PointCloud<PointT> &in,
+		std::vector<std::vector<boost::shared_ptr<pcl::PointXYZI> > > &out,
+		int image_width,
+		int image_height)
+{
+		unsigned int hits = 0;
+		BOOST_FOREACH (pcl::PointXYZI& pt, in.points){
+			if( pt.z > 1) { // min distance from camera 1m
+
+				cv::Point2f point_image = camera_model.project3dToPixel(cv::Point3d(pt.x, pt.y, pt.z));
+
+				if( between<int>(0, point_image.x, image_width )
+					&& between<int>( 0, point_image.y, image_height )
+				)
+				{
+					// Point in image push to 2d and 3d point
+					out[point_image.x][point_image.y].reset(new pcl::PointXYZI(pt));
+					//printf("project_2d: point: z: %f \n", out[point_image.x][point_image.y]->z);
+
+					++hits;
+				}
+			}
+		}
+}
+
+
+template <typename PointT>
+void
+project_2d(
+		std::vector<std::vector<boost::shared_ptr<PointT> > > &in,
+		cv::Mat &out,
+		Field field = INTENSITY,
+		int point_size = 1
+		)
+{
+		for(int y = 0; y < in[0].size(); y++)
+		{
+			for(int x = 0; x < in.size(); x++)
+			{
+				cv::Point3i value;
+				if( in[x][y]){ /* found something */
+					switch(field){
+						default:
+						case DEPTH:
+								cv::circle(out, cv::Point2i(x,y), point_size, cv::Scalar(in[x][y]->z), -1);
+							break;
+						case INTENSITY:
+								cv::circle(out, cv::Point2i(x,y), point_size, cv::Scalar(in[x][y]->intensity), -1);
+							break;
+					}
+				}
+			}
+		}
+}
+
+}
 #endif
