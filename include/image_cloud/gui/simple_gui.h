@@ -34,46 +34,19 @@ enum Filter
 	HARRIS_3D = 3
 };
 
+struct Slider_data{
+	int max;
+	int val;
+};
+
 struct Config_data
 {
 	std::string path;
 	std::string image_file;
 	std::string pcl_file;
 	Filter filter;
+	Slider_data filter_selector;
 };
-
-struct Slider_data{
-	int filter_max;
-	int filter;
-};
-
-struct Slider_tf
-{
-	int val_max;
-	int translation_scale;
-	int rotation_scale;
-
-	int tx;
-	int ty;
-	int tz;
-
-	int roll;
-	int pitch;
-	int yaw;
-};
-
-
-struct Config_transfrom
-{
-	float tx;
-	float ty;
-	float tz;
-
-	float roll;
-	float pitch;
-	float yaw;
-};
-
 
 class Simple_gui {
 
@@ -95,19 +68,16 @@ public:
 	void create_gui_filter();
 
 	void update_values();
-	void update_tf();
 	void loop();
 	void init_filter_data();
+	void init_tf();
 
 	std::string window_name;
+	std::string window_name_transform;
 	std::string window_name_control;
 
+
 	Config_data data;
-	Config_transfrom tf_data;
-	Slider_tf tf_slider;
-	Slider_data data_slider;
-
-
 
 	cv::Mat image_file;
 	cv::Mat image_display;
@@ -115,6 +85,7 @@ public:
 
 	char filterNames[4][50];
 	std::vector<std::vector<Filter_value> >filter_data;
+	Filter_value tf_data[6];
 
 	image_geometry::PinholeCameraModel camera_model;
 	pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_file;

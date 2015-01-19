@@ -37,28 +37,6 @@ Simple_gui::~Simple_gui() {
 	// TODO Auto-generated destructor stub
 }
 
-void Simple_gui::init_filter_data() {
-	data_slider.filter_max = 3;
-	data_slider.filter = data.filter;
-	sprintf(filterNames[0], "intensity");
-	sprintf(filterNames[1], "depth");
-	sprintf(filterNames[2], "depth_intensity");
-	sprintf(filterNames[3], "harris");
-
-	filter_data.resize(4);
-	filter_data.at(INTENSITY).resize(0);
-
-	filter_data.at(DEPTH).resize(2);
-	filter_data.at(DEPTH).at(0).init("neighbors", 1, 30, false);
-	filter_data.at(DEPTH).at(1).init("epsilon", 50, 200, 1, 100);
-
-	filter_data.at(DEPTH_INTENSITY).resize(4);
-	filter_data.at(DEPTH_INTENSITY).at(0).init("depth", 30, 200, 1, 100 );
-	filter_data.at(DEPTH_INTENSITY).at(1).init("intensity", 50, 200, 1, 100);
-	filter_data.at(DEPTH_INTENSITY).at(2).init("neighbors", 1, 30, false);
-	filter_data.at(DEPTH_INTENSITY).at(3).init("direction_x?", 0, 1, false);
-}
-
 void
 Simple_gui::init(){
 	//load image
@@ -68,43 +46,61 @@ Simple_gui::init(){
 
 
 	window_name = "manual calibration";
-	window_name_control = window_name+" control";
+	window_name_transform = window_name+" transform";
+	window_name_control = window_name + " image control";
 
-	tf_slider.val_max = 100;
-	tf_slider.tx = tf_slider.val_max / 2;
-	tf_slider.ty = tf_slider.val_max / 2;
-	tf_slider.tz = tf_slider.val_max / 2;
-	tf_slider.yaw = tf_slider.val_max / 2;
-	tf_slider.roll = tf_slider.val_max / 2;
-	tf_slider.pitch = tf_slider.val_max / 2;
-	tf_slider.translation_scale = 5;
-	tf_slider.rotation_scale = 1;
+	data.filter = DEPTH;
 
-
-	data.filter = DEPTH_INTENSITY;
-
-
-	tf_data.tx = 0;
-	tf_data.ty = 0;
-	tf_data.tz = 0;
-	tf_data.yaw = 0;
-	tf_data.roll = 0;
-	tf_data.pitch = 0;
-
+	init_tf();
 	init_filter_data();
 
+
+	load_pcl();
+	load_image();
+	load_projection();
+
 	cv::namedWindow(window_name.c_str(), CV_GUI_EXPANDED);
+	cv::namedWindow(window_name_transform.c_str(), CV_GUI_EXPANDED);
 	cv::namedWindow(window_name_control.c_str(), CV_GUI_EXPANDED);
 	cv::namedWindow(filterNames[data.filter], CV_GUI_NORMAL);
 
 	create_gui();
 	create_gui_filter();
 
-	load_pcl();
-	load_image();
-	load_projection();
 	update_view();
 	loop();
+
+}
+
+void Simple_gui::init_filter_data() {
+	data.filter_selector.max = 3;
+	data.filter_selector.val = data.filter;
+	sprintf(filterNames[0], "intensity");
+	sprintf(filterNames[1], "depth");
+	sprintf(filterNames[2], "depth_intensity");
+	sprintf(filterNames[3], "harris");
+
+	filter_data.resize(4);
+	filter_data.at(INTENSITY);
+
+	filter_data.at(DEPTH).resize(2);
+	filter_data.at(DEPTH).at(0).init("neighbors", 2, 30, false);
+	filter_data.at(DEPTH).at(1).init("epsilon", 50, 200, 1, 100);
+
+	filter_data.at(DEPTH_INTENSITY).resize(4);
+	filter_data.at(DEPTH_INTENSITY).at(0).init("depth", 30, 200, 1, 100 );
+	filter_data.at(DEPTH_INTENSITY).at(1).init("intensity", 50, 200, 1, 100);
+	filter_data.at(DEPTH_INTENSITY).at(2).init("neighbors", 2, 30, false);
+	filter_data.at(DEPTH_INTENSITY).at(3).init("direction_x?", 0, 1, false);
+}
+
+void Simple_gui::init_tf(){
+	tf_data[0].init("tx", 		50, 100, 1, 10, true, true);
+	tf_data[1].init("ty", 		50, 100, 1, 10, true, true);
+	tf_data[2].init("tz", 		50, 100, 1, 10, true, true);
+	tf_data[3].init("roll", 	50, 100, 1, 10, true, true);
+	tf_data[4].init("pitch", 	50, 100, 1, 10, true, true);
+	tf_data[5].init("yaw", 		50, 100, 1, 10, true, true);
 
 }
 
@@ -149,46 +145,13 @@ Simple_gui::load_projection(){
 	camera_model.fromCameraInfo(info_msg);
 }
 
-void Simple_gui::update_tf() {
-	float value;
-	float scale = tf_slider.translation_scale;
-	float scale_rot = tf_slider.rotation_scale;
-	float max_half = tf_slider.val_max / 2;
-	value = (float) ((tf_slider.tx - max_half)) / (float) (tf_slider.val_max);
-	value = value * scale;
-	std::cout << "Tx: " << tf_data.tx << " -> " << value << std::endl;
-	tf_data.tx = value;
-	value = (float) ((tf_slider.ty - max_half)) / (float) (tf_slider.val_max);
-	value = value * scale;
-	std::cout << "Ty: " << tf_data.ty << " -> " << value << std::endl;
-	tf_data.ty = value;
-	value = (float) ((tf_slider.tz - max_half)) / (float) (tf_slider.val_max);
-	value = value * scale;
-	std::cout << "Tz: " << tf_data.tz << " -> " << value << std::endl;
-	tf_data.tz = value;
-	value = (float) ((tf_slider.roll - max_half)) / (float) (tf_slider.val_max);
-	value = value * scale_rot;
-	std::cout << "Roll: " << tf_data.roll << " -> " << value << std::endl;
-	tf_data.roll = value;
-	value = (float) ((tf_slider.pitch - max_half))
-			/ (float) (tf_slider.val_max);
-	value = value * scale_rot;
-	std::cout << "Pitch: " << tf_data.pitch << " -> " << value << std::endl;
-	tf_data.pitch = value;
-	value = (float) ((tf_slider.yaw - max_half)) / (float) (tf_slider.val_max);
-	value = value * scale_rot;
-	std::cout << "Yaw: " << tf_data.yaw << " -> " << value << std::endl;
-	tf_data.yaw = value;
-}
 
 void
 Simple_gui::update_values()
 {
-	update_tf();
-
-	if(data_slider.filter != data.filter){
+	if(data.filter_selector.val != data.filter){
 		cv::destroyWindow(filterNames[data.filter]);
-		data.filter = (Filter)data_slider.filter;
+		data.filter = (Filter)data.filter_selector.val;
 		create_gui_filter();
 	}
 }
@@ -213,7 +176,8 @@ Simple_gui::filter3d(){
 	pcl::PointCloud<pcl::PointXYZI> transformed = *cloud_file;
 
 	//Transform
-	transform_pointcloud<pcl::PointXYZI>(transformed, tf_data.tx, tf_data.ty, tf_data.tz, tf_data.roll, tf_data.pitch, tf_data.yaw);
+	transform_pointcloud<pcl::PointXYZI>(transformed, 	tf_data[0].get_value(), tf_data[1].get_value(), tf_data[2].get_value(),
+														tf_data[3].get_value(), tf_data[4].get_value(), tf_data[5].get_value());
 	pcl::PointCloud<pcl::PointXYZI> filtred;
 
 	switch (data.filter)
@@ -233,10 +197,8 @@ Simple_gui::filter3d(){
 				filter::filter_depth_intensity(map, filtred,
 						filter_data[data.filter][0].get_value(), // depth
 						filter_data[data.filter][1].get_value(), // intensity
-						filter_data[data.filter][2].get_value(),	// neighbors
+						filter_data[data.filter][2].get_value(), // neighbors
 						filter_data[data.filter][3].get_value()); // search direction_x?
-				//filter::filter_depth_intensity();
-				//std::vector<std::vector<PointT*> > vec;
 			}
 			break;
 		case HARRIS_3D:
@@ -256,18 +218,13 @@ void Simple_gui::create_gui_filter() {
 	cv::namedWindow(filterNames[data.filter], CV_GUI_NORMAL);
 
 	for(int i = 0; i < filter_data[data.filter].size(); ++i){
-		Filter_value* fv = &filter_data[data.filter][i];
-		cv::createTrackbar( fv->name, 				filterNames[data.filter], &fv->value, 		fv->max, &callback, this );
-		if(fv->is_float){
-			cv::createTrackbar( fv->name+" numerator", 	filterNames[data.filter], &fv->numerator, 	fv->max, &callback, this );
-			cv::createTrackbar( fv->name+" denominator", filterNames[data.filter],  &fv->denominator, 	fv->max, &callback, this );
-		}
+		filter_data[data.filter][i].create_slider(filterNames[data.filter], &callback, this);
 	}
 }
 
 void Simple_gui::recreate_config_gui(){
 	cv::destroyWindow(filterNames[data.filter]);
-	cv::destroyWindow(window_name_control.c_str());
+	cv::destroyWindow(window_name_transform.c_str());
 	create_gui_filter();
 	create_gui();
 }
@@ -275,29 +232,14 @@ void Simple_gui::recreate_config_gui(){
 void
 Simple_gui::create_gui(){
 	printf("gui\n");
-	 char TrackbarName[9][50];
-	 sprintf( TrackbarName[0], "Tx (val - %d) * scale cm", tf_slider.val_max/2 );
-	 sprintf( TrackbarName[1], "Ty (val - %d) * scale cm", tf_slider.val_max/2 );
-	 sprintf( TrackbarName[2], "Tz (val - %d) * scale cm", tf_slider.val_max/2 );
-	 sprintf( TrackbarName[3], "Roll val/%d", tf_slider.val_max );
-	 sprintf( TrackbarName[4], "Pich val/%d", tf_slider.val_max );
-	 sprintf( TrackbarName[5], "Yaw val/%d", tf_slider.val_max );
-	 sprintf( TrackbarName[6], "Filter");
-	 sprintf( TrackbarName[7], "T scale val/%d", tf_slider.val_max );
-	 sprintf( TrackbarName[8], "R scale val/%d", tf_slider.val_max );
+	tf_data[0].create_slider(window_name_transform, &callback, this);
+	tf_data[1].create_slider(window_name_transform, &callback, this);
+	tf_data[2].create_slider(window_name_transform, &callback, this);
+	tf_data[3].create_slider(window_name_transform, &callback, this);
+	tf_data[4].create_slider(window_name_transform, &callback, this);
+	tf_data[5].create_slider(window_name_transform, &callback, this);
 
-
-	 cv::createTrackbar( TrackbarName[7], window_name_control.c_str(), &tf_slider.translation_scale, tf_slider.val_max, &callback, this );
-	 cv::createTrackbar( TrackbarName[0], window_name_control.c_str(), &tf_slider.tx, 		tf_slider.val_max, &callback, this );
-	 cv::createTrackbar( TrackbarName[1], window_name_control.c_str(), &tf_slider.ty, 		tf_slider.val_max, &callback, this );
-	 cv::createTrackbar( TrackbarName[2], window_name_control.c_str(), &tf_slider.tz, 		tf_slider.val_max, &callback, this );
-
-	 cv::createTrackbar( TrackbarName[8], window_name_control.c_str(), &tf_slider.rotation_scale, 	tf_slider.val_max, &callback, this );
-	 cv::createTrackbar( TrackbarName[3], window_name_control.c_str(), &tf_slider.roll, 	tf_slider.val_max, &callback, this );
-	 cv::createTrackbar( TrackbarName[4], window_name_control.c_str(), &tf_slider.pitch, 	tf_slider.val_max, &callback, this );
-	 cv::createTrackbar( TrackbarName[5], window_name_control.c_str(), &tf_slider.yaw, 	tf_slider.val_max, &callback, this );
-
-	 cv::createTrackbar( TrackbarName[6], window_name_control.c_str(), &data_slider.filter, data_slider.filter_max, &callback, this );
+	cv::createTrackbar( "Filter", window_name_control, &data.filter_selector.val, data.filter_selector.max, &callback, this );
 }
 
 
