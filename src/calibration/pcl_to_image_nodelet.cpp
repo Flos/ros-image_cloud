@@ -264,10 +264,10 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
 				//extract_intensity_and_normals(camera_model, cloud.makeShared(), image_pcl, image_depth, config_.point_size, config_.normal_search_radius);
 
 				project2d::project_2d(camera_model, cloud, cloud2d, cloud3d_hit_image, image_pcl.image.rows, image_pcl.image.cols );
-				filter_depth_edges(cloud2d.makeShared(), cloud3d_hit_image.makeShared(), cloud3d_filtred, image_pcl );
+				filter_depth_edges(cloud2d, cloud3d_hit_image, cloud3d_filtred, image_pcl );
 				break;
 			case 3: // depth discontinuity
-				extract_depth_discontinuity(camera_model, cloud.makeShared(), image_pcl, config_.point_size);
+				extract_depth_discontinuity(camera_model, cloud, image_pcl, config_.point_size);
 				break;
 		}
 	}catch(std::exception &e){
