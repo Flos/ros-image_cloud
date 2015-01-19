@@ -21,6 +21,7 @@
 // Own
 #include <gui/filter_value.h>
 #include <gui/config_parser.h>
+#include <gui/filelist.h>
 
 #ifndef SRC_CALIBRATION_SIMPLE_GUI_H_
 #define SRC_CALIBRATION_SIMPLE_GUI_H_
@@ -40,6 +41,15 @@ struct Slider_data{
 	int val;
 };
 
+
+
+struct Set_selector{
+	Filelist images;
+	Filelist pointclouds;
+	Slider_data pos;
+	int pos_loaded;
+};
+
 struct Config_data
 {
 	std::string path;
@@ -47,6 +57,7 @@ struct Config_data
 	std::string pcl_file;
 	Filter filter;
 	Slider_data filter_selector;
+	Set_selector set;
 };
 
 class Simple_gui {
@@ -83,6 +94,8 @@ public:
 	cv::Mat image_file;
 	cv::Mat image_display;
 	boost::mutex filter_lock;
+
+	Config_parser parser;
 
 	char filterNames[4][50];
 	std::vector<std::vector<Filter_value> >filter_data;

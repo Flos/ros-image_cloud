@@ -43,6 +43,16 @@ Simple_gui::init(){
 	data.image_file = data.path + "synced_pcd_image_000067.jpg";
 	data.pcl_file	= data.path + "synced_pcd_image_1414534811121791.pcd";
 
+	data.set.images.load("/home/fnolden/Downloads/2011_09_26_drive_0005_sync/image_00/files.txt");
+	data.set.images.path = "/home/fnolden/Downloads/2011_09_26_drive_0005_sync/image_00/data/";
+	data.set.pointclouds.load("/home/fnolden/Downloads/2011_09_26_drive_0005_sync/velodyne_points/files.txt");
+	data.set.pointclouds.path = "/home/fnolden/Downloads/2011_09_26_drive_0005_sync/velodyne_points/data/";
+	data.set.pos_loaded = 0;
+
+	assert (data.set.pointclouds.file_names.size() == data.set.images.file_names.size());
+	data.set.pos.max = data.set.pointclouds.file_names.size();
+	data.set.pos.val = data.set.pos_loaded;
+
 
 	window_name = "manual calibration";
 	window_name_transform = window_name+" transform";
@@ -100,26 +110,29 @@ void Simple_gui::init_tf(){
 	tf_data[3].init("roll", 	50, 100, 1, 10, true, true);
 	tf_data[4].init("pitch", 	50, 100, 1, 10, true, true);
 	tf_data[5].init("yaw", 		50, 100, 1, 10, true, true);
-
 }
 
 bool
 Simple_gui::load_pcl()
 {
+	std::string filename;
+	data.set.pointclouds.get_fullname(filename, data.set.pos.val);
 	//load pcl
-	 cloud_file.reset(new pcl::PointCloud<pcl::PointXYZI>);
+	cloud_file.reset(new pcl::PointCloud<pcl::PointXYZI>);
 
-	  if (pcl::io::loadPCDFile<pcl::PointXYZI> (data.pcl_file.c_str(), *cloud_file) == -1) //* load the file
-	  {
+	if (pcl::io::loadPCDFile<pcl::PointXYZI> (data.pcl_file.c_str(), *cloud_file) == -1) //* load the file
+	{
 		PCL_ERROR ("Couldn't read file %s \n", data.pcl_file.c_str() );
 		return false;
-	  }
-	  return true;
+	}
+	return true;
 }
 
 void
 Simple_gui::load_image(){
-	image_file = cv::imread(data.image_file.c_str());
+	std::string filename;
+	data.set.images.get_fullname(filename, data.set.pos.val);
+	image_file = cv::imread(filename);
 	image_file.copyTo(image_display);
 }
 
@@ -152,6 +165,12 @@ Simple_gui::update_values()
 		cv::destroyWindow(filterNames[data.filter]);
 		data.filter = (Filter)data.filter_selector.val;
 		create_gui_filter();
+	}
+
+	if(data.set.pos.val != data.set.pos_loaded){
+		load_image();
+		load_pcl();
+		data.set.pos_loaded = data.set.pos.val;
 	}
 }
 
@@ -239,6 +258,7 @@ Simple_gui::create_gui(){
 	tf_data[5].create_slider(window_name_transform, &callback, this);
 
 	cv::createTrackbar( "Filter", window_name_control, &data.filter_selector.val, data.filter_selector.max, &callback, this );
+	cv::createTrackbar( "seq", window_name_control, &data.set.pos.val, data.set.pos.max, &callback, this );
 }
 
 
