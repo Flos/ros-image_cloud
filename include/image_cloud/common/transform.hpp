@@ -48,5 +48,19 @@ void inline transform_pointcloud(pcl::PointCloud<PointT> &cloud, float tx, float
    pcl_ros::transformPointCloud(cloud, cloud, tf);
 }
 
+template <typename PointT>
+void inline transform_pointcloud(pcl::PointCloud<PointT> &cloud, tf::Transform tf){
+   pcl_ros::transformPointCloud(cloud, cloud, tf);
+}
+
+template <typename PointT>
+void inline create_transform(tf::Transform &tf, float tx, float ty, float tz, float roll, float pitch, float yaw){
+   tf::Quaternion q;
+   q.setRPY(roll, pitch, yaw);
+
+   tf.setOrigin(tf::Vector3( tx, ty, tz));
+   tf.setRotation(q);
+}
+
 }
 #endif /* MY_TRANSFORM_H_ */
