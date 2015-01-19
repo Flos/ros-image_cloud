@@ -30,7 +30,7 @@ Filter_value::~Filter_value() {
 void
 Filter_value::init(std::string name, int value, int max, bool negativ){
 	this->name = name;
-	this->value = 0;
+	this->value = value;
 	this->max = max;
 	this->negativ = negativ;
 	this->is_float = false;
@@ -53,6 +53,7 @@ bool
 Filter_value::is_initalised(){
 	return initialised;
 }
+
 
 float
 Filter_value::get_value(){
@@ -81,6 +82,14 @@ Filter_value::get_value(){
 	ss << " = " << calculated_val;
 	printf("%s: %f\n%s \n", name.c_str(), calculated_val, ss.str().c_str());
 	return calculated_val;
+}
+
+void Filter_value::create_slider(std::string window_name, cv::TrackbarCallback callback, void* userdata){
+	cv::createTrackbar( name, 	 window_name, &value, max, callback, userdata );
+	if(is_float){
+		cv::createTrackbar( name+" numerator",   window_name, &numerator, 		max, callback, userdata );
+		cv::createTrackbar( name+" denominator", window_name, &denominator, 	max, callback, userdata );
+	}
 }
 
 } /* namespace image_cloud */
