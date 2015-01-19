@@ -20,6 +20,7 @@
 
 // Own
 #include <gui/filter_value.h>
+#include <gui/config_parser.h>
 
 #ifndef SRC_CALIBRATION_SIMPLE_GUI_H_
 #define SRC_CALIBRATION_SIMPLE_GUI_H_

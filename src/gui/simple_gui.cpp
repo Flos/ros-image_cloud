@@ -30,7 +30,6 @@ void callback_scale( int pos, void* data)
 
 Simple_gui::Simple_gui() {
 	// TODO Auto-generated constructor stub
-
 }
 
 Simple_gui::~Simple_gui() {

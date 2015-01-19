@@ -134,6 +134,7 @@ add_executable(gui
   src/gui/node.cpp
   src/gui/simple_gui.cpp
   src/gui/filter_value.cpp
+  src/gui/config_parser.cpp
 )
 
 target_link_libraries(gui
