@@ -107,6 +107,11 @@ filter_depth_discontinuity(
 	tree_n->setInputCloud(in.makeShared());
 	tree_n->setEpsilon(epsilon);
 
+	if(neighbohrs_to_search < 1)
+	{
+		neighbohrs_to_search = 1;
+	}
+
 	BOOST_FOREACH (const pcl::PointXYZI& pt, in.points){
 		std::vector<int> k_indices;
 		std::vector<float> square_distance;
