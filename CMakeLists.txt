@@ -136,6 +136,7 @@ add_executable(gui
   src/gui/filter_value.cpp
   src/gui/config_parser.cpp
   src/gui/kitti_camera.cpp
+  src/gui/filelist.cpp
 )
 
 target_link_libraries(gui
