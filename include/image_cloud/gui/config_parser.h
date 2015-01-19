@@ -43,7 +43,6 @@ public:
 
 	bool load_calib_cam_to_cam(std::string filename, float &corner_distance, std::vector<kitti::camera> &cams);
 	bool write_calib_cam_to_cam(std::string filename, float corner_distance, std::vector<kitti::camera> &cams);
-	void test();
 
 	const std::string get_current_date_time();
 
