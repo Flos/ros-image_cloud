@@ -4,6 +4,7 @@
 #include <common/pcl_features.hpp>
 #include <common/project2d.hpp>
 #include <common/depth_filter.hpp>
+#include <common/filter_depth_intensity.hpp>
 
 // watch the capitalization carefully
 PLUGINLIB_DECLARE_CLASS(image_cloud, Pcl_to_image_nodelet, image_cloud::Pcl_to_image_nodelet, nodelet::Nodelet)
@@ -102,7 +103,8 @@ Pcl_to_image_nodelet::init_pub() {
 	//Filter messages
 	pub_ = it_->advertise(config_.publish_topic.c_str(), 1);
 	pub_depth_ = it_->advertise(config_.publish_topic + "_depth", 1);
-	pub_cloud_ = nh.advertise<PointCloud>(config_.publish_topic_pcl.c_str(),1);
+	pub_cloud_ = nh.advertise<PointCloud>(config_.publish_topic_pcl +"_transformed",1);
+	pub_cloud_filtred_ = nh.advertise<PointCloud>(config_.publish_topic_pcl.c_str(),1);
 	//pub_range_ = it_->advertise(config_.subscribe_topic_pcl + "_depth", 1);
 }
 
@@ -236,6 +238,7 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
 	pcl::PointCloud<pcl::PointXYZI> cloud3d_hit_image;
 	pcl::PointCloud<pcl::PointXYZI> cloud3d_filtred;
 	cloud3d_filtred.header = cloud.header;
+	cloud3d_hit_image.header = cloud.header;
 	try{
 		switch(config_.feature){
 			default:
@@ -243,15 +246,25 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
 				extract_intensity(camera_model, cloud.makeShared(), image_pcl, image_depth, config_.point_size);
 				break;
 			case 1: // Normals
-				//extract_normals(camera_model, cloud.makeShared(), image_pcl, image_depth, config_.point_size, config_.normal_search_radius);
-				project_2d(camera_model, cloud, cloud2d, cloud3d_hit_image, image_pcl.image.rows, image_pcl.image.cols );
-				filter_depth_edges_easy(cloud2d.makeShared(), cloud3d_hit_image.makeShared(), image_pcl);
+				{
+					//	extract_normals(camera_model, cloud.makeShared(), image_pcl, image_depth, config_.point_size, config_.normal_search_radius);
+
+					std::vector<std::vector<boost::shared_ptr<pcl::PointXYZI> > > map(image.rows, std::vector<boost::shared_ptr<pcl::PointXYZI> > (image.cols));
+
+					project2d::project_2d(camera_model, cloud, map, image.rows, image.cols);
+					filter::filter_depth_intensity(map, cloud3d_filtred,
+							0.3, // depth
+							50, // intensity
+							2,	// neighbors
+							false); // search direction_x?
+					project2d::project_2d(map, image_pcl.image, project2d::INTENSITY, config_.point_size);
+				}
 				break;
 			case 2: // Intesity + Normals
 				//extract_intensity_and_normals(camera_model, cloud.makeShared(), image_pcl, image_depth, config_.point_size, config_.normal_search_radius);
 
-				project_2d(camera_model, cloud, cloud2d, cloud3d_hit_image, image_pcl.image.rows, image_pcl.image.cols );
-				filter_depth_edges(cloud2d, cloud3d_hit_image, cloud3d_filtred, image_pcl );
+				project2d::project_2d(camera_model, cloud, cloud2d, cloud3d_hit_image, image_pcl.image.rows, image_pcl.image.cols );
+				filter_depth_edges(cloud2d.makeShared(), cloud3d_hit_image.makeShared(), cloud3d_filtred, image_pcl );
 				break;
 			case 3: // depth discontinuity
 				extract_depth_discontinuity(camera_model, cloud.makeShared(), image_pcl, config_.point_size);
@@ -287,7 +300,17 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
    msg_cloud3d_filtred.height = 1;
    msg_cloud3d_filtred.width = cloud3d_filtred.points.size();
 
-   pub_cloud_.publish(msg_cloud3d_filtred);
+   pub_cloud_filtred_.publish(msg_cloud3d_filtred);
+
+
+   PointCloud msg_cloud3d_transformed;
+
+   pcl::toROSMsg(cloud3d_hit_image, msg_cloud3d_transformed);
+   msg_cloud3d_transformed.header.stamp = input_msg_image_info->header.stamp;
+   msg_cloud3d_transformed.height = 1;
+   msg_cloud3d_transformed.width = cloud3d_hit_image.points.size();
+
+   pub_cloud_.publish(msg_cloud3d_transformed);
 
    NODELET_DEBUG("callback end");
    config_lock_.unlock();

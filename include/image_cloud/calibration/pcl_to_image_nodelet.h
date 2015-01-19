@@ -81,6 +81,7 @@ private:
 	image_transport::Publisher pub_;
 	image_transport::Publisher pub_depth_;
 	ros::Publisher pub_cloud_;
+	ros::Publisher pub_cloud_filtred_;
 	//image_transport::Publisher pub_range_;
 
 	std::string node_name_;
