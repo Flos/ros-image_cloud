@@ -23,6 +23,7 @@
 #include <gui/kitti/camera.h>
 #include <gui/kitti/tf.h>
 #include <gui/string_list.h>
+#include <gui/kitti/dataset.h>
 
 #ifndef SRC_CALIBRATION_SIMPLE_GUI_H_
 #define SRC_CALIBRATION_SIMPLE_GUI_H_

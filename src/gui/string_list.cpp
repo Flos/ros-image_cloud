@@ -28,27 +28,27 @@ String_list::get_fullname(std::string &filepath, int index){
 }
 
 bool
-String_list::load(std::string filename){
+String_list::load(std::istream &stream){
 	std::string line;
-	std::ifstream myfile(filename.c_str());
-
-	std::cout << "Loading filenames from file:" << filename << "\n";
-
-	if (myfile.is_open()){
-		while ( std::getline (myfile, line) )
-		{
-			list.push_back(line);
-		}
-		myfile.close();
-	}else{
-		std::cout << "Unable to open file: " << filename.c_str() << "\n";
-		return false;
-	}
-	if(list.empty()){
-		std::cout << "File: "<< filename.c_str() <<" is empty \n";
-		return false;
+	while ( std::getline (stream, line) )
+	{
+		list.push_back(line);
 	}
 	return true;
+}
+
+std::string
+String_list::to_string(){
+	std::stringstream ss;
+	for(int i = 0; i < list.size(); ++i){
+		ss << list.at(i) << new_line;
+	}
+
+	if(list.empty()){
+		std::cout << "File is empty\n";
+		return false;
+	}
+	return ss.str();
 }
 
 } /* namespace image_cloud */

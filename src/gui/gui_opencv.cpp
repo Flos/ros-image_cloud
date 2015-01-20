@@ -44,14 +44,17 @@ Gui_opencv::init(){
 	data.image_file = data.path + "synced_pcd_image_000067.jpg";
 	data.pcl_file	= data.path + "synced_pcd_image_1414534811121791.pcd";
 
-	data.set.images.load("/home/fnolden/Downloads/2011_09_26_drive_0005_sync/image_00/files.txt");
+
+	kitti::dataset datas("/home/fnolden/Downloads/2011_09_26_drive_0005_sync/config.txt");
+
+	data.set.images.load_file("/home/fnolden/Downloads/2011_09_26_drive_0005_sync/image_00/files.txt");
 	data.set.images.path = "/home/fnolden/Downloads/2011_09_26_drive_0005_sync/image_00/data/";
-	data.set.pointclouds.load("/home/fnolden/Downloads/2011_09_26_drive_0005_sync/velodyne_points/files.txt");
+	data.set.pointclouds.load_file("/home/fnolden/Downloads/2011_09_26_drive_0005_sync/velodyne_points/files.txt");
 	data.set.pointclouds.path = "/home/fnolden/Downloads/2011_09_26_drive_0005_sync/velodyne_points/data/";
 	data.set.pos_loaded = 0;
 
-	assert (data.set.pointclouds.file_names.size() == data.set.images.file_names.size());
-	data.set.pos.max = data.set.pointclouds.file_names.size();
+	assert (data.set.pointclouds.list.size() == data.set.images.list.size());
+	data.set.pos.max = data.set.pointclouds.list.size();
 	data.set.pos.val = data.set.pos_loaded;
 
 
@@ -73,6 +76,7 @@ Gui_opencv::init(){
 	cv::namedWindow(window_name_transform.c_str(), CV_GUI_EXPANDED);
 	cv::namedWindow(window_name_control.c_str(), CV_GUI_EXPANDED);
 	cv::namedWindow(filterNames[data.filter], CV_GUI_NORMAL);
+
 
 	create_gui();
 	create_gui_filter();
@@ -154,6 +158,15 @@ Gui_opencv::load_projection(){
 	info_msg.P[5] = 507.6224208000001;
 	info_msg.P[6] = 547.1245216000002;
 	info_msg.P[10] = 1;
+
+	kitti::Camera cam;
+
+	cam.S[0] = 1;
+	cam.S[1] = 0;
+	cam.save_file("ldybug_camera4_init.txt");
+	cam.set_camera_info(info_msg);
+	cam.camera_nr = 4;
+	cam.save_file("ldybug_camera4.txt");
 
 	camera_model.fromCameraInfo(info_msg);
 }
