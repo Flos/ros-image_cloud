@@ -5,32 +5,28 @@
  *      Author: fnolden
  */
 
-#include "gui/kitti_camera.h"
+#include "gui/kitti/camera.h"
 
 namespace image_cloud {
 
+namespace kitti{
 
-/**
- * a[i] = b[i]
- */
-void set_array(double *a, float*b, int size){
-	for(int i=0; i< size; ++i){
-		a[i] = b[i];
-	}
+Camera::Camera()
+{
+	camera_nr = 0;
 }
 
-void set_array(float *a, double*b, int size){
-	for(int i=0; i< size; ++i){
-		a[i] = b[i];
-	}
+Camera::Camera(int camera_nr)
+{
+	this->camera_nr = camera_nr;
 }
 
 std::string
-kitti::camera::save(int camer_nr){
+Camera::to_string(){
 	std::stringstream ss;
 
 	char buffer[3];
-	sprintf(buffer,"%02d:", camer_nr);
+	sprintf(buffer,"%02d:", camera_nr);
 
 	ss.setf(std::ios::scientific);
 	ss << "S_" <<  buffer; serialize_array(ss, S, 2);
@@ -42,11 +38,10 @@ kitti::camera::save(int camer_nr){
 	ss << "R_rect_" <<  buffer; serialize_array(ss, R_rect, 9);
 	ss << "P_rect_" <<  buffer; serialize_array(ss, P_rect, 12);
 	return ss.str();
-
 }
 
 void
-kitti::camera::get_camera_info(sensor_msgs::CameraInfo &info_msg, bool rect){
+Camera::get_camera_info(sensor_msgs::CameraInfo &info_msg, bool rect){
 	info_msg.D[0] = D[0];
 	info_msg.D[1] = D[1];
 	info_msg.D[2] = D[2];
@@ -101,7 +96,7 @@ kitti::camera::get_camera_info(sensor_msgs::CameraInfo &info_msg, bool rect){
 }
 
 void
-kitti::camera::set_camera_info(sensor_msgs::CameraInfo info_msg, bool rect){
+Camera::set_camera_info(sensor_msgs::CameraInfo info_msg, bool rect){
 	D[0] = info_msg.D[0];
 	D[1] = info_msg.D[1];
 	D[2] = info_msg.D[2];
@@ -140,75 +135,59 @@ kitti::camera::set_camera_info(sensor_msgs::CameraInfo info_msg, bool rect){
 	R[6] = info_msg.R[6];
 	R[7] = info_msg.R[7];
 	R[8] = info_msg.R[8];
-
-}
-
-void
-kitti::camera::serialize_array(std::stringstream &ss, float* array, int array_size){
-	for(int i = 0; i < array_size; ++i){
-			ss << " "<< array[i];
-	}
-	ss << "\n";
-}
-
-void
-kitti::camera::deserialize_array(std::istringstream &in, float* array, int array_size){
-	for(int i = 0; i <  array_size; ++i){
-			in >> array[i];
-	}
 }
 
 bool
-kitti::camera::load(std::ifstream &file){
+Camera::load(std::istream& stream){
 	std::string line;
 	std::istringstream in;
 	std::string type;
 
 	try{
 		// S 2
-		if(std::getline (file, line) <= 0) return false;
+		if(std::getline (stream, line) <= 0) return false;
 		in.str(line);
 		in >> type;
 		deserialize_array(in, S, 2);
 
 		// K 9
-		std::getline (file, line);
+		std::getline (stream, line);
 		in.clear(); in.str(line);
 		in >> type;
 		deserialize_array(in, K, 9);
 
 		// D
-		std::getline (file, line);
+		std::getline (stream, line);
 		in.clear(); in.str(line);
 		in >> type;
 		deserialize_array(in, D, 5);
 
 		// R
-		std::getline (file, line);
+		std::getline (stream, line);
 		in.clear(); in.str(line);
 		in >> type;
 		deserialize_array(in, R, 9);
 
 		// T
-		std::getline (file, line);
+		std::getline (stream, line);
 		in.clear(); in.str(line);
 		in >> type;
 		deserialize_array(in, T, 3);
 
 		// S_rect
-		std::getline (file, line);
+		std::getline (stream, line);
 		in.clear(); in.str(line);
 		in >> type;
 		deserialize_array(in, S_rect, 2);
 
 		// R_rect
-		std::getline (file, line);
+		std::getline (stream, line);
 		in.clear(); in.str(line);
 		in >> type;
 		deserialize_array(in, R_rect, 9);
 
 		// P_rect
-		std::getline (file, line);
+		std::getline (stream, line);
 		in.clear(); in.str(line);
 		in >> type;
 		deserialize_array(in, P_rect, 12);
@@ -220,31 +199,6 @@ kitti::camera::load(std::ifstream &file){
 	return true;
 }
 
-void
-kitti::velo_to_cam::get_transform(tf::Transform &tf){
-	tf.setBasis(tf::Matrix3x3(R[0],R[1],R[2],
-								R[3],R[4],R[5],
-								R[6],R[7],R[8]));
-
-	tf.setOrigin(tf::Vector3(T[0], T[1], T[2]));
-}
-
-void
-kitti::velo_to_cam::set_transform(tf::Transform tf){
-	tf::Matrix3x3 mat = tf.getBasis();
-	R[0] = mat[0][0];
-	R[1] = mat[0][1];
-	R[2] = mat[0][2];
-	R[3] = mat[1][0];
-	R[4] = mat[1][1];
-	R[5] = mat[1][2];
-	R[6] = mat[2][0];
-	R[7] = mat[2][1];
-	R[8] = mat[2][2];
-
-	T[0] = tf.getOrigin()[0];
-	T[1] = tf.getOrigin()[1];
-	T[2] = tf.getOrigin()[2];
 }
 
 } /* namespace image_cloud */

@@ -19,15 +19,19 @@
 //ROS
 #include <image_geometry/pinhole_camera_model.h>
 
-#ifndef INCLUDE_IMAGE_CLOUD_GUI_KITTI_CAMERA_H_
-#define INCLUDE_IMAGE_CLOUD_GUI_KITTI_CAMERA_H_
+//own
+#include <gui/kitti/serializable.h>
+
+#ifndef INCLUDE_KITTI_CAMERA_H_
+#define INCLUDE_KITTI_CAMERA_H_
 
 namespace image_cloud {
 
 namespace kitti{
 
-class camera{
+class Camera : public Serializable{
 public:
+	int camera_nr;
 	float S[2];
 	float K[9];
 	float D[5];
@@ -36,27 +40,17 @@ public:
 	float S_rect[2];
 	float R_rect[9];
 	float P_rect[12];
-	std::string save(int camera_nr);
-	bool load(std::ifstream &file);
 	void get_camera_info(sensor_msgs::CameraInfo &info_msg, bool rect = true);
 	void set_camera_info(sensor_msgs::CameraInfo info_msg, bool rect = true);
-private:
-	void serialize_array(std::stringstream &ss, float*, int array_size);
-	void deserialize_array(std::istringstream &in, float*, int array_size);
-};
 
-class velo_to_cam{
-public:
-	float R[9];
-	float T[3];
-	float delta_f[2];
-	float delta_c[2];
-	void get_transform(tf::Transform &tf);
-	void set_transform(tf::Transform tf);
+	Camera();
+	Camera(int camera_nr);
+	std::string to_string();
+	bool load( std::istream& stream);
 };
 
 }
 
 } /* namespace image_cloud */
 
-#endif /* INCLUDE_IMAGE_CLOUD_GUI_KITTI_CAMERA_H_ */
+#endif /* INCLUDE_KITTI_CAMERA_H_ */
