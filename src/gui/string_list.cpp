@@ -20,11 +20,11 @@ String_list::~String_list() {
 
 void
 String_list::get_fullname(std::string &filepath, int index){
-	if(index > file_names.size()){
-		std::cout << "Index: " << index << " out of bounds, Max: " << file_names.size() << "\n";
+	if(index > list.size()){
+		std::cout << "Index: " << index << " out of bounds, Max: " << list.size() << "\n";
 		return;
 	}
-	filepath = path + file_names.at(index);
+	filepath = path + list.at(index);
 }
 
 bool
@@ -37,14 +37,14 @@ String_list::load(std::string filename){
 	if (myfile.is_open()){
 		while ( std::getline (myfile, line) )
 		{
-			file_names.push_back(line);
+			list.push_back(line);
 		}
 		myfile.close();
 	}else{
 		std::cout << "Unable to open file: " << filename.c_str() << "\n";
 		return false;
 	}
-	if(file_names.empty()){
+	if(list.empty()){
 		std::cout << "File: "<< filename.c_str() <<" is empty \n";
 		return false;
 	}

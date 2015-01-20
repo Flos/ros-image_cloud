@@ -23,7 +23,7 @@ public:
 	String_list();
 	virtual ~String_list();
 	std::string path;
-	std::vector<std::string> file_names;
+	std::vector<std::string> list;
 	void get_fullname(std::string &filepath, int index);
 	bool load(std::string filename);
 };
