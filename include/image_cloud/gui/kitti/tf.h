@@ -30,6 +30,7 @@ namespace kitti{
 
 class Tf : public Serializable {
 public:
+	Tf();
 	float R[9];
 	float T[3];
 	float delta_f[2];

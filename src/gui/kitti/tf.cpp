@@ -11,6 +11,13 @@ namespace image_cloud {
 
 namespace kitti {
 
+Tf::Tf(){
+	set_zero(R, 9);
+	set_zero(T, 3);
+	set_zero(delta_f, 2);
+	set_zero(delta_c, 2);
+}
+
 void
 Tf::get_transform(tf::Transform &tf){
 	tf.setBasis(tf::Matrix3x3(R[0],R[1],R[2],
