@@ -20,7 +20,8 @@
 
 // Own
 #include <gui/filter_value.h>
-#include <gui/config_parser.h>
+#include <gui/kitti/camera.h>
+#include <gui/kitti/tf.h>
 #include <gui/filelist.h>
 
 #ifndef SRC_CALIBRATION_SIMPLE_GUI_H_
@@ -94,8 +95,6 @@ public:
 	cv::Mat image_file;
 	cv::Mat image_display;
 	boost::mutex filter_lock;
-
-	Config_parser parser;
 
 	char filterNames[4][50];
 	std::vector<std::vector<Filter_value> >filter_data;
