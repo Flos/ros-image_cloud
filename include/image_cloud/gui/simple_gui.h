@@ -22,7 +22,7 @@
 #include <gui/filter_value.h>
 #include <gui/kitti/camera.h>
 #include <gui/kitti/tf.h>
-#include <gui/filelist.h>
+#include <gui/string_list.h>
 
 #ifndef SRC_CALIBRATION_SIMPLE_GUI_H_
 #define SRC_CALIBRATION_SIMPLE_GUI_H_
@@ -45,8 +45,8 @@ struct Slider_data{
 
 
 struct Set_selector{
-	Filelist images;
-	Filelist pointclouds;
+	String_list images;
+	String_list pointclouds;
 	Slider_data pos;
 	int pos_loaded;
 };

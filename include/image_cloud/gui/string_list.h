@@ -18,10 +18,10 @@
 
 namespace image_cloud {
 
-class Filelist {
+class String_list {
 public:
-	Filelist();
-	virtual ~Filelist();
+	String_list();
+	virtual ~String_list();
 	std::string path;
 	std::vector<std::string> file_names;
 	void get_fullname(std::string &filepath, int index);

@@ -137,7 +137,7 @@ add_executable(gui
   src/gui/kitti/serializable.cpp
   src/gui/kitti/camera.cpp
   src/gui/kitti/tf.cpp
-  src/gui/filelist.cpp
+  src/gui/string_list.cpp
 )
 
 target_link_libraries(gui

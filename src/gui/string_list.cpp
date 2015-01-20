@@ -5,21 +5,21 @@
  *      Author: fnolden
  */
 
-#include "gui/filelist.h"
+#include "gui/string_list.h"
 
 namespace image_cloud {
 
-Filelist::Filelist() {
+String_list::String_list() {
 	// TODO Auto-generated constructor stub
 
 }
 
-Filelist::~Filelist() {
+String_list::~String_list() {
 	// TODO Auto-generated destructor stub
 }
 
 void
-Filelist::get_fullname(std::string &filepath, int index){
+String_list::get_fullname(std::string &filepath, int index){
 	if(index > file_names.size()){
 		std::cout << "Index: " << index << " out of bounds, Max: " << file_names.size() << "\n";
 		return;
@@ -28,7 +28,7 @@ Filelist::get_fullname(std::string &filepath, int index){
 }
 
 bool
-Filelist::load(std::string filename){
+String_list::load(std::string filename){
 	std::string line;
 	std::ifstream myfile(filename.c_str());
 
