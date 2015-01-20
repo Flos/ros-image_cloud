@@ -134,7 +134,6 @@ add_executable(gui
   src/gui/node.cpp
   src/gui/simple_gui.cpp
   src/gui/filter_value.cpp
-  src/gui/config_parser.cpp
   src/gui/kitti/serializable.cpp
   src/gui/kitti/camera.cpp
   src/gui/kitti/tf.cpp
