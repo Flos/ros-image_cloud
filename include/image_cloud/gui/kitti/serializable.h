@@ -43,8 +43,15 @@ protected:
 	void serialize_array(std::ostream &stream, float*, int array_size);
 	void deserialize_array( std::istream &stream, float*, int array_size);
 
-	template <class T1, class T2>
-	void set_array(T1* a, T2* b, int size);
+	void set_array(float* a, float* b, int size);
+	void set_array(double* a, float* b, int size);
+	void set_array(float* a, double* b, int size);
+
+	void set_zero(float* a, int size);
+	void set_zero(double* a, int size);
+
+
+
 
 	std::string def;
 	std::string limiter;

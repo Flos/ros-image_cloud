@@ -24,11 +24,36 @@ Serializable::~Serializable(){
 /**
  * a[i] = b[i]
  */
-template <class T1, class T2>
 void
-Serializable::set_array(T1* a, T2* b, int size){
+Serializable::set_array(float* a, float* b, int size){
 	for(int i=0; i< size; ++i){
 		a[i] = b[i];
+	}
+}
+void
+Serializable::set_array(float* a, double* b, int size){
+	for(int i=0; i< size; ++i){
+		a[i] = b[i];
+	}
+}
+void
+Serializable::set_array(double* a, float* b, int size){
+	for(int i=0; i< size; ++i){
+		a[i] = b[i];
+	}
+}
+
+void
+Serializable::set_zero(float* a, int size){
+	for(int i=0; i< size; ++i){
+		a[i] = 0.0;
+	}
+}
+
+void
+Serializable::set_zero(double* a, int size){
+	for(int i=0; i< size; ++i){
+		a[i] = 0.0;
 	}
 }
 
