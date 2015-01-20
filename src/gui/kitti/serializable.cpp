@@ -69,15 +69,17 @@ Serializable::save(std::ostream &stream){
 bool
 Serializable::save_file( std::string filename){
 	std::ofstream myfile(filename.c_str());
+
 	if (myfile.is_open()) {
 
 		save(myfile);
 
 		myfile.close();
 	} else{
-		std::cout << "Unable to open file" <<def << limiter << filename << new_line;
+		std::cout << "Unable to open file" << def << limiter << filename << new_line;
 		return false;
 	}
+	std::cout << "Created file" << def << limiter << filename << new_line;
 	return true;
 }
 

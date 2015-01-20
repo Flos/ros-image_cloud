@@ -30,12 +30,11 @@ public:
 	Serializable();
 	virtual ~Serializable();
 
-	void save( std::ostream &stream);
-	bool save_file( std::string filename);
-	bool load_file( std::string filename);
-	bool bla(std::string bla);
+	virtual void save( std::ostream &stream);
+	virtual bool save_file( std::string filename);
+	virtual bool load_file( std::string filename);
 
-	const std::string get_current_date_time();
+	virtual const std::string get_current_date_time();
 
 	virtual std::string to_string() = 0;
 	virtual bool load( std::istream &stream) = 0;
