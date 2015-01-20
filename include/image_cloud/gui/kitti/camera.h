@@ -32,6 +32,8 @@ namespace kitti{
 
 class Camera : public Serializable{
 public:
+	std::string name;
+	std::string id;
 	int camera_nr;
 	float S[2]; // original image size
 	float K[9]; // calibration matrices (unrectified)
@@ -46,8 +48,9 @@ public:
 	void get_camera_info(sensor_msgs::CameraInfo &info_msg);
 	void set_camera_info(sensor_msgs::CameraInfo info_msg);
 
-	Camera();
-	Camera(int camera_nr);
+	Camera(int camera_nr = 0, std::string name = "camera");
+	void set_camera_nr(int camera);
+
 	std::string to_string();
 	bool load( std::istream& stream);
 };

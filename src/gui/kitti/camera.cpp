@@ -11,9 +11,11 @@ namespace image_cloud {
 
 namespace kitti{
 
-Camera::Camera()
+Camera::Camera(int camera_nr, std::string name)
 {
-	camera_nr = 0;
+	this->camera_nr = camera_nr;
+	this->name = name;
+
 	set_zero(S, 2);
 	set_zero(K, 9);
 	set_zero(D, 5);
@@ -26,29 +28,31 @@ Camera::Camera()
 	set_zero(tf_rect.T, 3);
 
 	set_zero(P_rect, 12);
+
+	set_camera_nr(camera_nr);
 }
 
-Camera::Camera(int camera_nr)
-{
+void
+Camera::set_camera_nr(int camera_nr){
 	this->camera_nr = camera_nr;
+	char val[2];
+	sprintf(val,"%02d", camera_nr);
+	id = val;
 }
 
 std::string
 Camera::to_string(){
 	std::stringstream ss;
 
-	char buffer[3];
-	sprintf(buffer,"%02d:", camera_nr);
-
 	ss.setf(std::ios::scientific);
-	ss << "S_" <<  buffer; serialize_array(ss, S, 2);
-	ss << "K_" <<  buffer; serialize_array(ss, K, 9);
-	ss << "D_" <<  buffer; serialize_array(ss, D, 5);
-	ss << "R_" <<  buffer; serialize_array(ss, tf.R, 9);
-	ss << "T_" <<  buffer; serialize_array(ss, tf.T, 3);
-	ss << "S_rect_" <<  buffer; serialize_array(ss, S_rect, 2);
-	ss << "R_rect_" <<  buffer; serialize_array(ss, tf_rect.R, 9);
-	ss << "P_rect_" <<  buffer; serialize_array(ss, P_rect, 12);
+	ss << "S_" <<  id << limiter; serialize_array(ss, S, 2);
+	ss << "K_" <<  id << limiter; serialize_array(ss, K, 9);
+	ss << "D_" <<  id << limiter; serialize_array(ss, D, 5);
+	ss << "R_" <<  id << limiter; serialize_array(ss, tf.R, 9);
+	ss << "T_" <<  id << limiter; serialize_array(ss, tf.T, 3);
+	ss << "S_rect_" <<  id << limiter; serialize_array(ss, S_rect, 2);
+	ss << "R_rect_" <<  id << limiter; serialize_array(ss, tf_rect.R, 9);
+	ss << "P_rect_" <<  id << limiter; serialize_array(ss, P_rect, 12);
 
 	return ss.str();
 }
@@ -104,6 +108,7 @@ Camera::load(std::istream& stream){
 		if(std::getline (stream, line) <= 0) return false;
 		in.str(line);
 		in >> type;
+		if(type != "S_"+std::string(id)+":") false;
 		deserialize_array(in, S, 2);
 
 		// K 9
