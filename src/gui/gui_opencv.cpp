@@ -5,39 +5,40 @@
  *      Author: fnolden
  */
 
-#include "gui/simple_gui.h"
-#include "common/project2d.hpp"
-#include "common/filter_depth_intensity.hpp"
-#include "common/depth_filter.hpp"
-#include "common/transform.hpp"
+#include <gui/gui_opencv.h>
+
+#include <common/project2d.hpp>
+#include <common/filter_depth_intensity.hpp>
+#include <common/depth_filter.hpp>
+#include <common/transform.hpp>
 
 namespace image_cloud {
 
 void callback( int pos, void* data)
 {
-	Simple_gui* ct = reinterpret_cast<Simple_gui*>(data);
+	Gui_opencv* ct = reinterpret_cast<Gui_opencv*>(data);
 	ct->update_values();
 	ct->update_view();
 }
 
 void callback_scale( int pos, void* data)
 {
-	Simple_gui* ct = reinterpret_cast<Simple_gui*>(data);
+	Gui_opencv* ct = reinterpret_cast<Gui_opencv*>(data);
 	ct->update_values();
 	ct->recreate_config_gui();
 	ct->update_view();
 }
 
-Simple_gui::Simple_gui() {
+Gui_opencv::Gui_opencv() {
 	// TODO Auto-generated constructor stub
 }
 
-Simple_gui::~Simple_gui() {
+Gui_opencv::~Gui_opencv() {
 	// TODO Auto-generated destructor stub
 }
 
 void
-Simple_gui::init(){
+Gui_opencv::init(){
 	//load image
 	data.path = "/home/fnolden/Bilder/synced_pcd_images/";
 	data.image_file = data.path + "synced_pcd_image_000067.jpg";
@@ -81,7 +82,7 @@ Simple_gui::init(){
 
 }
 
-void Simple_gui::init_filter_data() {
+void Gui_opencv::init_filter_data() {
 	data.filter_selector.max = 3;
 	data.filter_selector.val = data.filter;
 	sprintf(filterNames[0], "intensity");
@@ -103,7 +104,7 @@ void Simple_gui::init_filter_data() {
 	filter_data.at(DEPTH_INTENSITY).at(3).init("direction_x?", 0, 1, false);
 }
 
-void Simple_gui::init_tf(){
+void Gui_opencv::init_tf(){
 	tf_data[0].init("tx", 		50, 100, 1, 10, true, true);
 	tf_data[1].init("ty", 		50, 100, 1, 10, true, true);
 	tf_data[2].init("tz", 		50, 100, 1, 10, true, true);
@@ -113,7 +114,7 @@ void Simple_gui::init_tf(){
 }
 
 bool
-Simple_gui::load_pcl()
+Gui_opencv::load_pcl()
 {
 	std::string filename;
 	data.set.pointclouds.get_fullname(filename, data.set.pos.val);
@@ -129,7 +130,7 @@ Simple_gui::load_pcl()
 }
 
 void
-Simple_gui::load_image(){
+Gui_opencv::load_image(){
 	std::string filename;
 	data.set.images.get_fullname(filename, data.set.pos.val);
 	image_file = cv::imread(filename);
@@ -137,7 +138,7 @@ Simple_gui::load_image(){
 }
 
 void
-Simple_gui::load_projection(){
+Gui_opencv::load_projection(){
 	//TODO: Load form xml...
 	// Camera 4 color_rect_info
 	sensor_msgs::CameraInfo info_msg;
@@ -159,7 +160,7 @@ Simple_gui::load_projection(){
 
 
 void
-Simple_gui::update_values()
+Gui_opencv::update_values()
 {
 	if(data.filter_selector.val != data.filter){
 		cv::destroyWindow(filterNames[data.filter]);
@@ -175,20 +176,20 @@ Simple_gui::update_values()
 }
 
 void
-Simple_gui::loop(){
+Gui_opencv::loop(){
 	while(true){
 		cv::waitKey(50);
 	}
 }
 
 void
-Simple_gui::update_view(){
+Gui_opencv::update_view(){
 	filter3d();
 	cv::imshow(window_name.c_str(), image_display);
 }
 
 void
-Simple_gui::filter3d(){
+Gui_opencv::filter3d(){
 	filter_lock.lock();
 	printf("filter3d %d %d\n", data.filter, DEPTH);
 	pcl::PointCloud<pcl::PointXYZI> transformed = *cloud_file;
@@ -232,7 +233,7 @@ Simple_gui::filter3d(){
 	filter_lock.unlock();
 }
 
-void Simple_gui::create_gui_filter() {
+void Gui_opencv::create_gui_filter() {
 	cv::namedWindow(filterNames[data.filter], CV_GUI_NORMAL);
 
 	for(int i = 0; i < filter_data[data.filter].size(); ++i){
@@ -240,7 +241,7 @@ void Simple_gui::create_gui_filter() {
 	}
 }
 
-void Simple_gui::recreate_config_gui(){
+void Gui_opencv::recreate_config_gui(){
 	cv::destroyWindow(filterNames[data.filter]);
 	cv::destroyWindow(window_name_transform.c_str());
 	create_gui_filter();
@@ -248,7 +249,7 @@ void Simple_gui::recreate_config_gui(){
 }
 
 void
-Simple_gui::create_gui(){
+Gui_opencv::create_gui(){
 	printf("gui\n");
 	tf_data[0].create_slider(window_name_transform, &callback, this);
 	tf_data[1].create_slider(window_name_transform, &callback, this);

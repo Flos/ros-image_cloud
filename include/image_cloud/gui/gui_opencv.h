@@ -61,11 +61,11 @@ struct Config_data
 	Set_selector set;
 };
 
-class Simple_gui {
+class Gui_opencv {
 
 public:
-	Simple_gui();
-	virtual ~Simple_gui();
+	Gui_opencv();
+	virtual ~Gui_opencv();
 	void init();
 
 	void load_image();

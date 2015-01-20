@@ -132,7 +132,7 @@ add_dependencies(pcl_to_image
 ## Other
 add_executable(gui
   src/gui/node.cpp
-  src/gui/simple_gui.cpp
+  src/gui/gui_opencv.cpp
   src/gui/filter_value.cpp
   src/gui/kitti/serializable.cpp
   src/gui/kitti/camera.cpp
