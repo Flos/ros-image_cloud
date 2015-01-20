@@ -62,7 +62,7 @@ Camera_list::load( std::istream &stream){
 
 			Camera cam;
 			while( cam.load(stream) ){
-				cam.camera_nr = cameras.size();
+				cam.set_camera_nr(cameras.size());
 				cameras.push_back(cam);
 			}
 		}
