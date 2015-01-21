@@ -16,6 +16,9 @@ Tf::Tf(){
 	set_zero(T, 3);
 	set_zero(delta_f, 2);
 	set_zero(delta_c, 2);
+	R[0] = 1;
+	R[4] = 1;
+	R[8] = 1;
 }
 
 void
@@ -25,6 +28,13 @@ Tf::get_transform(tf::Transform &tf){
 								R[6],R[7],R[8]));
 
 	tf.setOrigin(tf::Vector3(T[0], T[1], T[2]));
+}
+
+void
+Tf::get_rotation(tf::Matrix3x3 &rotation){
+	rotation.setValue(R[0],R[1],R[2],
+					R[3],R[4],R[5],
+					R[6],R[7],R[8]);
 }
 
 void
@@ -75,6 +85,7 @@ Tf::load( std::istream &stream){
 			deserialize_array(in, delta_c, 2);
 		}
 	}
+	std::cout << "Got: " << to_string();
 	return true;
 
 }

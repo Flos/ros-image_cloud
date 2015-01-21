@@ -37,6 +37,7 @@ public:
 	float delta_c[2];
 	void get_transform(tf::Transform &tf);
 	void set_transform(tf::Transform tf);
+	void get_rotation(tf::Matrix3x3 &rotation);
 	std::string to_string();
 	bool load( std::istream &stream);
 };
