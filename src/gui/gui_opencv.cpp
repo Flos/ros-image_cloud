@@ -40,60 +40,43 @@ Gui_opencv::~Gui_opencv() {
 void
 Gui_opencv::init(){
 	//load image
-//	data.path = "/home/fnolden/Bilder/synced_pcd_images/";
-//	data.image_file = data.path + "synced_pcd_image_000067.jpg";
-//	data.pcl_file	= data.path + "synced_pcd_image_1414534811121791.pcd";
+	config_files.push_back("/media/Daten/kitti/config_barney_0001.txt");
+	config_files.push_back("/media/Daten/kitti/config_kitti_0005.txt");
+	config_files.push_back("/media/Daten/kitti/config_kitti_0048.txt");
 
+	for(int i = 0; i < config_files.size(); ++i)
 	{
-		// Kitti start
-		kitti::Dataset city("/home/fnolden/Downloads/2011_09_26_drive_0005_sync/config.txt");
+		kitti::Dataset city(config_files.at(i));
 		Dataset_config city_conf;
 
 		datasets.list_config.push_back(city_conf);
 		datasets.list_datasets.push_back(city);
 
-		int current_index = datasets.list_datasets.size()-1;
+		datasets.list_config.at(i).pos_image.pos.val = 0;
+		datasets.list_config.at(i).pos_image.pos.max = 	datasets.list_datasets.at(i).camera_file_list.at(0).list.size() - 1;
+		datasets.list_config.at(i).pos_image.pos_loaded = 0;
 
-		datasets.pos_dataset.pos.val = 0;
-		datasets.pos_dataset.pos.max = current_index;
-		datasets.pos_dataset.pos_loaded = 0;
+		datasets.list_config.at(i).pos_camera.pos.val = 0;
+		datasets.list_config.at(i).pos_camera.pos.max = datasets.list_datasets.at(i).camera_list.cameras.size() - 1;
+		datasets.list_config.at(i).pos_camera.pos_loaded = 0;
 
+		datasets.list_config.at(i).filter = DEPTH;
+		datasets.list_config.at(i).filter_selector.val = datasets.list_config.at(i).filter;
+		datasets.list_config.at(i).filter_selector.max = datasets.filter_data.size() - 1;
 
-		datasets.list_config.at(current_index).pos_image.pos.val = 0;
-		datasets.list_config.at(current_index).pos_image.pos.max = datasets.list_datasets.at(current_index).camera_file_list.at(0).list.size();
-		datasets.list_config.at(current_index).pos_image.pos_loaded = 0;
-
-		datasets.list_config.at(current_index).pos_camera.pos.val = 0;
-		datasets.list_config.at(current_index).pos_camera.pos.max = datasets.list_datasets.at(current_index).camera_list.cameras.size();
-		datasets.list_config.at(current_index).pos_camera.pos_loaded = 0;
-
-		datasets.list_config.at(current_index).filter = DEPTH;
-		datasets.list_config.at(current_index).filter_selector.val = datasets.list_config.at(current_index).filter;
-		datasets.list_config.at(current_index).filter_selector.max = datasets.filter_data.size()-1;
-
-		datasets.list_config.at(current_index).pos_camera.pos.val = 0;
-		datasets.list_config.at(current_index).pos_camera.pos_loaded = 0;
-		datasets.list_config.at(current_index).pos_camera.pos.max = datasets.list_datasets.at(current_index).camera_list.cameras.size()-1;
+		datasets.list_config.at(i).pos_camera.pos.val = 0;
+		datasets.list_config.at(i).pos_camera.pos_loaded = 0;
+		datasets.list_config.at(i).pos_camera.pos.max = datasets.list_datasets.at(i).camera_list.cameras.size() - 1;
 
 	}
 
-	// Kitti end
+	datasets.pos_dataset.pos.val = 1;
+	datasets.pos_dataset.pos.max = datasets.list_datasets.size() -1;
+	datasets.pos_dataset.pos_loaded = 0;
 
-//	data.set.images.load_file("/home/fnolden/Downloads/2011_09_26_drive_0005_sync/image_00/files.txt");
-//	data.set.images.path = "/home/fnolden/Downloads/2011_09_26_drive_0005_sync/image_00/data/";
-//	data.set.pointclouds.load_file("/home/fnolden/Downloads/2011_09_26_drive_0005_sync/velodyne_points/files.txt");
-//	data.set.pointclouds.path = "/home/fnolden/Downloads/2011_09_26_drive_0005_sync/velodyne_points/data/";
-//	data.set.pos_loaded = 0;
-//
-//	assert (data.set.pointclouds.list.size() == data.set.images.list.size());
-//	data.set.pos.max = data.set.pointclouds.list.size();
-//	data.set.pos.val = data.set.pos_loaded;
-//
-//	data.filter = DEPTH;
 
 	window_name = "manual calibration";
-	window_name_transform = window_name+" transform";
-	window_name_control = window_name + " image control";
+	window_name_general_conf = window_name + " image control";
 
 	init_tf();
 	init_filter_data();
@@ -103,13 +86,12 @@ Gui_opencv::init(){
 	load_image();
 	load_projection();
 
+
 	cv::namedWindow(window_name.c_str(), CV_GUI_EXPANDED);
-	cv::namedWindow(window_name_transform.c_str(), CV_GUI_EXPANDED);
-	cv::namedWindow(window_name_control.c_str(), CV_GUI_EXPANDED);
-	cv::namedWindow(filterNames[datasets.list_config.at(datasets.pos_dataset.pos.val).filter], CV_GUI_NORMAL);
 
 
-	create_gui();
+	create_gui_general_conf();
+	create_gui_manual_tf();
 	create_gui_filter();
 
 	update_view();
@@ -223,39 +205,12 @@ Gui_opencv::load_image(){
 
 void
 Gui_opencv::load_projection(){
-	//TODO: Load form xml...
-	// Camera 4 color_rect_info
 	sensor_msgs::CameraInfo info_msg;
-//
-//	info_msg.K[0] = 230.73746400000002;
-//	info_msg.K[2] = 635.050064;
-//	info_msg.K[4] = 230.73746400000002;
-//	info_msg.K[5] = 532.329328;
-//	info_msg.K[8] = 1;
-//
-//	info_msg.P[0] = 507.6224208000001;
-//	info_msg.P[2] = 639.1101408000002;
-//	info_msg.P[5] = 507.6224208000001;
-//	info_msg.P[6] = 547.1245216000002;
-//	info_msg.P[10] = 1;
-//
-//	kitti::Camera cam;
-//
-//	cam.set_camera_info(info_msg);
-//	cam.camera_nr = 4;
-//	cam.save_file("ladybug_camera4.txt");
 
 	int camera = datasets.list_config.at(datasets.pos_dataset.pos.val).pos_camera.pos.val;
 
 	datasets.list_datasets.at(datasets.pos_dataset.pos.val).camera_list.cameras.at(camera).get_camera_info(info_msg);
-//	std::cout << "camera: " << datasets.list_datasets.at(datasets.pos_dataset.pos.val).camera_list.cameras.at(camera).to_string() << "\n";
-//    std::cout << "camera_info: ";
-//	for(int i = 0; i< 12; ++i){
-//    	std::cout << info_msg.P[i] << " ";
-//    	if( (i+1) % 4 == 0){
-//    		 std::cout << "\ncamera_info: ";
-//    	}
-//    }
+
 	camera_model.fromCameraInfo(info_msg);
 }
 
@@ -269,8 +224,15 @@ Gui_opencv::update_values()
 		create_gui_filter();
 	}
 	if(datasets.pos_dataset.pos_loaded != datasets.pos_dataset.pos.val){
+		load_projection();
 		load_image();
 		load_pcl();
+		cv::destroyWindow(filterNames[datasets.list_config.at(datasets.pos_dataset.pos.val).filter]);
+		cv::destroyWindow(window_name_general_conf);
+		cv::destroyWindow(window_name_transform);
+		create_gui_filter();
+		create_gui_manual_tf();
+		create_gui_general_conf();
 		datasets.pos_dataset.pos_loaded = datasets.pos_dataset.pos.val;
 	}
 
@@ -312,18 +274,15 @@ Gui_opencv::filter3d(){
 	// Transforms velo_cam0
 	tf::Transform velo_to_cam0;
 	datasets.list_datasets.at(datasets.pos_dataset.pos.val).velodyne_to_cam0.get_transform(velo_to_cam0);
-	transform_pointcloud(transformed, velo_to_cam0);
-	datasets.list_datasets.at(datasets.pos_dataset.pos.val).velodyne_to_cam0.save_file("valo_to_cam1_1.txt");
-
-	datasets.list_datasets.at(datasets.pos_dataset.pos.val).velodyne_to_cam0.load_file("valo_to_cam1_1.txt");
-	datasets.list_datasets.at(datasets.pos_dataset.pos.val).velodyne_to_cam0.save_file("valo_to_cam1_2.txt");
 
 	// Transform cam0_to_cam
 	tf::Transform cam0_to_cam;
 	int camera = datasets.list_config.at(datasets.pos_dataset.pos.val).pos_camera.pos.val;
 
 	datasets.list_datasets.at(datasets.pos_dataset.pos.val).camera_list.cameras.at(camera).tf_rect.get_transform(cam0_to_cam);
-	transform_pointcloud(transformed, cam0_to_cam);
+
+	tf::Transform result = (velo_to_cam0, velo_to_cam0);
+	transform_pointcloud(transformed, result);
 
 	// Transform Manual
 	transform_pointcloud<pcl::PointXYZI>(transformed, 	tf_data[0].get_value(), tf_data[1].get_value(), tf_data[2].get_value(),
@@ -333,6 +292,7 @@ Gui_opencv::filter3d(){
 	switch (datasets.list_config.at(datasets.pos_dataset.pos.val).filter)
 	{
 		case INTENSITY:
+			filtred = transformed;
 			break;
 		case DEPTH:
 				filter_depth_discontinuity(transformed, filtred,
@@ -341,9 +301,9 @@ Gui_opencv::filter3d(){
 			break;
 		case DEPTH_INTENSITY:
 			{
-				std::vector<std::vector<boost::shared_ptr<pcl::PointXYZI> > > map(image_display.rows, std::vector<boost::shared_ptr<pcl::PointXYZI> > (image_display.cols));
+				std::vector<std::vector<boost::shared_ptr<pcl::PointXYZI> > > map(image_display.rows*3, std::vector<boost::shared_ptr<pcl::PointXYZI> > (image_display.cols*2));
 				printf("vector size: %lu, %lu\n", map.size(),map[0].size());
-				project2d::project_2d(camera_model, transformed, map, image_display.rows, image_display.cols);
+				project2d::project_2d(camera_model, transformed, map, image_display.rows*3, image_display.cols*2);
 				filter::filter_depth_intensity(map, filtred,
 						datasets.filter_data[datasets.list_config.at(datasets.pos_dataset.pos.val).filter][0].get_value(), // depth
 						datasets.filter_data[datasets.list_config.at(datasets.pos_dataset.pos.val).filter][1].get_value(), // intensity
@@ -377,30 +337,42 @@ void Gui_opencv::recreate_config_gui(){
 	cv::destroyWindow(filterNames[datasets.list_config.at(datasets.pos_dataset.pos.val).filter]);
 	cv::destroyWindow(window_name_transform.c_str());
 	create_gui_filter();
-	create_gui();
+	create_gui_manual_tf();
+	create_gui_general_conf();
 }
 
-void
-Gui_opencv::create_gui(){
-	printf("gui\n");
+void Gui_opencv::create_gui_manual_tf() {
+	window_name_transform = window_name+" transform";
+	cv::namedWindow(window_name_transform, CV_GUI_EXPANDED);
 	tf_data[0].create_slider(window_name_transform, &callback, this);
 	tf_data[1].create_slider(window_name_transform, &callback, this);
 	tf_data[2].create_slider(window_name_transform, &callback, this);
 	tf_data[3].create_slider(window_name_transform, &callback, this);
 	tf_data[4].create_slider(window_name_transform, &callback, this);
 	tf_data[5].create_slider(window_name_transform, &callback, this);
+}
 
-	cv::createTrackbar( "Filter", window_name_control, &datasets.list_config.at(datasets.pos_dataset.pos.val).filter_selector.val,
+void
+Gui_opencv::create_gui_general_conf(){
+	cv::namedWindow(window_name_general_conf.c_str(), CV_GUI_EXPANDED);
+
+	if( datasets.list_config.at(datasets.pos_dataset.pos.val).filter_selector.max > 0){
+		cv::createTrackbar( "Filter", window_name_general_conf, &datasets.list_config.at(datasets.pos_dataset.pos.val).filter_selector.val,
 			datasets.list_config.at(datasets.pos_dataset.pos.val).filter_selector.max, &callback, this );
+	}
 
-	cv::createTrackbar( "img.nr", window_name_control, &datasets.list_config.at(datasets.pos_dataset.pos.val).pos_image.pos.val,
+	if( datasets.list_config.at(datasets.pos_dataset.pos.val).pos_image.pos.max > 0){
+		cv::createTrackbar( "img.nr", window_name_general_conf, &datasets.list_config.at(datasets.pos_dataset.pos.val).pos_image.pos.val,
 			datasets.list_config.at(datasets.pos_dataset.pos.val).pos_image.pos.max, &callback, this );
-//
-	cv::createTrackbar( "camera", window_name_control, &datasets.list_config.at(datasets.pos_dataset.pos.val).pos_camera.pos.val,
+	}
+
+	if( datasets.list_config.at(datasets.pos_dataset.pos.val).pos_camera.pos.max > 0){
+		cv::createTrackbar( "camera", window_name_general_conf, &datasets.list_config.at(datasets.pos_dataset.pos.val).pos_camera.pos.val,
 		datasets.list_config.at(datasets.pos_dataset.pos.val).pos_camera.pos.max, &callback, this );
+	}
 
 	if(datasets.pos_dataset.pos.max > 0) {
-		cv::createTrackbar( "data_set", window_name_control, &datasets.pos_dataset.pos.val, datasets.pos_dataset.pos.max, &callback, this );
+		cv::createTrackbar( "data_set", window_name_general_conf, &datasets.pos_dataset.pos.val, datasets.pos_dataset.pos.max, &callback, this );
 	}
 }
 

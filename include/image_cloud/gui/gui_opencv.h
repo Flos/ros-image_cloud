@@ -96,7 +96,7 @@ public:
 
 	void filter3d();
 	void project2image(cv::Mat &image, pcl::PointCloud<pcl::PointXYZI>::Ptr cloud);
-	void create_gui();
+	void create_gui_general_conf();
 	void recreate_config_gui();
 	void create_gui_filter();
 
@@ -104,14 +104,16 @@ public:
 	void loop();
 	void init_filter_data();
 	void init_tf();
+	void create_gui_manual_tf();
 
 	std::string window_name;
 	std::string window_name_transform;
-	std::string window_name_control;
+	std::string window_name_general_conf;
 
 
 	//Config_data data;
 	Datasets_list datasets;
+	std::vector<std::string> config_files;
 
 	cv::Mat image_file;
 	cv::Mat image_display;
