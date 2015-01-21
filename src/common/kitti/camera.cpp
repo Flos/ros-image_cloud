@@ -75,6 +75,8 @@ Camera::get_camera_info(sensor_msgs::CameraInfo &info_msg){
 	for(int i = 0; i < info_msg.P.size(); ++i){
 		info_msg.P[i] = P_rect[i];
 	}
+	info_msg.width = S_rect[0];
+	info_msg.height = S_rect[1];
 }
 
 void
@@ -95,6 +97,16 @@ Camera::set_camera_info(sensor_msgs::CameraInfo info_msg){
 	for(int i = 0; i < info_msg.P.size(); ++i){
 		P_rect[i] = info_msg.P[i];
 	}
+}
+
+void
+Camera::get_projection(Tf &tf){
+	tf::Transform transform;
+	transform.setBasis( tf::Matrix3x3(	P_rect[0],P_rect[1],P_rect[2],
+										P_rect[4],P_rect[5],P_rect[6],
+										P_rect[8],P_rect[9],P_rect[10]));
+	transform.setOrigin(tf::Vector3(P_rect[3],P_rect[7], P_rect[11]));
+	tf.set_transform(transform);
 }
 
 bool

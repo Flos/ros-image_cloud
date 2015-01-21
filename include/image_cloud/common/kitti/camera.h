@@ -48,6 +48,8 @@ public:
 	void get_camera_info(sensor_msgs::CameraInfo &info_msg);
 	void set_camera_info(sensor_msgs::CameraInfo info_msg);
 
+	void get_projection(Tf &tf);
+
 	Camera(int camera_nr = 0, std::string name = "camera");
 	void set_camera_nr(int camera);
 
