@@ -30,18 +30,61 @@
 
 namespace image_cloud {
 
-enum Filter
-{
-	INTENSITY = 0,
-	DEPTH = 1,
-	DEPTH_INTENSITY = 2,
-	HARRIS_3D = 3
-};
-
 struct Slider_data{
 	int max;
 	int val;
 };
+
+struct Position{
+	Slider_data pos;
+	int pos_loaded;
+};
+
+namespace pcl_filter{
+	enum Filter3d
+	{
+		OFF = 0,
+		DEPTH = 1,
+		DEPTH_INTENSITY = 2,
+		HARRIS_3D = 3
+	};
+}
+
+namespace image_filter{
+
+	namespace blur{
+		enum Blur{
+			OFF = 0,
+			BILATERAL = 1,
+			BLUR = 2,
+			GAUSSIAN = 3,
+			MEDIAN = 4
+		};
+	}
+
+	namespace edge{
+		enum Edge{
+			OFF = 0,
+			CANNY = 1,
+			LAPLACE = 2
+		};
+	}
+
+	namespace enlight{
+		enum Enlight{
+			OFF = 0
+		};
+	}
+
+	struct Image_filter{
+		Position blur;
+		std::vector< std::vector<Filter_value> >blur_values;
+		Position edge;
+		std::vector<std::vector<Filter_value> >edge_values;
+		std::string window_name;
+	};
+
+}
 
 
 
@@ -52,14 +95,11 @@ struct Set_selector{
 	int pos_loaded;
 };
 
-struct Position{
-	Slider_data pos;
-	int pos_loaded;
-};
+
 
 struct Dataset_config{
-	Filter filter;
-	Slider_data filter_selector;
+	pcl_filter::Filter3d filter3d;
+	Slider_data filter3d_selector;
 	Position pos_image;
 	Position pos_camera;
 };
@@ -67,7 +107,8 @@ struct Dataset_config{
 struct Datasets_list{
 	std::vector<kitti::Dataset> list_datasets;
 	std::vector<Dataset_config> list_config;
-	std::vector<std::vector<Filter_value> >filter_data;
+	std::vector<std::vector<Filter_value> >filter3d_data;
+	image_filter::Image_filter filter2d;
 	Position pos_dataset;
 };
 
@@ -76,7 +117,7 @@ struct Config_data
 	std::string path;
 	std::string image_file;
 	std::string pcl_file;
-	Filter filter;
+	pcl_filter::Filter3d filter;
 	Slider_data filter_selector;
 	Set_selector set;
 };
@@ -95,10 +136,12 @@ public:
 	void update_view();
 
 	void filter3d();
+	void filter2d();
 	void project2image(cv::Mat &image, pcl::PointCloud<pcl::PointXYZI>::Ptr cloud);
 	void create_gui_general_conf();
 	void recreate_config_gui();
-	void create_gui_filter();
+	void create_gui_filter2d();
+	void create_gui_filter3d();
 
 	void update_values();
 	void loop();
@@ -117,13 +160,15 @@ public:
 
 	cv::Mat image_file;
 	cv::Mat image_display;
+	cv::Mat image_2d_filtred;
 	boost::mutex filter_lock;
 
 	// config common
-	char filterNames[4][50];
+	char filter3d_names[4][50];
+	std::vector<std::string> filter2d_blur_names;
+	std::vector<std::string> filter2d_edge_names;
 	//std::vector<std::vector<Filter_value> >filter_data;
 	Filter_value tf_data[6];
-
 
 	image_geometry::PinholeCameraModel camera_model;
 	pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_file;

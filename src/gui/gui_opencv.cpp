@@ -60,9 +60,9 @@ Gui_opencv::init(){
 		datasets.list_config.at(i).pos_camera.pos.max = datasets.list_datasets.at(i).camera_list.cameras.size() - 1;
 		datasets.list_config.at(i).pos_camera.pos_loaded = 0;
 
-		datasets.list_config.at(i).filter = DEPTH;
-		datasets.list_config.at(i).filter_selector.val = datasets.list_config.at(i).filter;
-		datasets.list_config.at(i).filter_selector.max = datasets.filter_data.size() - 1;
+		datasets.list_config.at(i).filter3d = pcl_filter::DEPTH;
+		datasets.list_config.at(i).filter3d_selector.val = datasets.list_config.at(i).filter3d;
+		datasets.list_config.at(i).filter3d_selector.max = datasets.filter3d_data.size() - 1;
 
 		datasets.list_config.at(i).pos_camera.pos.val = 0;
 		datasets.list_config.at(i).pos_camera.pos_loaded = 0;
@@ -72,7 +72,7 @@ Gui_opencv::init(){
 
 	datasets.pos_dataset.pos.val = 1;
 	datasets.pos_dataset.pos.max = datasets.list_datasets.size() -1;
-	datasets.pos_dataset.pos_loaded = 0;
+	datasets.pos_dataset.pos_loaded = datasets.pos_dataset.pos.val;
 
 
 	window_name = "manual calibration";
@@ -92,7 +92,8 @@ Gui_opencv::init(){
 
 	create_gui_general_conf();
 	create_gui_manual_tf();
-	create_gui_filter();
+	create_gui_filter3d();
+	create_gui_filter2d();
 
 	update_view();
 	loop();
@@ -100,25 +101,73 @@ Gui_opencv::init(){
 }
 
 void Gui_opencv::init_filter_data() {
-	datasets.list_config.at(datasets.pos_dataset.pos.val).filter_selector.max = 3;
-	datasets.list_config.at(datasets.pos_dataset.pos.val).filter_selector.val = datasets.list_config.at(datasets.pos_dataset.pos_loaded).filter;
-	sprintf(filterNames[0], "intensity");
-	sprintf(filterNames[1], "depth");
-	sprintf(filterNames[2], "depth_intensity");
-	sprintf(filterNames[3], "harris");
+	datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d_selector.max = 3;
+	datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d_selector.val = datasets.list_config.at(datasets.pos_dataset.pos_loaded).filter3d;
+	sprintf(filter3d_names[0], "off");
+	sprintf(filter3d_names[1], "depth");
+	sprintf(filter3d_names[2], "depth_intensity");
+	sprintf(filter3d_names[3], "harris");
 
-	datasets.filter_data.resize(4);
-	datasets.filter_data.at(INTENSITY);
+	datasets.filter3d_data.resize(4);
+	datasets.filter3d_data.at(pcl_filter::OFF);
 
-	datasets.filter_data.at(DEPTH).resize(2);
-	datasets.filter_data.at(DEPTH).at(0).init("neighbors", 2, 30, false);
-	datasets.filter_data.at(DEPTH).at(1).init("epsilon", 50, 200, 1, 100);
+	datasets.filter3d_data.at(pcl_filter::DEPTH).resize(2);
+	datasets.filter3d_data.at(pcl_filter::DEPTH).at(0).init("neighbors", 2, 30, false);
+	datasets.filter3d_data.at(pcl_filter::DEPTH).at(1).init("epsilon", 50, 200, 1, 100);
 
-	datasets.filter_data.at(DEPTH_INTENSITY).resize(4);
-	datasets.filter_data.at(DEPTH_INTENSITY).at(0).init("depth", 30, 200, 1, 100 );
-	datasets.filter_data.at(DEPTH_INTENSITY).at(1).init("intensity", 50, 200, 1, 100);
-	datasets.filter_data.at(DEPTH_INTENSITY).at(2).init("neighbors", 2, 30, false);
-	datasets.filter_data.at(DEPTH_INTENSITY).at(3).init("direction_x?", 0, 1, false);
+	datasets.filter3d_data.at(pcl_filter::DEPTH_INTENSITY).resize(4);
+	datasets.filter3d_data.at(pcl_filter::DEPTH_INTENSITY).at(0).init("depth", 30, 200, 1, 100 );
+	datasets.filter3d_data.at(pcl_filter::DEPTH_INTENSITY).at(1).init("intensity", 50, 200, 1, 100);
+	datasets.filter3d_data.at(pcl_filter::DEPTH_INTENSITY).at(2).init("neighbors", 2, 30, false);
+	datasets.filter3d_data.at(pcl_filter::DEPTH_INTENSITY).at(3).init("direction_x?", 0, 1, false);
+
+
+
+	filter2d_blur_names.push_back("off");
+	filter2d_blur_names.push_back("bilateral");
+	filter2d_blur_names.push_back("blur");
+	filter2d_blur_names.push_back("gaussian");
+	filter2d_blur_names.push_back("median");
+
+	datasets.filter2d.blur.pos.val = 0;
+	datasets.filter2d.blur.pos_loaded = datasets.filter2d.blur.pos.val;
+	datasets.filter2d.blur.pos.max = filter2d_blur_names.size() -1;
+
+	datasets.filter2d.blur_values.resize(filter2d_blur_names.size());
+	datasets.filter2d.blur_values.at(image_filter::blur::BILATERAL).push_back(Filter_value("kernel", 2, 40));
+	datasets.filter2d.blur_values.at(image_filter::blur::GAUSSIAN).push_back(Filter_value("kernel", 2, 40));
+	datasets.filter2d.blur_values.at(image_filter::blur::MEDIAN).push_back(Filter_value("kernel", 2, 40));
+	datasets.filter2d.blur_values.at(image_filter::blur::BLUR).push_back(Filter_value("kernel", 2, 40));
+
+	filter2d_edge_names.push_back("off");
+	filter2d_edge_names.push_back("canny"); //4
+	filter2d_edge_names.push_back("laplace"); //3
+
+	datasets.filter2d.edge.pos.val = 0;
+	datasets.filter2d.edge.pos.max = filter2d_edge_names.size() -1;
+	datasets.filter2d.edge.pos_loaded = datasets.filter2d.edge.pos.val;
+
+	datasets.filter2d.edge_values.resize(filter2d_edge_names.size());
+	datasets.filter2d.edge_values.at(image_filter::edge::CANNY).push_back(Filter_value("threashold1", 30, 500, 1, 1, false, true));
+	datasets.filter2d.edge_values.at(image_filter::edge::CANNY).push_back(Filter_value("threashold2", 100, 500, 1, 1, false, true));
+	datasets.filter2d.edge_values.at(image_filter::edge::CANNY).push_back(Filter_value("apertureSize", 3, 30));
+	datasets.filter2d.edge_values.at(image_filter::edge::CANNY).push_back(Filter_value("l2gradient?", 0, 1));
+
+	datasets.filter2d.edge_values.at(image_filter::edge::LAPLACE).push_back(Filter_value("kernel", 3, 30));
+	datasets.filter2d.edge_values.at(image_filter::edge::LAPLACE).push_back(Filter_value("scale", 1, 30, 1, 1, false, true));
+	datasets.filter2d.edge_values.at(image_filter::edge::LAPLACE).push_back(Filter_value("delta", 0, 30, 1, 1, false, true));
+
+	assert(datasets.filter2d.blur_values.size() == 5 );
+	assert(datasets.filter2d.blur_values.at(0).size() == 0);
+	assert(datasets.filter2d.blur_values.at(1).size() == 1);
+	assert(datasets.filter2d.blur_values.at(2).size() == 1);
+	assert(datasets.filter2d.blur_values.at(3).size() == 1);
+	assert(datasets.filter2d.blur_values.at(4).size() == 1);
+
+	assert(datasets.filter2d.edge_values.size() == 3 );
+	assert(datasets.filter2d.edge_values.at(0).size() == 0);
+	assert(datasets.filter2d.edge_values.at(1).size() == 4);
+	assert(datasets.filter2d.edge_values.at(2).size() == 3);
 }
 
 void Gui_opencv::init_tf(){
@@ -218,22 +267,33 @@ Gui_opencv::load_projection(){
 void
 Gui_opencv::update_values()
 {
-	if(datasets.list_config.at(datasets.pos_dataset.pos.val).filter_selector.val != datasets.list_config.at(datasets.pos_dataset.pos.val).filter){
-		cv::destroyWindow(filterNames[datasets.list_config.at(datasets.pos_dataset.pos.val).filter]);
-		datasets.list_config.at(datasets.pos_dataset.pos.val).filter = (Filter)datasets.list_config.at(datasets.pos_dataset.pos.val).filter_selector.val;
-		create_gui_filter();
-	}
 	if(datasets.pos_dataset.pos_loaded != datasets.pos_dataset.pos.val){
 		load_projection();
 		load_image();
 		load_pcl();
-		cv::destroyWindow(filterNames[datasets.list_config.at(datasets.pos_dataset.pos.val).filter]);
+		cv::destroyWindow(filter3d_names[datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d]);
 		cv::destroyWindow(window_name_general_conf);
 		cv::destroyWindow(window_name_transform);
-		create_gui_filter();
+		//cv::destroyWindow(datasets.filter2d.window_name);
+		create_gui_filter3d();
 		create_gui_manual_tf();
 		create_gui_general_conf();
+		//create_gui_filter2d();
 		datasets.pos_dataset.pos_loaded = datasets.pos_dataset.pos.val;
+	}
+	if(datasets.filter2d.blur.pos.val != datasets.filter2d.blur.pos_loaded
+			|| datasets.filter2d.edge.pos.val != datasets.filter2d.edge.pos_loaded
+			){
+			cv::destroyWindow(datasets.filter2d.window_name);
+			create_gui_filter2d();
+			datasets.filter2d.blur.pos_loaded = datasets.filter2d.blur.pos.val;
+			datasets.filter2d.edge.pos_loaded = datasets.filter2d.edge.pos.val;
+		}
+
+	if(datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d_selector.val != datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d){
+		cv::destroyWindow(filter3d_names[datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d]);
+		datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d = (pcl_filter::Filter3d)datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d_selector.val;
+		create_gui_filter3d();
 	}
 
 	//
@@ -260,15 +320,95 @@ Gui_opencv::loop(){
 
 void
 Gui_opencv::update_view(){
+	filter2d();
 	filter3d();
 	cv::imshow(window_name.c_str(), image_display);
+}
+
+void
+Gui_opencv::filter2d(){
+	filter_lock.lock();
+
+	//image_file.copyTo(image_2d_filtred);
+	cv::Mat tmp,tmp2;
+
+	// Pipeline blur;
+
+	try{
+
+
+	switch(datasets.filter2d.blur.pos.val){
+		default:
+		case image_filter::blur::OFF:
+			image_file.copyTo(tmp);
+			break;
+		case image_filter::blur::BILATERAL:
+			cv::bilateralFilter ( image_file, tmp,
+					datasets.filter2d.blur_values.at(image_filter::blur::BILATERAL)[0].value,
+					datasets.filter2d.blur_values.at(image_filter::blur::BILATERAL)[0].value*2,
+					datasets.filter2d.blur_values.at(image_filter::blur::BILATERAL)[0].value/2);
+			break;
+	    case image_filter::blur::BLUR:
+			cv::blur( image_file, tmp, cv::Size( datasets.filter2d.blur_values.at(image_filter::blur::BLUR)[0].value,
+					datasets.filter2d.blur_values.at(image_filter::blur::BLUR)[0].value ), cv::Point(-1,-1) );
+			break;
+	    case image_filter::blur::GAUSSIAN:
+			cv::GaussianBlur( image_file, tmp, cv::Size( datasets.filter2d.blur_values.at(image_filter::blur::GAUSSIAN)[0].value,
+					datasets.filter2d.blur_values.at(image_filter::blur::GAUSSIAN)[0].value ), 0, 0 );
+			break;
+	    case image_filter::blur::MEDIAN:
+	    	cv::medianBlur ( image_file, tmp, datasets.filter2d.blur_values.at(image_filter::blur::MEDIAN)[0].value );
+	    	break;
+	}
+
+
+	if(image_2d_filtred.dims != 1 && image_filter::edge::OFF != datasets.filter2d.edge.pos.val)
+	{
+		cvtColor(tmp, tmp2, CV_BGR2GRAY );
+	}
+	else{
+		tmp2 = tmp;
+	}
+
+	switch (datasets.filter2d.edge.pos.val)
+	{
+		default:
+		case image_filter::edge::OFF:
+			tmp2.copyTo(image_2d_filtred);
+			break;
+		case image_filter::edge::CANNY:
+			cv::Canny( tmp2, image_2d_filtred,
+					datasets.filter2d.edge_values.at(image_filter::edge::CANNY)[0].get_value(),
+					datasets.filter2d.edge_values.at(image_filter::edge::CANNY)[1].get_value(),
+					datasets.filter2d.edge_values.at(image_filter::edge::CANNY)[2].value,
+					datasets.filter2d.edge_values.at(image_filter::edge::CANNY)[3].value );
+			break;
+		case image_filter::edge::LAPLACE:
+			cv::Laplacian( tmp2, image_2d_filtred, CV_16S,
+					datasets.filter2d.edge_values.at(image_filter::edge::LAPLACE)[0].value,
+					datasets.filter2d.edge_values.at(image_filter::edge::LAPLACE)[1].get_value(),
+					datasets.filter2d.edge_values.at(image_filter::edge::LAPLACE)[2].get_value() );
+			break;
+	}
+	}catch(cv::Exception &e){
+		printf("Filter2d error: %s", e.what());
+	}
+
+	if(image_2d_filtred.dims == 1) {
+		cvtColor(image_2d_filtred, tmp2, CV_GRAY2BGR );
+		image_2d_filtred = tmp2;
+	}
+
+
+	//filtred.copyTo(image_display);
+	filter_lock.unlock();
 }
 
 void
 Gui_opencv::filter3d(){
 	filter_lock.lock();
 
-	printf("filter3d %d %d\n", datasets.list_config.at(datasets.pos_dataset.pos.val).filter, DEPTH);
+	printf("filter3d %d %d\n", datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d, pcl_filter::DEPTH);
 	pcl::PointCloud<pcl::PointXYZI> transformed = *cloud_file;
 
 	// Transforms velo_cam0
@@ -289,54 +429,72 @@ Gui_opencv::filter3d(){
 														tf_data[3].get_value(), tf_data[4].get_value(), tf_data[5].get_value());
 	pcl::PointCloud<pcl::PointXYZI> filtred;
 
-	switch (datasets.list_config.at(datasets.pos_dataset.pos.val).filter)
+	switch (datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d)
 	{
-		case INTENSITY:
+		case pcl_filter::OFF:
 			filtred = transformed;
 			break;
-		case DEPTH:
+		case pcl_filter::DEPTH:
 				filter_depth_discontinuity(transformed, filtred,
-						datasets.filter_data[datasets.list_config.at(datasets.pos_dataset.pos.val).filter][0].value, // neighbors
-						datasets.filter_data[datasets.list_config.at(datasets.pos_dataset.pos.val).filter][1].get_value()); // epsilon
+						datasets.filter3d_data[datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d][0].value, // neighbors
+						datasets.filter3d_data[datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d][1].get_value()); // epsilon
 			break;
-		case DEPTH_INTENSITY:
+		case pcl_filter::DEPTH_INTENSITY:
 			{
 				std::vector<std::vector<boost::shared_ptr<pcl::PointXYZI> > > map(image_display.rows*3, std::vector<boost::shared_ptr<pcl::PointXYZI> > (image_display.cols*2));
 				printf("vector size: %lu, %lu\n", map.size(),map[0].size());
 				project2d::project_2d(camera_model, transformed, map, image_display.rows*3, image_display.cols*2);
 				filter::filter_depth_intensity(map, filtred,
-						datasets.filter_data[datasets.list_config.at(datasets.pos_dataset.pos.val).filter][0].get_value(), // depth
-						datasets.filter_data[datasets.list_config.at(datasets.pos_dataset.pos.val).filter][1].get_value(), // intensity
-						datasets.filter_data[datasets.list_config.at(datasets.pos_dataset.pos.val).filter][2].get_value(), // neighbors
-						datasets.filter_data[datasets.list_config.at(datasets.pos_dataset.pos.val).filter][3].get_value()); // search direction_x?
+						datasets.filter3d_data[datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d][0].get_value(), // depth
+						datasets.filter3d_data[datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d][1].get_value(), // intensity
+						datasets.filter3d_data[datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d][2].get_value(), // neighbors
+						datasets.filter3d_data[datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d][3].get_value()); // search direction_x?
 			}
 			break;
-		case HARRIS_3D:
+		case pcl_filter::HARRIS_3D:
 			break;
 		default:
 			break;
 	}
 
-	printf("filter %d in: %lu out: %lu\n", (int)datasets.list_config.at(datasets.pos_dataset.pos.val).filter, cloud_file->size(), filtred.size());
+	printf("filter %d in: %lu out: %lu\n", (int)datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d, cloud_file->size(), filtred.size());
 	// pointcloud to image
-	image_file.copyTo(image_display); //Reset image
+	image_2d_filtred.copyTo(image_display); //Reset image
 	project2d::project_2d(camera_model, filtred, image_display, project2d::INTENSITY);
 	filter_lock.unlock();
 }
 
-void Gui_opencv::create_gui_filter() {
-	cv::namedWindow(filterNames[datasets.list_config.at(datasets.pos_dataset.pos.val).filter], CV_GUI_NORMAL);
+void Gui_opencv::create_gui_filter3d() {
+	cv::namedWindow(filter3d_names[datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d], CV_GUI_NORMAL);
 
-	for(int i = 0; i < datasets.filter_data[datasets.list_config.at(datasets.pos_dataset.pos.val).filter].size(); ++i){
-		datasets.filter_data[datasets.list_config.at(datasets.pos_dataset.pos.val).filter][i]
-				  .create_slider(filterNames[datasets.list_config.at(datasets.pos_dataset.pos.val).filter], &callback, this);
+	for(int i = 0; i < datasets.filter3d_data[datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d].size(); ++i){
+		datasets.filter3d_data[datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d][i]
+				  .create_slider(filter3d_names[datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d], &callback, this);
+	}
+}
+
+void Gui_opencv::create_gui_filter2d() {
+	datasets.filter2d.window_name = filter2d_blur_names.at(datasets.filter2d.blur.pos.val) + " " + filter2d_edge_names.at(datasets.filter2d.edge.pos.val);
+	cv::namedWindow(datasets.filter2d.window_name, CV_GUI_NORMAL);
+
+	// Blur
+	for(int i = 0; i < datasets.filter2d.blur_values.at(datasets.filter2d.blur.pos.val).size(); ++i){
+		datasets.filter2d.blur_values.at(datasets.filter2d.blur.pos.val).at(i)
+			  .create_slider(datasets.filter2d.window_name, &callback, this);
+	}
+
+	// Edge
+	for(int i = 0; i < datasets.filter2d.edge_values.at(datasets.filter2d.edge.pos.val).size(); ++i){
+		datasets.filter2d.edge_values.at(datasets.filter2d.edge.pos.val).at(i)
+			  .create_slider(datasets.filter2d.window_name, &callback, this);
 	}
 }
 
 void Gui_opencv::recreate_config_gui(){
-	cv::destroyWindow(filterNames[datasets.list_config.at(datasets.pos_dataset.pos.val).filter]);
+	cv::destroyWindow(window_name_general_conf);
+	cv::destroyWindow(filter3d_names[datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d]);
 	cv::destroyWindow(window_name_transform.c_str());
-	create_gui_filter();
+	create_gui_filter3d();
 	create_gui_manual_tf();
 	create_gui_general_conf();
 }
@@ -356,9 +514,19 @@ void
 Gui_opencv::create_gui_general_conf(){
 	cv::namedWindow(window_name_general_conf.c_str(), CV_GUI_EXPANDED);
 
-	if( datasets.list_config.at(datasets.pos_dataset.pos.val).filter_selector.max > 0){
-		cv::createTrackbar( "Filter", window_name_general_conf, &datasets.list_config.at(datasets.pos_dataset.pos.val).filter_selector.val,
-			datasets.list_config.at(datasets.pos_dataset.pos.val).filter_selector.max, &callback, this );
+	if( datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d_selector.max > 0){
+		cv::createTrackbar( "pcl filter", window_name_general_conf, &datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d_selector.val,
+			datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d_selector.max, &callback, this );
+	}
+
+	if( datasets.filter2d.blur.pos.max > 0){
+		cv::createTrackbar( "image blur", window_name_general_conf, &datasets.filter2d.blur.pos.val,
+			datasets.filter2d.blur.pos.max, &callback, this );
+	}
+
+	if( datasets.filter2d.edge.pos.max > 0){
+		cv::createTrackbar( "image edge", window_name_general_conf, &datasets.filter2d.edge.pos.val,
+			datasets.filter2d.edge.pos.max, &callback, this );
 	}
 
 	if( datasets.list_config.at(datasets.pos_dataset.pos.val).pos_image.pos.max > 0){
