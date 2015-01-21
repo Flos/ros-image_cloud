@@ -11,17 +11,17 @@ namespace image_cloud {
 
 namespace kitti {
 
-dataset::dataset() {
+Dataset::Dataset() {
 	valid = false;
 }
 
-dataset::dataset( std::string config ){
+Dataset::Dataset( std::string config ){
 	valid = false;
 	init( config );
 }
 
 bool
-dataset::init( std::string config ){
+Dataset::init( std::string config ){
 	if (! load_config( config)) return false;
 	if (! load_cameras()) return false;
 	if (! load_camera_files()) return false;
@@ -29,17 +29,17 @@ dataset::init( std::string config ){
 	if (! load_velodyne_to_cam_tf()) return false;
 	return check();
 }
-dataset::~dataset() {
+Dataset::~Dataset() {
 }
 
-void dataset::extract_string(std::istringstream& in, std::string &file_path) {
+void Dataset::extract_string(std::istringstream& in, std::string &file_path) {
 	std::istreambuf_iterator<char> it(in), end;
 	++it; // remove whitespace
 	std::copy(it, end, std::inserter(file_path, file_path.begin()));
 }
 
 bool
-dataset::load_config( std::string config){
+Dataset::load_config( std::string config){
 	path.config_file = config;
 
 	std::cout << "Reading config from: "<< config << '\n';
@@ -96,12 +96,12 @@ dataset::load_config( std::string config){
 }
 
 bool
-dataset::load_cameras(){
+Dataset::load_cameras(){
 	return camera_list.load_file(path.camera_calib_file );
 }
 
 bool
-dataset::load_camera_files(){
+Dataset::load_camera_files(){
 	if( path.camera_data.list.empty()){
 		for(int i = 0; i < camera_list.cameras.size(); ++i){
 				std::string folder = path.root_data_path + "image_" + camera_list.cameras.at(i).id + "/data/";
@@ -120,13 +120,13 @@ dataset::load_camera_files(){
 }
 
 bool
-dataset::load_velodyne_to_cam_tf(){
+Dataset::load_velodyne_to_cam_tf(){
 	if(path.tf_velodyne_to_cam0.empty() ) return true; // no path, empty tf, done
 	return velodyne_to_cam0.load_file(path.tf_velodyne_to_cam0);
 }
 
 bool
-dataset::check()
+Dataset::check()
 {
 	bool result = true;
 	if(camera_list.cameras.size() != path.camera_data.list.size()){
@@ -152,7 +152,7 @@ dataset::check()
 }
 
 bool
-dataset::load_pointcloud_files(){
+Dataset::load_pointcloud_files(){
 	if(path.pcl_data.empty()){
 		path.pcl_data = path.root_data_path + "velodyne_points/data/";
 	}
@@ -162,7 +162,7 @@ dataset::load_pointcloud_files(){
 }
 
 bool
-dataset::get_files(std::string path, String_list &list){
+Dataset::get_files(std::string path, String_list &list){
 	list.path = path;
 	DIR *dir;
 	struct dirent *ent;

@@ -31,16 +31,16 @@ struct Paths{
 	String_list camera_data;
 };
 
-class dataset {
+class Dataset {
 public:
-	dataset();
-	dataset(std::string config);
+	Dataset();
+	Dataset(std::string config);
 	bool init(std::string config);
 	bool load_config(std::string config);
 
 	bool check();
 
-	virtual ~dataset();
+	virtual ~Dataset();
 
 	Paths path;
 
