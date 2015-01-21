@@ -52,6 +52,25 @@ struct Set_selector{
 	int pos_loaded;
 };
 
+struct Position{
+	Slider_data pos;
+	int pos_loaded;
+};
+
+struct Dataset_config{
+	Filter filter;
+	Slider_data filter_selector;
+	Position pos_image;
+	Position pos_camera;
+};
+
+struct Datasets_list{
+	std::vector<kitti::Dataset> list_datasets;
+	std::vector<Dataset_config> list_config;
+	std::vector<std::vector<Filter_value> >filter_data;
+	Position pos_dataset;
+};
+
 struct Config_data
 {
 	std::string path;
@@ -91,15 +110,18 @@ public:
 	std::string window_name_control;
 
 
-	Config_data data;
+	//Config_data data;
+	Datasets_list datasets;
 
 	cv::Mat image_file;
 	cv::Mat image_display;
 	boost::mutex filter_lock;
 
+	// config common
 	char filterNames[4][50];
-	std::vector<std::vector<Filter_value> >filter_data;
+	//std::vector<std::vector<Filter_value> >filter_data;
 	Filter_value tf_data[6];
+
 
 	image_geometry::PinholeCameraModel camera_model;
 	pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_file;
