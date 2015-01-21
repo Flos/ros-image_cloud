@@ -19,6 +19,10 @@ Filter_value::Filter_value() {
 	initialised = false;
 }
 
+Filter_value::Filter_value(std::string name, int value, int max, bool negativ){
+	init(name, value, max, negativ);
+}
+
 Filter_value::Filter_value(std::string name, int value, int max, int numerator, int denominator, bool negativ, bool is_float) {
 	init(name, value, max, numerator, denominator, negativ, is_float);
 }

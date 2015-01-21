@@ -21,6 +21,7 @@ namespace image_cloud {
 class Filter_value {
 public:
 	Filter_value();
+	Filter_value(std::string name, int value, int max, bool negativ = false);
 	Filter_value(std::string name, int value, int max, int numerator, int denominator, bool negativ = false, bool is_float = true);
 	~Filter_value();
 
