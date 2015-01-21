@@ -65,8 +65,8 @@ project_2d(
 
 			cv::Point2f point_image = camera_model.project3dToPixel(cv::Point3d(pt.x, pt.y, pt.z));
 
-			if( between<int>(0, point_image.x, image.rows )
-				&& between<int>( 0, point_image.y, image.cols )
+			if( between<int>(0, point_image.x, image.cols )
+				&& between<int>( 0, point_image.y, image.rows )
 			)
 			{
 				switch(field){
