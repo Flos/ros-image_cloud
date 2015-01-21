@@ -248,7 +248,14 @@ Gui_opencv::load_projection(){
 	int camera = datasets.list_config.at(datasets.pos_dataset.pos.val).pos_camera.pos.val;
 
 	datasets.list_datasets.at(datasets.pos_dataset.pos.val).camera_list.cameras.at(camera).get_camera_info(info_msg);
-
+//	std::cout << "camera: " << datasets.list_datasets.at(datasets.pos_dataset.pos.val).camera_list.cameras.at(camera).to_string() << "\n";
+//    std::cout << "camera_info: ";
+//	for(int i = 0; i< 12; ++i){
+//    	std::cout << info_msg.P[i] << " ";
+//    	if( (i+1) % 4 == 0){
+//    		 std::cout << "\ncamera_info: ";
+//    	}
+//    }
 	camera_model.fromCameraInfo(info_msg);
 }
 
@@ -306,6 +313,10 @@ Gui_opencv::filter3d(){
 	tf::Transform velo_to_cam0;
 	datasets.list_datasets.at(datasets.pos_dataset.pos.val).velodyne_to_cam0.get_transform(velo_to_cam0);
 	transform_pointcloud(transformed, velo_to_cam0);
+	datasets.list_datasets.at(datasets.pos_dataset.pos.val).velodyne_to_cam0.save_file("valo_to_cam1_1.txt");
+
+	datasets.list_datasets.at(datasets.pos_dataset.pos.val).velodyne_to_cam0.load_file("valo_to_cam1_1.txt");
+	datasets.list_datasets.at(datasets.pos_dataset.pos.val).velodyne_to_cam0.save_file("valo_to_cam1_2.txt");
 
 	// Transform cam0_to_cam
 	tf::Transform cam0_to_cam;

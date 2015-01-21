@@ -13,7 +13,7 @@
 #include <assert.h>
 #include <vector>
 
-#include <gui/kitti/serializable.h>
+#include <common/kitti/serializable.h>
 
 #ifndef SRC_GUI_FILELIST_H_
 #define SRC_GUI_FILELIST_H_

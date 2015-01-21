@@ -5,7 +5,7 @@
  *      Author: fnolden
  */
 
-#include "gui/kitti/tf.h"
+#include "common/kitti/tf.h"
 
 namespace image_cloud {
 
@@ -85,7 +85,7 @@ Tf::to_string(){
 
 	ss.setf(std::ios::scientific);
 
-	ss << "calib_time: " << def << limiter << get_current_date_time() << new_line;
+	ss << "calib_time" << def << limiter << get_current_date_time() << new_line;
 	ss << "R" << def << limiter; serialize_array(ss, R, 9);
 	ss << "T" << def << limiter; serialize_array(ss, T, 3);
 	ss << "delta_f" << def << limiter; serialize_array(ss, delta_f, 2);
@@ -93,6 +93,11 @@ Tf::to_string(){
 
 	return ss.str();
 }
+
+
+//readTransform.setOrigin( tf::Vector3(values[3], values[7], values[11]) );
+//readTransform.setBasis( tf::Matrix3x3(values[0], values[1], values[2],values[4], values[5], values[6],values[8], values[9], values[10]) );
+
 
 }
 

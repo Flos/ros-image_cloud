@@ -5,7 +5,7 @@
  *      Author: fnolden
  */
 
-#include <gui/kitti/dataset.h>
+#include <common/kitti/dataset.h>
 
 namespace image_cloud {
 

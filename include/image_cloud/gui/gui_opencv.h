@@ -20,10 +20,10 @@
 
 // Own
 #include <gui/filter_value.h>
-#include <gui/kitti/camera.h>
-#include <gui/kitti/tf.h>
-#include <gui/string_list.h>
-#include <gui/kitti/dataset.h>
+#include <common/kitti/camera.h>
+#include <common/kitti/tf.h>
+#include <common/string_list.h>
+#include <common/kitti/dataset.h>
 
 #ifndef SRC_CALIBRATION_SIMPLE_GUI_H_
 #define SRC_CALIBRATION_SIMPLE_GUI_H_

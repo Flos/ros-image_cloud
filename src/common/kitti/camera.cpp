@@ -5,7 +5,7 @@
  *      Author: fnolden
  */
 
-#include "gui/kitti/camera.h"
+#include "common/kitti/camera.h"
 
 namespace image_cloud {
 
@@ -152,6 +152,13 @@ Camera::load(std::istream& stream){
 		in.clear(); in.str(line);
 		in >> type;
 		deserialize_array(in, P_rect, 12);
+
+		if(P_rect[11] < 0.01 ) {
+			P_rect[11] = 0; // should be 0
+		}
+		else{
+			assert(P_rect[11] == 0);
+		}
 
 		set_array(tf_rect.T, tf.T, 3);
 

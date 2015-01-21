@@ -5,7 +5,7 @@
  *      Author: fnolden
  */
 
-#include "gui/kitti/serializable.h"
+#include "common/kitti/serializable.h"
 
 namespace image_cloud {
 

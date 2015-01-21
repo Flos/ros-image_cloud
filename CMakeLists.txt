@@ -134,12 +134,12 @@ add_executable(gui
   src/gui/node.cpp
   src/gui/gui_opencv.cpp
   src/gui/filter_value.cpp
-  src/gui/kitti/serializable.cpp
-  src/gui/kitti/camera.cpp
-  src/gui/kitti/camera_list.cpp
-  src/gui/kitti/dataset.cpp
-  src/gui/kitti/tf.cpp
-  src/gui/string_list.cpp
+  src/common/kitti/serializable.cpp
+  src/common/kitti/camera.cpp
+  src/common/kitti/camera_list.cpp
+  src/common/kitti/dataset.cpp
+  src/common/kitti/tf.cpp
+  src/common/string_list.cpp
 )
 
 target_link_libraries(gui

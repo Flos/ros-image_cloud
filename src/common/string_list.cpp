@@ -5,7 +5,7 @@
  *      Author: fnolden
  */
 
-#include "gui/string_list.h"
+#include <common/string_list.h>
 
 namespace image_cloud {
 
@@ -46,7 +46,6 @@ String_list::to_string(){
 
 	if(list.empty()){
 		std::cout << "File is empty\n";
-		return false;
 	}
 	return ss.str();
 }

@@ -6,9 +6,9 @@
  */
 
 //own
-#include <gui/kitti/camera_list.h>
-#include <gui/kitti/tf.h>
-#include <gui/string_list.h>
+#include <common/kitti/camera_list.h>
+#include <common/kitti/tf.h>
+#include <common/string_list.h>
 #include <string>
 #include <sstream>
 #include <dirent.h>
