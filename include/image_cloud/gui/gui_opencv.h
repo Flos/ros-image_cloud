@@ -76,6 +76,15 @@ namespace image_filter{
 		};
 	}
 
+	enum image_index{
+		FILE_READ = 0,
+		IMAGE_GREY = 1,
+		IMAGE_BLUR = 2,
+		IMAGE_EDGE = 3,
+		IMAGE_FULL = 4,
+		IMAGE_POINTS = 5
+	};
+
 	struct Image_filter{
 		Position blur;
 		std::vector< std::vector<Filter_value> >blur_values;
@@ -85,8 +94,6 @@ namespace image_filter{
 	};
 
 }
-
-
 
 struct Set_selector{
 	String_list images;
@@ -110,16 +117,8 @@ struct Datasets_list{
 	std::vector<std::vector<Filter_value> >filter3d_data;
 	image_filter::Image_filter filter2d;
 	Position pos_dataset;
-};
-
-struct Config_data
-{
-	std::string path;
-	std::string image_file;
-	std::string pcl_file;
-	pcl_filter::Filter3d filter;
-	Slider_data filter_selector;
-	Set_selector set;
+	Slider_data processed_image_selector;
+	Slider_data projection;
 };
 
 class Gui_opencv {
@@ -144,6 +143,7 @@ public:
 	void create_gui_filter3d();
 
 	void update_values();
+	void update_image();
 	void loop();
 	void init_filter_data();
 	void init_tf();
@@ -153,15 +153,10 @@ public:
 	std::string window_name_transform;
 	std::string window_name_general_conf;
 
-
-	//Config_data data;
 	Datasets_list datasets;
 	std::vector<std::string> config_files;
 
-	cv::Mat image_file;
-	cv::Mat image_display;
-	cv::Mat image_2d_edge;
-	cv::Mat image_2d_current_edge;
+	std::vector<cv::Mat> images;
 	boost::mutex filter_lock;
 
 	// config common
