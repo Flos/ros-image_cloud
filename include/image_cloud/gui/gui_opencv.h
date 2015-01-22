@@ -160,7 +160,8 @@ public:
 
 	cv::Mat image_file;
 	cv::Mat image_display;
-	cv::Mat image_2d_filtred;
+	cv::Mat image_2d_edge;
+	cv::Mat image_2d_current_edge;
 	boost::mutex filter_lock;
 
 	// config common

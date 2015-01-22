@@ -11,6 +11,7 @@
 #include <common/filter_depth_intensity.hpp>
 #include <common/depth_filter.hpp>
 #include <common/transform.hpp>
+#include <common/score.hpp>
 
 namespace image_cloud {
 
@@ -330,61 +331,60 @@ Gui_opencv::filter2d(){
 	filter_lock.lock();
 
 	//image_file.copyTo(image_2d_filtred);
-	cv::Mat tmp,tmp2;
+	cv::Mat unprocessed,blured;
 
-	// Pipeline blur;
+	if(image_file.channels() != 1 && image_filter::edge::OFF != datasets.filter2d.edge.pos.val)
+	{
+		cvtColor(image_file, unprocessed , CV_BGR2GRAY );
+		assert(unprocessed.channels() == 1);
+	}
+	else{
+		image_file.copyTo(unprocessed);
+	}
+
 
 	try{
 
-
+	// Pipeline blur;
 	switch(datasets.filter2d.blur.pos.val){
 		default:
 		case image_filter::blur::OFF:
-			image_file.copyTo(tmp);
+			unprocessed.copyTo(blured);
 			break;
 		case image_filter::blur::BILATERAL:
-			cv::bilateralFilter ( image_file, tmp,
+			cv::bilateralFilter ( unprocessed, blured,
 					datasets.filter2d.blur_values.at(image_filter::blur::BILATERAL)[0].value,
 					datasets.filter2d.blur_values.at(image_filter::blur::BILATERAL)[0].value*2,
 					datasets.filter2d.blur_values.at(image_filter::blur::BILATERAL)[0].value/2);
 			break;
 	    case image_filter::blur::BLUR:
-			cv::blur( image_file, tmp, cv::Size( datasets.filter2d.blur_values.at(image_filter::blur::BLUR)[0].value,
+			cv::blur( unprocessed, blured, cv::Size( datasets.filter2d.blur_values.at(image_filter::blur::BLUR)[0].value,
 					datasets.filter2d.blur_values.at(image_filter::blur::BLUR)[0].value ), cv::Point(-1,-1) );
 			break;
 	    case image_filter::blur::GAUSSIAN:
-			cv::GaussianBlur( image_file, tmp, cv::Size( datasets.filter2d.blur_values.at(image_filter::blur::GAUSSIAN)[0].value,
+			cv::GaussianBlur( unprocessed, blured, cv::Size( datasets.filter2d.blur_values.at(image_filter::blur::GAUSSIAN)[0].value,
 					datasets.filter2d.blur_values.at(image_filter::blur::GAUSSIAN)[0].value ), 0, 0 );
 			break;
 	    case image_filter::blur::MEDIAN:
-	    	cv::medianBlur ( image_file, tmp, datasets.filter2d.blur_values.at(image_filter::blur::MEDIAN)[0].value );
+	    	cv::medianBlur ( unprocessed, blured, datasets.filter2d.blur_values.at(image_filter::blur::MEDIAN)[0].value );
 	    	break;
-	}
-
-
-	if(image_2d_filtred.dims != 1 && image_filter::edge::OFF != datasets.filter2d.edge.pos.val)
-	{
-		cvtColor(tmp, tmp2, CV_BGR2GRAY );
-	}
-	else{
-		tmp2 = tmp;
 	}
 
 	switch (datasets.filter2d.edge.pos.val)
 	{
 		default:
 		case image_filter::edge::OFF:
-			tmp2.copyTo(image_2d_filtred);
+			blured.copyTo(image_2d_current_edge);
 			break;
 		case image_filter::edge::CANNY:
-			cv::Canny( tmp2, image_2d_filtred,
+			cv::Canny( blured, image_2d_current_edge,
 					datasets.filter2d.edge_values.at(image_filter::edge::CANNY)[0].get_value(),
 					datasets.filter2d.edge_values.at(image_filter::edge::CANNY)[1].get_value(),
 					datasets.filter2d.edge_values.at(image_filter::edge::CANNY)[2].value,
 					datasets.filter2d.edge_values.at(image_filter::edge::CANNY)[3].value );
 			break;
 		case image_filter::edge::LAPLACE:
-			cv::Laplacian( tmp2, image_2d_filtred, CV_16S,
+			cv::Laplacian( blured, image_2d_current_edge, CV_16S,
 					datasets.filter2d.edge_values.at(image_filter::edge::LAPLACE)[0].value,
 					datasets.filter2d.edge_values.at(image_filter::edge::LAPLACE)[1].get_value(),
 					datasets.filter2d.edge_values.at(image_filter::edge::LAPLACE)[2].get_value() );
@@ -394,11 +394,25 @@ Gui_opencv::filter2d(){
 		printf("Filter2d error: %s", e.what());
 	}
 
-	if(image_2d_filtred.dims == 1) {
-		cvtColor(image_2d_filtred, tmp2, CV_GRAY2BGR );
-		image_2d_filtred = tmp2;
+	printf("1");
+	if(image_2d_current_edge.channels() == 1) {
+
+		printf("2");
+		image_2d_current_edge.copyTo(image_2d_edge);
+
+		printf("3");
+		cvtColor(image_2d_current_edge, image_display, CV_GRAY2BGR );
+
+		printf("5");
+	}
+	else{
+		printf("6 c: %i, d: %i",image_2d_current_edge.channels(),image_2d_current_edge.depth());
+		cv::Mat grey;
+		cvtColor(image_2d_current_edge, image_2d_edge, CV_BGR2GRAY );
+		printf("6e");
 	}
 
+	printf("7");
 
 	//filtred.copyTo(image_display);
 	filter_lock.unlock();
@@ -429,6 +443,10 @@ Gui_opencv::filter3d(){
 														tf_data[3].get_value(), tf_data[4].get_value(), tf_data[5].get_value());
 	pcl::PointCloud<pcl::PointXYZI> filtred;
 
+	std::vector<std::vector<boost::shared_ptr<pcl::PointXYZI> > > map(image_display.cols, std::vector<boost::shared_ptr<pcl::PointXYZI> > (image_display.rows));
+	printf("vector size: %lu, %lu\n", map.size(),map[0].size());
+	project2d::project_2d(camera_model, transformed, map, image_display.cols, image_display.rows);
+
 	switch (datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d)
 	{
 		case pcl_filter::OFF:
@@ -441,9 +459,6 @@ Gui_opencv::filter3d(){
 			break;
 		case pcl_filter::DEPTH_INTENSITY:
 			{
-				std::vector<std::vector<boost::shared_ptr<pcl::PointXYZI> > > map(image_display.rows*3, std::vector<boost::shared_ptr<pcl::PointXYZI> > (image_display.cols*2));
-				printf("vector size: %lu, %lu\n", map.size(),map[0].size());
-				project2d::project_2d(camera_model, transformed, map, image_display.rows*3, image_display.cols*2);
 				filter::filter_depth_intensity(map, filtred,
 						datasets.filter3d_data[datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d][0].get_value(), // depth
 						datasets.filter3d_data[datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d][1].get_value(), // intensity
@@ -457,10 +472,14 @@ Gui_opencv::filter3d(){
 			break;
 	}
 
-	printf("filter %d in: %lu out: %lu\n", (int)datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d, cloud_file->size(), filtred.size());
 	// pointcloud to image
-	image_2d_filtred.copyTo(image_display); //Reset image
+	image_2d_current_edge.copyTo(image_display); //Reset image
 	project2d::project_2d(camera_model, filtred, image_display, project2d::INTENSITY);
+
+	float score;
+	score::score(map, image_2d_edge, score);
+	printf("filter %d in: %lu out: %lu score: %f\n", (int)datasets.list_config.at(datasets.pos_dataset.pos.val).filter3d, cloud_file->size(), filtred.size(), score);
+
 	filter_lock.unlock();
 }
 
