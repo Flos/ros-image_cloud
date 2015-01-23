@@ -19,26 +19,16 @@
 #include <image_geometry/pinhole_camera_model.h>
 
 // Own
-#include <gui/filter_value.h>
 #include <common/kitti/camera.h>
 #include <common/kitti/tf.h>
 #include <common/string_list.h>
 #include <common/kitti/dataset.h>
+#include <gui/slider.h>
 
 #ifndef SRC_CALIBRATION_SIMPLE_GUI_H_
 #define SRC_CALIBRATION_SIMPLE_GUI_H_
 
 namespace image_cloud {
-
-struct Slider_data{
-	int max;
-	int val;
-};
-
-struct Position{
-	Slider_data pos;
-	int pos_loaded;
-};
 
 namespace pcl_filter{
 	enum Filter3d
@@ -46,7 +36,7 @@ namespace pcl_filter{
 		OFF = 0,
 		DEPTH = 1,
 		DEPTH_INTENSITY = 2,
-		HARRIS_3D = 3
+		OTHER = 3
 	};
 }
 
@@ -86,10 +76,10 @@ namespace image_filter{
 	};
 
 	struct Image_filter{
-		Position blur;
-		std::vector< std::vector<Filter_value> >blur_values;
-		Position edge;
-		std::vector<std::vector<Filter_value> >edge_values;
+		Slider blur;
+		std::vector< std::vector<Slider> >blur_values;
+		Slider edge;
+		std::vector<std::vector<Slider> >edge_values;
 		std::string window_name;
 	};
 
@@ -98,27 +88,26 @@ namespace image_filter{
 struct Set_selector{
 	String_list images;
 	String_list pointclouds;
-	Slider_data pos;
-	int pos_loaded;
+	Slider pos;
 };
 
 
 
 struct Dataset_config{
-	pcl_filter::Filter3d filter3d;
-	Slider_data filter3d_selector;
-	Position pos_image;
-	Position pos_camera;
+	Slider pos_image;
+	Slider pos_camera;
 };
 
+//Date for all
 struct Datasets_list{
 	std::vector<kitti::Dataset> list_datasets;
 	std::vector<Dataset_config> list_config;
-	std::vector<std::vector<Filter_value> >filter3d_data;
+	std::vector<std::vector<Slider> >filter3d_data;
 	image_filter::Image_filter filter2d;
-	Position pos_dataset;
-	Slider_data processed_image_selector;
-	Slider_data projection;
+	Slider pos_dataset;
+	Slider processed_image_selector;
+	Slider projection;
+	Slider pcl_filter;
 };
 
 class Gui_opencv {
@@ -145,9 +134,10 @@ public:
 	void update_values();
 	void update_image();
 	void loop();
-	void init_filter_data();
+	void init_menu_options();
 	void init_tf();
 	void create_gui_manual_tf();
+	void init_datasets();
 
 	std::string window_name;
 	std::string window_name_transform;
@@ -160,11 +150,11 @@ public:
 	boost::mutex filter_lock;
 
 	// config common
-	char filter3d_names[4][50];
+	std::vector<std::string> filter3d_names;
 	std::vector<std::string> filter2d_blur_names;
 	std::vector<std::string> filter2d_edge_names;
 	//std::vector<std::vector<Filter_value> >filter_data;
-	Filter_value tf_data[6];
+	Slider tf_data[6];
 
 	image_geometry::PinholeCameraModel camera_model;
 	pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_file;
