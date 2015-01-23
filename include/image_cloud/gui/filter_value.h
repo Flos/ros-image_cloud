@@ -18,12 +18,12 @@
 
 namespace image_cloud {
 
-class Filter_value {
+class Slider {
 public:
-	Filter_value();
-	Filter_value(std::string name, int value, int max, bool negativ = false);
-	Filter_value(std::string name, int value, int max, int numerator, int denominator, bool negativ = false, bool is_float = true);
-	~Filter_value();
+	Slider();
+	Slider(std::string name, int value, int max, bool negativ = false);
+	Slider(std::string name, int value, int max, int numerator, int denominator, bool negativ = false, bool is_float = true);
+	~Slider();
 
 	void init(std::string name, int value, int max, bool negativ = false);
 	void init(std::string name, int value, int max, int numerator, int denominator, bool negativ = false, bool is_float = true);
@@ -36,6 +36,7 @@ public:
 	int numerator;
 	int denominator;
 	int value;
+	int loaded;
 	bool initialised;
 	bool is_float;
 	std::string name;
