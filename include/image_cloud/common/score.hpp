@@ -49,23 +49,37 @@ score(
 		assert(image_edge.cols == idx.size());
 		score = 0;
 
-		int hit = 0;
-		int points = 0;
+		long unsigned int hit = 0;
+		long unsigned int points = 0;
+		long unsigned int pixels_with_value = 0;
+
 		for(int y = 0; y < idx[0].size(); y++)
 		{
 			for(int x = 0; x < idx.size(); x++)
 			{
+				int pixel_value = image_edge.at<uchar>(x,y);
 				if( idx[x][y]){ /* found something */
 					++points;
-					if( image_edge.at<uchar>(x,y) > threshold){
+					if( pixel_value > threshold){
 						++hit;
 					}
+				}
+				else if(pixel_value != 0){
+					++pixels_with_value;
 				}
 			}
 		}
 
-		score = (float)hit/(float)points;
-		printf("Points: %d, threshold %i, hits: %d, Score: %f\n", points, threshold, hit, score );
+		if(pixels_with_value > (image_edge.rows*image_edge.cols*0.3)){
+			printf("Error no proper image with features applied\n");
+			score = 0;
+		}
+		else{
+			// Should be high when many points hit.
+			// but should be low if chance to hit is to high
+			score = (float)hit/(float)points;
+		}
+		printf("Pixels: %lu, Points: %lu, threshold %i, hits: %lu, Score: %f\n", pixels_with_value, points, threshold, hit, score );
 }
 
 
