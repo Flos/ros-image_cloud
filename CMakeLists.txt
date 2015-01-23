@@ -133,7 +133,7 @@ add_dependencies(pcl_to_image
 add_executable(gui
   src/gui/node.cpp
   src/gui/gui_opencv.cpp
-  src/gui/filter_value.cpp
+  src/gui/slider.cpp
   src/common/kitti/serializable.cpp
   src/common/kitti/camera.cpp
   src/common/kitti/camera_list.cpp

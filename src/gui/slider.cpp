@@ -5,7 +5,7 @@
  *      Author: fnolden
  */
 
-#include <gui/filter_value.h>
+#include <gui/slider.h>
 
 namespace image_cloud {
 
