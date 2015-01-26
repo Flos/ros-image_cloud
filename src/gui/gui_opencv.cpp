@@ -68,6 +68,7 @@ Gui_opencv::init(){
 	config_files.push_back("/media/Daten/kitti/config_barney_0001.txt");
 	config_files.push_back("/media/Daten/kitti/config_kitti_0005.txt");
 	config_files.push_back("/media/Daten/kitti/config_kitti_0048.txt");
+	config_files.push_back("/media/Daten/kitti/barney/graz/0001_add/config.txt");
 
 	init_datasets();
 
