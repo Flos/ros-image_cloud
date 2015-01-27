@@ -71,8 +71,9 @@ namespace image_filter{
 		IMAGE_GREY = 1,
 		IMAGE_BLUR = 2,
 		IMAGE_EDGE = 3,
-		IMAGE_FULL = 4,
-		IMAGE_POINTS = 5
+		IMAGE_INVERSE_TRANSFORMED = 4,
+		IMAGE_FULL = 5,
+		IMAGE_POINTS = 6
 	};
 
 	struct Image_filter{

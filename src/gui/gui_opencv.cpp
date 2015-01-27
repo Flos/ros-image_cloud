@@ -13,6 +13,8 @@
 #include <common/transform.hpp>
 #include <common/score.hpp>
 #include <common/filter/segmentation.hpp>
+#include <common/filter/inverse_distance_transform.hpp>
+
 
 namespace image_cloud {
 
@@ -103,7 +105,7 @@ Gui_opencv::init(){
 }
 
 void Gui_opencv::init_menu_options() {
-	images.resize(6);
+	images.resize(7);
 
 	filter3d_names.push_back("off");
 	filter3d_names.push_back("depth");
@@ -245,6 +247,10 @@ Gui_opencv::load_image(){
 	images[image_filter::IMAGE_POINTS].create(images[image_filter::FILE_READ].rows,
 												images[image_filter::FILE_READ].cols,
 												images[image_filter::FILE_READ].type());
+
+	images[image_filter::IMAGE_INVERSE_TRANSFORMED].create(images[image_filter::FILE_READ].rows,
+													images[image_filter::FILE_READ].cols,
+													CV_8U);
 }
 
 void
@@ -390,6 +396,8 @@ Gui_opencv::filter2d(){
 			break;
 	}
 
+
+	filter_2d::inverse_distance_transformation(images[image_filter::IMAGE_EDGE], images[image_filter::IMAGE_INVERSE_TRANSFORMED]);
 	printf("7");
 
 	}catch(cv::Exception &e){
