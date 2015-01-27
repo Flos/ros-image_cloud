@@ -30,6 +30,7 @@ Camera::Camera(int camera_nr, std::string name)
 	set_zero(P_rect, 12);
 
 	set_camera_nr(camera_nr);
+	this->frame_id = "image_" + id;
 }
 
 void
@@ -97,6 +98,8 @@ Camera::set_camera_info(sensor_msgs::CameraInfo info_msg){
 	for(int i = 0; i < info_msg.P.size(); ++i){
 		P_rect[i] = info_msg.P[i];
 	}
+
+	frame_id = info_msg.header.frame_id;
 }
 
 void

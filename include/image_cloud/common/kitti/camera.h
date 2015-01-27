@@ -33,6 +33,7 @@ namespace kitti{
 class Camera : public Serializable{
 public:
 	std::string name;
+	std::string frame_id;
 	std::string id;
 	int camera_nr;
 	float S[2]; // original image size
