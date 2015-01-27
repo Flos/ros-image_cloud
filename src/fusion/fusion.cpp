@@ -181,7 +181,9 @@ Fusion::callback(const sensor_msgs::ImageConstPtr& input_msg_image, const sensor
 	// If we are here we can start
 	camera_model.fromCameraInfo(input_msg_image_info);
 
-	//NODELET_INFO("camera_model:  tx: %f, ty: %f, cx: %f, cy: %f, fx: %f, fy: %f ", camera_model.Tx(), camera_model.Ty(), camera_model.cx(), camera_model.cy(), camera_model.fx(), camera_model.fy() );
+	//NODELET_INFO("camera_model:  tx: %f, ty: %f, cx: %f, cy: %f, fx: %f, fy: %f, w: %d, h: %d ", camera_model.Tx(), camera_model.Ty(),
+							  camera_model.cx(), camera_model.cy(), camera_model.fx(), camera_model.fy(),
+							  input_msg_image_info->width, input_msg_image_info->height );
    cv_bridge::CvImagePtr cv_ptr;
    cv_bridge::CvImagePtr cv_shared_ptr;
    try{
