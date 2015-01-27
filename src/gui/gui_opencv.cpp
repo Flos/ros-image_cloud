@@ -44,8 +44,10 @@ Gui_opencv::~Gui_opencv() {
 	// TODO Auto-generated destructor stub
 }
 
+
 void Gui_opencv::init_datasets() {
-	for (int i = 0; i < config_files.size(); ++i) {
+	for (int i = 0; i < config_files.size(); ++i)
+	{
 		kitti::Dataset city(config_files.at(i));
 		Dataset_config city_conf;
 		datasets.list_config.push_back(city_conf);
@@ -68,7 +70,8 @@ Gui_opencv::init(){
 	config_files.push_back("/media/Daten/kitti/config_barney_0001.txt");
 	config_files.push_back("/media/Daten/kitti/config_kitti_0005.txt");
 	config_files.push_back("/media/Daten/kitti/config_kitti_0048.txt");
-	config_files.push_back("/media/Daten/kitti/barney/graz/0001_add/config.txt");
+	config_files.push_back("/media/Daten/kitti/barney/graz/0001.txt");
+	config_files.push_back("/media/Daten/kitti/barney/graz/0001_add.txt");
 
 	init_datasets();
 
@@ -118,7 +121,7 @@ void Gui_opencv::init_menu_options() {
 	datasets.filter3d_data.at(pcl_filter::DEPTH_INTENSITY).at(0).init("depth", 30, 200, 1, 100 );
 	datasets.filter3d_data.at(pcl_filter::DEPTH_INTENSITY).at(1).init("intensity", 50, 200, 1, 100);
 	datasets.filter3d_data.at(pcl_filter::DEPTH_INTENSITY).at(2).init("neighbors", 2, 30, false);
-	datasets.filter3d_data.at(pcl_filter::DEPTH_INTENSITY).at(3).init("direction_x?", 0, 1, false);
+	datasets.filter3d_data.at(pcl_filter::DEPTH_INTENSITY).at(3).init("direction y|x", 1, 1, false);
 
 
 	filter2d_blur_names.push_back("off");
@@ -413,7 +416,7 @@ Gui_opencv::filter3d(){
 
 	datasets.list_datasets.at(datasets.pos_dataset.value).camera_list.cameras.at(camera).tf_rect.get_transform(cam0_to_cam);
 
-	tf::Transform result = (velo_to_cam0, velo_to_cam0);
+	tf::Transform result = (cam0_to_cam*velo_to_cam0);
 	transform_pointcloud(transformed, result);
 
 	// Transform Manual
