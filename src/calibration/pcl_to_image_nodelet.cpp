@@ -148,9 +148,9 @@ Pcl_to_image_nodelet::reconfigure_callback(Config &config, uint32_t level){
 
 void
 Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_image_info, const PointCloud::ConstPtr &input_msg_cloud_ptr){
-	NODELET_DEBUG("Pcl_to_image_nodelet: callback");
+	//NODELET_DEBUG("Pcl_to_image_nodelet: callback");
 
-	time("pcl_to_image: ", input_msg_image_info->header, input_msg_cloud_ptr->header, true);
+	//time("pcl_to_image: ", input_msg_image_info->header, input_msg_cloud_ptr->header, true);
 
 	if( pub_.getNumSubscribers() == 0
 			&& pub_depth_.getNumSubscribers() == 0){ // don't do anything if no one is interested
@@ -223,7 +223,7 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
 
 	camera_model.fromCameraInfo(cam_info);
 
-	NODELET_DEBUG("camera_model:  tx: %f, ty: %f, cx: %f, cy: %f, fx: %f, fy: %f ", camera_model.Tx(), camera_model.Ty(), camera_model.cx(), camera_model.cy(), camera_model.fx(), camera_model.fy() );
+	//NODELET_DEBUG("camera_model:  tx: %f, ty: %f, cx: %f, cy: %f, fx: %f, fy: %f ", camera_model.Tx(), camera_model.Ty(), camera_model.cx(), camera_model.cy(), camera_model.fx(), camera_model.fy() );
 
 
 	cv::Mat image;
@@ -312,7 +312,7 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
 
    pub_cloud_.publish(msg_cloud3d_transformed);
 
-   NODELET_DEBUG("callback end");
+   //NODELET_DEBUG("callback end");
    config_lock_.unlock();
 }
 
