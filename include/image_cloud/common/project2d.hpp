@@ -43,8 +43,8 @@ project_2d(
 
 
 enum Field{
-	INTENSITY,
-	DEPTH
+	INTENSITY = 0,
+	DEPTH = 1
 };
 
 
