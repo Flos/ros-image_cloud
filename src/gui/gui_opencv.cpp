@@ -78,14 +78,15 @@ Gui_opencv::init(){
 
 	init_datasets();
 
-	datasets.pos_dataset.init("set", 1, datasets.list_datasets.size() -1);
 
 	window_name = "manual calibration";
 	window_name_general_conf = window_name + " image control";
 
-	datasets.processed_image_selector.init("processed image", 4, images.size() -1);
+	// Default slider values
+	datasets.pos_dataset.init("set", 1, datasets.list_datasets.size() -1);
+	datasets.processed_image_selector.init("processed image", image_filter::IMAGE_INVERSE_TRANSFORMED, images.size() -1);
 	datasets.filter2d.blur.init("blur filter", image_filter::blur::OFF, filter2d_blur_names.size() -1);
-	datasets.filter2d.edge.init("edge filter", image_filter::edge::OFF, filter2d_edge_names.size() -1);
+	datasets.filter2d.edge.init("edge filter", image_filter::edge::MAX, filter2d_edge_names.size() -1);
 	datasets.projection.init("0 = intensity | depth = 1", 0, 1);
 	datasets.pcl_filter.init("pcl filter", 1, filter3d_names.size() -1);
 
@@ -247,11 +248,20 @@ Gui_opencv::load_image(){
 				);
 
 	images[image_filter::FILE_READ] = cv::imread(filename);
-	images[image_filter::IMAGE_POINTS].create(images[image_filter::FILE_READ].rows,
-												images[image_filter::FILE_READ].cols,
-												images[image_filter::FILE_READ].type());
 
+	images[image_filter::IMAGE_EDGE].create(images[image_filter::FILE_READ].rows,
+												images[image_filter::FILE_READ].cols,
+												CV_8U);
+	images[image_filter::IMAGE_GREY].create(images[image_filter::FILE_READ].rows,
+													images[image_filter::FILE_READ].cols,
+													CV_8U);
 	images[image_filter::IMAGE_INVERSE_TRANSFORMED].create(images[image_filter::FILE_READ].rows,
+													images[image_filter::FILE_READ].cols,
+													CV_8U);
+	images[image_filter::IMAGE_POINTS].create(images[image_filter::FILE_READ].rows,
+													images[image_filter::FILE_READ].cols,
+													CV_8U);
+	images[image_filter::IMAGE_BLUR].create(images[image_filter::FILE_READ].rows,
 													images[image_filter::FILE_READ].cols,
 													CV_8U);
 }
@@ -403,7 +413,7 @@ Gui_opencv::filter2d(){
 	}
 
 
-	filter_2d::inverse_distance_transformation(images[image_filter::IMAGE_EDGE], images[image_filter::IMAGE_INVERSE_TRANSFORMED]);
+	filter_2d::inverse_distance_transformation<uchar,uchar>(images[image_filter::IMAGE_EDGE], images[image_filter::IMAGE_INVERSE_TRANSFORMED]);
 	printf("7");
 
 	}catch(cv::Exception &e){
@@ -486,7 +496,7 @@ Gui_opencv::filter3d(){
 	project2d::project_2d(camera_model, filtred, images[image_filter::IMAGE_POINTS], (project2d::Field) datasets.projection.value);
 
 	long unsigned score;
-	score::objective_function(map, images[image_filter::IMAGE_INVERSE_TRANSFORMED], score);
+	score::objective_function<pcl::PointXYZI,uchar>(map, images[image_filter::IMAGE_INVERSE_TRANSFORMED], score);
 	printf("filter %d in: %lu out: %lu score: %lu\n", (int)datasets.pcl_filter.value, cloud_file->size(), filtred.size(), score);
 
 	filter_lock.unlock();
