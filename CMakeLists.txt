@@ -18,11 +18,8 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   tf
+  kitti
 )
-
-## System dependencies are found with CMake's conventions
-find_package(Boost REQUIRED COMPONENTS system)
-
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -52,7 +49,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES image_cloud
-  CATKIN_DEPENDS image_geometry image_transport pcl_conversions pcl_ros OpenCV PCL boost cv_bridge nodelet roscpp rospy rostime sensor_msgs std_msgs tf
+  CATKIN_DEPENDS image_geometry image_transport pcl_conversions pcl_ros cv_bridge nodelet roscpp rospy rostime sensor_msgs std_msgs tf
   DEPENDS system_lib
 )
 
@@ -60,21 +57,46 @@ catkin_package(
 ## Build ##
 ###########
 
+find_package(OpenCV REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system)
 find_package(PCL 1.7 REQUIRED)
-include_directories(BEFORE ${PCL_INCLUDE_DIRS})
-link_directories(${PCL_LIBRARY_DIRS})
-add_definitions(${PCL_DEFINITIONS})
+
+include_directories(BEFORE 	${PCL_INCLUDE_DIRS}  
+							${OpenCV_INCLUDE_DIRS}
+  							${Boost_INCLUDE_DIRS}
+)
+
+link_directories(${PCL_LIBRARY_DIRS}
+				 ${OpenCV_LIBRARY_DIRS}
+)
+
+add_definitions( ${PCL_DEFINITIONS}
+				 ${OpenCV_DEFINITIONS}
+)
 if (NOT PCL_FOUND)
     MESSAGE(FATAL_ERROR "PCL not found.\n")
 endif (NOT PCL_FOUND)
 
+
+set(common
+  src/common/string_list.cpp
+)
+
+
+set(kitti_data
+  src/common/kitti/serializable.cpp
+  src/common/kitti/camera.cpp
+  src/common/kitti/camera_list.cpp
+  src/common/kitti/dataset.cpp
+  src/common/kitti/tf.cpp
+)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
-  include/image_cloud
+  include
 )
 
 ## Fusion Nodelets
@@ -134,12 +156,8 @@ add_executable(gui
   src/gui/node.cpp
   src/gui/gui_opencv.cpp
   src/gui/slider.cpp
-  src/common/kitti/serializable.cpp
-  src/common/kitti/camera.cpp
-  src/common/kitti/camera_list.cpp
-  src/common/kitti/dataset.cpp
-  src/common/kitti/tf.cpp
-  src/common/string_list.cpp
+  ${common}
+  ${kitti_data}
 )
 
 target_link_libraries(gui
@@ -147,6 +165,20 @@ target_link_libraries(gui
 )
 
 add_dependencies(gui 
+  ${PROJECT_NAME}_gencfg
+)
+
+
+add_executable(calibration_standalone
+  src/calibration/calibration_standalone.cpp
+)
+
+target_link_libraries(calibration_standalone
+  ${catkin_LIBRARIES}
+  kitti
+)
+
+add_dependencies(calibration_standalone 
   ${PROJECT_NAME}_gencfg
 )
 
