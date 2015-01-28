@@ -3,8 +3,8 @@
 #include <common/time.hpp>
 #include <common/pcl_features.hpp>
 #include <common/project2d.hpp>
-#include <common/depth_filter.hpp>
-#include <common/filter_depth_intensity.hpp>
+#include <common/filter/pcl/depth_filter.hpp>
+#include <common/filter/pcl/filter_depth_intensity.hpp>
 
 // watch the capitalization carefully
 PLUGINLIB_DECLARE_CLASS(image_cloud, Pcl_to_image_nodelet, image_cloud::Pcl_to_image_nodelet, nodelet::Nodelet)
