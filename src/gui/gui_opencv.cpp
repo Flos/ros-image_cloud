@@ -5,17 +5,17 @@
  *      Author: fnolden
  */
 
-#include <gui/gui_opencv.h>
+#include <image_cloud/gui/gui_opencv.h>
 
-#include <common/project2d.hpp>
-#include <common/filter/pcl/filter_depth_intensity.hpp>
-#include <common/filter/pcl/segmentation.hpp>
-#include <common/filter/pcl/depth_filter.hpp>
-#include <common/transform.hpp>
-#include <common/calibration/score.hpp>
-#include <common/filter/cv/inverse_distance_transform.hpp>
-#include <common/filter/cv/edge.hpp>
-#include <common/calibration/multi_score.hpp>
+#include <image_cloud/common/project2d.hpp>
+#include <image_cloud/common/filter/pcl/filter_depth_intensity.hpp>
+#include <image_cloud/common/filter/pcl/segmentation.hpp>
+#include <image_cloud/common/filter/pcl/depth_filter.hpp>
+#include <image_cloud/common/transform.hpp>
+#include <image_cloud/common/calibration/score.hpp>
+#include <image_cloud/common/filter/cv/inverse_distance_transform.hpp>
+#include <image_cloud/common/filter/cv/edge.hpp>
+#include <image_cloud/common/calibration/multi_score.hpp>
 
 
 namespace image_cloud {
@@ -454,7 +454,8 @@ Gui_opencv::filter3d(){
 
 	printf("vector size: %lu, %lu\n", map.size(),map[0].size());
 
-	project2d::project_2d(camera_model, transformed, map, images[image_filter::FILE_READ].cols, images[image_filter::FILE_READ].rows);
+	Projected_pointcloud<pcl::PointXYZI> projected_pointclouds;
+	project2d::project_2d(camera_model, transformed, map, projected_pointclouds, images[image_filter::FILE_READ].cols, images[image_filter::FILE_READ].rows);
 
 	switch (datasets.pcl_filter.value)
 	{
@@ -494,11 +495,13 @@ Gui_opencv::filter3d(){
 													images[image_filter::FILE_READ].cols,
 													CV_8UC3,
 													cv::Scalar(127,127,127));
+
 	project2d::project_2d(camera_model, filtred, images[image_filter::IMAGE_POINTS], (project2d::Field) datasets.projection.value);
 
-	long unsigned score;
-	score::objective_function<pcl::PointXYZI,uchar>(map, images[image_filter::IMAGE_INVERSE_TRANSFORMED], score);
-	printf("filter %d in: %lu out: %lu score: %lu\n", (int)datasets.pcl_filter.value, cloud_file->size(), filtred.size(), score);
+	long unsigned score = 0;
+	score::objective_function<pcl::PointXYZI,uchar>(projected_pointclouds, images[image_filter::IMAGE_INVERSE_TRANSFORMED], score);
+
+	printf("filter %d in: %lu out: %lu score: %lu \n", (int)datasets.pcl_filter.value, cloud_file->size(), filtred.size(), score);
 
 	filter_lock.unlock();
 }

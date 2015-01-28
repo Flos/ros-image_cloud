@@ -8,7 +8,7 @@
 #ifndef SYNC_REMAP_NODELET_H_
 #define SYNC_REMAP_NODELET_H_
 
-#include "ros/ros.h"
+#include <ros/ros.h>
 #include <sstream>
 #include <string.h>
 #include <map>

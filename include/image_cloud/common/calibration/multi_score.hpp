@@ -1,9 +1,10 @@
-#include <common/small_helpers.hpp>
-#include <opencv2/core/core.hpp>
-#include <common/type.hpp>
+#include <image_cloud/common/small_helpers.hpp>
+#include <image_cloud/common/type.hpp>
+#include <image_cloud/common/calibration/structs.hpp>
+#include <image_cloud/common/transform.hpp>
+
 #include <math.h>
-#include <common/calibration/structs.hpp>
-#include <common/transform.hpp>
+#include <opencv2/core/core.hpp>
 
 #ifndef MUTLI_SCORE_H_
 #define MUTLI_SCORE_H_

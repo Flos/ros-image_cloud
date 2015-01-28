@@ -17,7 +17,7 @@
 
 #include <image_transport/image_transport.h>
 #include <tf/transform_broadcaster.h>
-#include "nodelet/nodelet.h"
+#include <nodelet/nodelet.h>
 
 #include <pcl_ros/point_cloud.h>
 #include <pcl_ros/transforms.h>
@@ -45,7 +45,9 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/PointCloud2.h>
+
 #include <pcl/keypoints/harris_3d.h>
+
 #include <dynamic_reconfigure/server.h>
 #include <image_cloud/pcl_imageConfig.h>
 

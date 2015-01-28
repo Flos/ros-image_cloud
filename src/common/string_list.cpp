@@ -5,7 +5,7 @@
  *      Author: fnolden
  */
 
-#include <common/string_list.h>
+#include <image_cloud/common/string_list.h>
 
 namespace image_cloud {
 

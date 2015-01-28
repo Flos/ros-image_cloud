@@ -6,9 +6,9 @@
  */
 
 //own
-#include <common/kitti/camera_list.h>
-#include <common/kitti/tf.h>
-#include <common/string_list.h>
+#include <image_cloud/common/kitti/camera_list.h>
+#include <image_cloud/common/kitti/tf.h>
+#include <image_cloud/common/string_list.h>
 #include <string>
 #include <sstream>
 #include <dirent.h>

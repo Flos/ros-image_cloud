@@ -8,7 +8,7 @@
 #include <image_geometry/pinhole_camera_model.h>
 #include <sensor_msgs/PointCloud2.h>
 
-#include <common/small_helpers.hpp>
+#include <image_cloud/common/small_helpers.hpp>
 
 #ifndef PCL_DEPTH_FILTER_H_
 #define PCL_DEPTH_FILTER_H_

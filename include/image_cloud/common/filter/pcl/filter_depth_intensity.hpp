@@ -1,7 +1,7 @@
 #ifndef FILDER_DEPTH_INTENSITY_H_
 #define FILDER_DEPTH_INTENSITY_H_
 
-#include <common/small_helpers.hpp>
+#include <image_cloud/common/small_helpers.hpp>
 #include <pcl/common/common.h>
 
 #include <cv_bridge/cv_bridge.h>

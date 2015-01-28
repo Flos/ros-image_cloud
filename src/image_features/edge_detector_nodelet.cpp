@@ -5,7 +5,7 @@
  *      Author: fnolden
  */
 
-#include "edge_detector_nodelet.h"
+#include <image_cloud/image_features/edge_detector_nodelet.h>
 #include <pluginlib/class_list_macros.h>
 
 // watch the capitalization carefully

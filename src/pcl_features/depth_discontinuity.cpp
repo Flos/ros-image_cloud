@@ -55,24 +55,6 @@ Harris3d_nodelet::callback(const PointCloud::ConstPtr &input_msg_cloud_ptr){
 
 	NODELET_INFO( "In: %lu, keypoints: %lu", cloud.size(), keypoints->size());
 
-//	pcl::PointCloud<pcl::PointXYZ>::Ptr keypoints3D(new pcl::PointCloud<pcl::PointXYZ>());
-//	pcl::PointXYZ tmp;
-//	double max = 0,min=0;
-//
-//	for(pcl::PointCloud<pcl::PointXYZI>::iterator i = keypoints->begin(); i!= keypoints->end(); i++){
-//		tmp = pcl::PointXYZ((*i).x,(*i).y,(*i).zne);
-//		if ((*i).intensity>max ){
-//			std::cout << (*i) << " coords: " << (*i).x << ";" << (*i).y << ";" << (*i).z << std::endl;
-//			max = (*i).intensity;
-//		}
-//		if ((*i).intensity<min){
-//			min = (*i).intensity;
-//		}
-//		keypoints3D->push_back(tmp);
-//	}
-
-	//std::cout << "maximal responce: "<< max << " min responce:  "<< min<<std::endl;
-
 	PointCloud out;
 	pcl::toROSMsg(*keypoints,out);
 	out.header = input_msg_cloud_ptr->header;

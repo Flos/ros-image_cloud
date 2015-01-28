@@ -1,9 +1,9 @@
-#include <pcl/common/common.h>
-#include <image_geometry/pinhole_camera_model.h>
-#include <common/small_helpers.hpp>
-#include <opencv2/core/core.hpp>
-#include <common/type.hpp>
+#include <image_cloud/common/small_helpers.hpp>
+#include <image_cloud/common/type.hpp>
 
+#include <image_geometry/pinhole_camera_model.h>
+#include <pcl/common/common.h>
+#include <opencv2/core/core.hpp>
 
 #ifndef SCORE_H_
 #define SCORE_H_

@@ -5,7 +5,7 @@
  *      Author: fnolden
  */
 
-#include <gui/slider.h>
+#include <image_cloud/gui/slider.h>
 
 namespace image_cloud {
 

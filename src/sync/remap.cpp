@@ -1,4 +1,4 @@
-#include "sync/remap.h"
+#include <image_cloud/sync/remap.h>
 #include <pluginlib/class_list_macros.h>
 
 // watch the capitalization carefully

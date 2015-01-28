@@ -1,8 +1,9 @@
+#include <image_cloud/common/small_helpers.hpp>
+#include <image_cloud/common/type.hpp>
+
 #include <pcl/common/common.h>
 #include <image_geometry/pinhole_camera_model.h>
-#include <common/small_helpers.hpp>
 #include <opencv2/core/core.hpp>
-#include <common/type.hpp>
 
 #ifndef PROJECT_2D_H_
 #define PROJECT_2D_H_

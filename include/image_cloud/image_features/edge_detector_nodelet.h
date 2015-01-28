@@ -8,7 +8,7 @@
 #ifndef EDGEDETECTORNODELET_H_
 #define EDGEDETECTORNODELET_H_
 
-#include "ros/ros.h"
+#include <ros/ros.h>
 #include <sstream>
 #include <string.h>
 #include <map>
@@ -17,7 +17,7 @@
 
 #include <image_transport/image_transport.h>
 #include <tf/transform_broadcaster.h>
-#include "nodelet/nodelet.h"
+#include <nodelet/nodelet.h>
 
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>

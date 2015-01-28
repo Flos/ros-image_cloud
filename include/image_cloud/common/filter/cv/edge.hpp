@@ -1,4 +1,4 @@
-#include <common/small_helpers.hpp>
+#include <image_cloud/common/small_helpers.hpp>
 #include <opencv2/core/core.hpp>
 #include <math.h>
 

@@ -19,11 +19,11 @@
 #include <image_geometry/pinhole_camera_model.h>
 
 // Own
-#include <common/kitti/camera.h>
-#include <common/kitti/tf.h>
-#include <common/string_list.h>
-#include <common/kitti/dataset.h>
-#include <gui/slider.h>
+#include <image_cloud/common/kitti/camera.h>
+#include <image_cloud/common/kitti/tf.h>
+#include <image_cloud/common/string_list.h>
+#include <image_cloud/common/kitti/dataset.h>
+#include <image_cloud/gui/slider.h>
 
 #ifndef SRC_CALIBRATION_SIMPLE_GUI_H_
 #define SRC_CALIBRATION_SIMPLE_GUI_H_

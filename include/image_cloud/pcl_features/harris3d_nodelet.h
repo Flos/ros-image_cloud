@@ -8,7 +8,7 @@
 #ifndef HARRIS3DEDGEDETECTORNODELET_H_
 #define HARRIS3DEDGEDETECTORNODELET_H_
 
-#include "ros/ros.h"
+#include <ros/ros.h>
 #include <sstream>
 #include <string.h>
 #include <map>
@@ -16,7 +16,7 @@
 #include <functional>
 
 #include <tf/transform_broadcaster.h>
-#include "nodelet/nodelet.h"
+#include <nodelet/nodelet.h>
 
 #include <pcl_ros/point_cloud.h>
 #include <pcl_ros/transforms.h>

@@ -1,10 +1,10 @@
-#include "calibration/pcl_to_image_nodelet.h"
+#include <image_cloud/calibration/pcl_to_image_nodelet.h>
 #include <pluginlib/class_list_macros.h>
-#include <common/time.hpp>
-#include <common/pcl_features.hpp>
-#include <common/project2d.hpp>
-#include <common/filter/pcl/depth_filter.hpp>
-#include <common/filter/pcl/filter_depth_intensity.hpp>
+#include <image_cloud/common/time.hpp>
+#include <image_cloud/common/pcl_features.hpp>
+#include <image_cloud/common/project2d.hpp>
+#include <image_cloud/common/filter/pcl/depth_filter.hpp>
+#include <image_cloud/common/filter/pcl/filter_depth_intensity.hpp>
 
 // watch the capitalization carefully
 PLUGINLIB_DECLARE_CLASS(image_cloud, Pcl_to_image_nodelet, image_cloud::Pcl_to_image_nodelet, nodelet::Nodelet)

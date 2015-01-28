@@ -5,7 +5,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include <gui/gui_opencv.h>
+#include <image_cloud/gui/gui_opencv.h>
 
 
 int main(){

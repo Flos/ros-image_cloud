@@ -8,7 +8,7 @@
 #ifndef SYNC_IMAGE_NODELET_H_
 #define SYNC_IMAGE_NODELET_H_
 
-#include "ros/ros.h"
+#include <ros/ros.h>
 #include <sstream>
 #include <string.h>
 #include <map>
@@ -17,7 +17,7 @@
 
 #include <image_transport/image_transport.h>
 #include <tf/transform_broadcaster.h>
-#include "nodelet/nodelet.h"
+#include <nodelet/nodelet.h>
 
 #include <pcl_ros/point_cloud.h>
 

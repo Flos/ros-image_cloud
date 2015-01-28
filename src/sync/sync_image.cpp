@@ -1,4 +1,4 @@
-#include "sync/sync_image.h"
+#include <image_cloud/sync/sync_image.h>
 #include <pluginlib/class_list_macros.h>
 
 // watch the capitalization carefully

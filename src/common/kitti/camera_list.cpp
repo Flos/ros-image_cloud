@@ -5,7 +5,7 @@
  *      Author: fnolden
  */
 
-#include <common/kitti/camera_list.h>
+#include <image_cloud/common/kitti/camera_list.h>
 
 namespace image_cloud {
 

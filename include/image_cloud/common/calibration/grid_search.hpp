@@ -1,9 +1,10 @@
-#include <common/small_helpers.hpp>
+#include <image_cloud/common/small_helpers.hpp>
+#include <image_cloud/common/type.hpp>
+#include <image_cloud/common/calibration/multi_score.hpp>
+#include <image_cloud/common/calibration/structs.hpp>
+
 #include <opencv2/core/core.hpp>
-#include <common/type.hpp>
 #include <math.h>
-#include <common/calibration/multi_score.hpp>
-#include <common/calibration/structs.hpp>
 
 #ifndef SEARCH_GRID_6_DH_
 #define SEARCH_GRID_6D_H_

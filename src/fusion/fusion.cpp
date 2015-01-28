@@ -1,6 +1,6 @@
-#include "fusion/fusion.h"
+#include <image_cloud/fusion/fusion.h>
 #include <pluginlib/class_list_macros.h>
-#include <common/time.hpp>
+#include <image_cloud/common/time.hpp>
 
 // watch the capitalization carefully
 PLUGINLIB_DECLARE_CLASS(image_cloud, Fusion, image_cloud::Fusion, nodelet::Nodelet)
@@ -182,8 +182,8 @@ Fusion::callback(const sensor_msgs::ImageConstPtr& input_msg_image, const sensor
 	camera_model.fromCameraInfo(input_msg_image_info);
 
 	//NODELET_INFO("camera_model:  tx: %f, ty: %f, cx: %f, cy: %f, fx: %f, fy: %f, w: %d, h: %d ", camera_model.Tx(), camera_model.Ty(),
-							  camera_model.cx(), camera_model.cy(), camera_model.fx(), camera_model.fy(),
-							  input_msg_image_info->width, input_msg_image_info->height );
+//							  camera_model.cx(), camera_model.cy(), camera_model.fx(), camera_model.fy(),
+//							  input_msg_image_info->width, input_msg_image_info->height );
    cv_bridge::CvImagePtr cv_ptr;
    cv_bridge::CvImagePtr cv_shared_ptr;
    try{
