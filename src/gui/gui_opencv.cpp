@@ -8,13 +8,14 @@
 #include <gui/gui_opencv.h>
 
 #include <common/project2d.hpp>
-#include <common/filter_depth_intensity.hpp>
-#include <common/depth_filter.hpp>
+#include <common/filter/pcl/filter_depth_intensity.hpp>
+#include <common/filter/pcl/segmentation.hpp>
+#include <common/filter/pcl/depth_filter.hpp>
 #include <common/transform.hpp>
-#include <common/score.hpp>
-#include <common/filter/segmentation.hpp>
-#include <common/filter/inverse_distance_transform.hpp>
-#include <common/filter/edge.hpp>
+#include <common/calibration/score.hpp>
+#include <common/filter/cv/inverse_distance_transform.hpp>
+#include <common/filter/cv/edge.hpp>
+#include <common/calibration/multi_score.hpp>
 
 
 namespace image_cloud {
