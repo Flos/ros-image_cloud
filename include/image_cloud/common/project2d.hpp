@@ -115,7 +115,7 @@ project_2d(
 		const image_geometry::PinholeCameraModel &camera_model,
 		pcl::PointCloud<PointT> &in,
 		std::vector<std::vector<boost::shared_ptr<pcl::PointXYZI> > > &out_vector,
-		Projected_Pointclouds<PointT> &out,
+		Projected_pointcloud<PointT> &out,
 		int image_width,
 		int image_height)
 {
@@ -144,7 +144,7 @@ inline void
 project_2d(
 		const image_geometry::PinholeCameraModel &camera_model,
 		pcl::PointCloud<PointT> &in,
-		Projected_Pointclouds<PointT> &out,
+		Projected_pointcloud<PointT> &out,
 		int image_width,
 		int image_height)
 {

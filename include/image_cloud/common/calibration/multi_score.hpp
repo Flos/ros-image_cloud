@@ -16,7 +16,7 @@ namespace score
 template <typename PointT, typename ImageT>
 inline void
 multi_score(
-		std::vector<Projected_Pointcloud<PointT> > &idx,
+		std::vector<Projected_pointcloud<PointT> > &idx,
 		std::vector<cv::Mat> &edge_images,
 		long unsigned &score)
 {
@@ -48,7 +48,7 @@ multi_score(
 
 		image_cloud::transform_pointcloud(pointclouds.at(i), search.x, search.y, search.z, search.roll, search.pitch, search.yaw);
 
-		Projected_Pointcloud<PointT> p;
+		Projected_pointcloud<PointT> p;
 		p.image_size.heigh = edge_images.at(i).rows;
 		p.image_size.width = edge_images.at(i).cols;
 

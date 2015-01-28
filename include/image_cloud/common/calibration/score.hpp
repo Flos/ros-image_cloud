@@ -87,7 +87,7 @@ score(
 template <typename PointT, typename ImageT>
 inline void
 objective_function(
-		Projected_Pointclouds<PointT> &idx,
+		Projected_pointcloud<PointT> &idx,
 		cv::Mat &image_edge,
 		long unsigned &score)
 {

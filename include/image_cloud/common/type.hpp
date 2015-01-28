@@ -19,7 +19,7 @@ struct Image_size{
 	int height;
 };
 template <typename PointT>
-struct Projected_Pointclouds{
+struct Projected_pointcloud{
 	std::vector<Projected_Point<PointT> > points;
 	Image_size image_size;
 };
