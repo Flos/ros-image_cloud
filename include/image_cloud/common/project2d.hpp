@@ -93,7 +93,6 @@ project_2d(
 		int image_width,
 		int image_height)
 {
-		unsigned int hits = 0;
 		BOOST_FOREACH (pcl::PointXYZI& pt, in.points){
 			if( pt.z > 1) { // min distance from camera 1m
 
@@ -105,9 +104,34 @@ project_2d(
 				{
 					// Point in image push to 2d and 3d point
 					out[point_image.x][point_image.y].reset(new pcl::PointXYZI(pt));
-					//printf("project_2d: point: z: %f \n", out[point_image.x][point_image.y]->z);
+				}
+			}
+		}
+}
 
-					++hits;
+template <typename PointT>
+void
+project_2d(
+		const image_geometry::PinholeCameraModel &camera_model,
+		pcl::PointCloud<PointT> &in,
+		std::vector<std::vector<boost::shared_ptr<pcl::PointXYZI> > > &out_vector,
+		Projected_Pointclouds<PointT> &out,
+		int image_width,
+		int image_height)
+{
+		BOOST_FOREACH (pcl::PointXYZI& pt, in.points){
+			if( pt.z > 1) { // min distance from camera 1m
+
+				cv::Point2f point_image = camera_model.project3dToPixel(cv::Point3d(pt.x, pt.y, pt.z));
+
+				if( between<int>(0, point_image.x, image_width )
+					&& between<int>( 0, point_image.y, image_height )
+				)
+				{
+					// Point in image push to 2d and 3d point
+					out_vector[point_image.x][point_image.y].reset(new pcl::PointXYZI(pt));
+					out.points.push_back(Projected_Point<PointT>(pt, point_image));
+
 				}
 			}
 		}
