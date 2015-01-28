@@ -14,6 +14,7 @@
 #include <common/score.hpp>
 #include <common/filter/segmentation.hpp>
 #include <common/filter/inverse_distance_transform.hpp>
+#include <common/filter/edge.hpp>
 
 
 namespace image_cloud {
@@ -141,6 +142,7 @@ void Gui_opencv::init_menu_options() {
 	filter2d_edge_names.push_back("off");
 	filter2d_edge_names.push_back("canny"); //4
 	filter2d_edge_names.push_back("laplace"); //3
+	filter2d_edge_names.push_back("max");
 
 	datasets.filter2d.edge_values.resize(filter2d_edge_names.size());
 	datasets.filter2d.edge_values.at(image_filter::edge::CANNY).push_back(Slider("threashold1", 30, 500, 1, 1, false, true));
@@ -159,10 +161,11 @@ void Gui_opencv::init_menu_options() {
 	assert(datasets.filter2d.blur_values.at(3).size() == 1);
 	assert(datasets.filter2d.blur_values.at(4).size() == 1);
 
-	assert(datasets.filter2d.edge_values.size() == 3 );
+	assert(datasets.filter2d.edge_values.size() == 4 );
 	assert(datasets.filter2d.edge_values.at(0).size() == 0);
 	assert(datasets.filter2d.edge_values.at(1).size() == 4);
 	assert(datasets.filter2d.edge_values.at(2).size() == 3);
+	assert(datasets.filter2d.edge_values.at(3).size() == 0);
 }
 
 void Gui_opencv::init_tf(){
@@ -394,6 +397,9 @@ Gui_opencv::filter2d(){
 					datasets.filter2d.edge_values.at(image_filter::edge::LAPLACE)[1].get_value(),
 					datasets.filter2d.edge_values.at(image_filter::edge::LAPLACE)[2].get_value() );
 			break;
+		case image_filter::edge::MAX:
+			filter_2d::edge_max( images[image_filter::IMAGE_BLUR], images[image_filter::IMAGE_EDGE]);
+			break;
 	}
 
 
@@ -479,9 +485,9 @@ Gui_opencv::filter3d(){
 													cv::Scalar(127,127,127));
 	project2d::project_2d(camera_model, filtred, images[image_filter::IMAGE_POINTS], (project2d::Field) datasets.projection.value);
 
-	float score;
-	score::score(map, images[image_filter::IMAGE_EDGE], score);
-	printf("filter %d in: %lu out: %lu score: %f\n", (int)datasets.pcl_filter.value, cloud_file->size(), filtred.size(), score);
+	long unsigned score;
+	score::objective_function(map, images[image_filter::IMAGE_INVERSE_TRANSFORMED], score);
+	printf("filter %d in: %lu out: %lu score: %lu\n", (int)datasets.pcl_filter.value, cloud_file->size(), filtred.size(), score);
 
 	filter_lock.unlock();
 }

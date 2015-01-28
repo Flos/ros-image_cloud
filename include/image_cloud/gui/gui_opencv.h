@@ -56,7 +56,8 @@ namespace image_filter{
 		enum Edge{
 			OFF = 0,
 			CANNY = 1,
-			LAPLACE = 2
+			LAPLACE = 2,
+			MAX = 3
 		};
 	}
 
