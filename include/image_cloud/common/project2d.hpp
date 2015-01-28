@@ -119,6 +119,9 @@ project_2d(
 		int image_width,
 		int image_height)
 {
+		out.image_size.width = image_width;
+		out.image_size.height = image_height;
+
 		BOOST_FOREACH (pcl::PointXYZI& pt, in.points){
 			if( pt.z > 1) { // min distance from camera 1m
 
@@ -131,7 +134,6 @@ project_2d(
 					// Point in image push to 2d and 3d point
 					out_vector[point_image.x][point_image.y].reset(new pcl::PointXYZI(pt));
 					out.points.push_back(Projected_Point<PointT>(pt, point_image));
-
 				}
 			}
 		}
