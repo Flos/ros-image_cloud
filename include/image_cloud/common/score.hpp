@@ -82,7 +82,7 @@ score(
 		printf("Pixels: %lu, Points: %lu, threshold %i, hits: %lu, Score: %f\n", pixels_with_value, points, threshold, hit, score );
 }
 
-template <typename PointT>
+template <typename PointT, typename ImageT>
 void
 objective_function(
 		std::vector<std::vector<boost::shared_ptr<PointT> > > &idx,
@@ -90,8 +90,7 @@ objective_function(
 		long unsigned &score)
 {
 
-		assert(image_edge.channels() == 1);
-		assert(image_edge.depth() == CV_8U  || image_edge.depth() == CV_8S);
+		assert(cv::DataType<ImageT>::channels == 1);
 		assert(image_edge.rows == idx[0].size());
 		assert(image_edge.cols == idx.size());
 
@@ -102,7 +101,7 @@ objective_function(
 			for(int x = 0; x < idx.size(); x++)
 			{
 				if( idx[x][y]){ /* found something */
-					score += (int)image_edge.at<uchar>(x,y);
+					score += image_edge.at<ImageT>(x,y);
 				}
 			}
 		}
