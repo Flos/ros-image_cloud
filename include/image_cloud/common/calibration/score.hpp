@@ -2,6 +2,7 @@
 #include <image_geometry/pinhole_camera_model.h>
 #include <common/small_helpers.hpp>
 #include <opencv2/core/core.hpp>
+#include <common/type.hpp>
 
 
 #ifndef SCORE_H_
@@ -11,7 +12,7 @@ namespace score
 {
 
 void
-score(
+inline score(
 		const pcl::PointCloud<pcl::PointXY> &in,
 		cv::Mat &image_edge,
 		float &score,
@@ -34,7 +35,7 @@ score(
 
 
 template <typename PointT>
-void
+inline void
 score(
 		std::vector<std::vector<boost::shared_ptr<PointT> > > &idx,
 		cv::Mat &image_edge,
@@ -83,7 +84,7 @@ score(
 }
 
 template <typename PointT, typename ImageT>
-void
+inline void
 objective_function(
 		std::vector<std::vector<boost::shared_ptr<PointT> > > &idx,
 		cv::Mat &image_edge,
@@ -104,6 +105,27 @@ objective_function(
 					score += image_edge.at<ImageT>(x,y);
 				}
 			}
+		}
+
+}
+
+template <typename PointT, typename ImageT>
+inline void
+objective_function(
+		Projected_Pointclouds<PointT> &idx,
+		cv::Mat &image_edge,
+		long unsigned &score)
+{
+
+		assert(cv::DataType<ImageT>::channels == 1);
+		assert(image_edge.rows == idx.image_size.width);
+		assert(image_edge.cols == idx.image_size.height);
+
+		score = 0;
+
+		for(int i = 0; i < idx.points.size(); i++)
+		{
+			score += image_edge.at<ImageT>(idx.points.cv);
 		}
 
 }

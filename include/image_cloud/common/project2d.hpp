@@ -2,6 +2,7 @@
 #include <image_geometry/pinhole_camera_model.h>
 #include <common/small_helpers.hpp>
 #include <opencv2/core/core.hpp>
+#include <common/type.hpp>
 
 #ifndef PROJECT_2D_H_
 #define PROJECT_2D_H_
@@ -107,6 +108,33 @@ project_2d(
 					//printf("project_2d: point: z: %f \n", out[point_image.x][point_image.y]->z);
 
 					++hits;
+				}
+			}
+		}
+}
+
+template <typename PointT>
+inline void
+project_2d(
+		const image_geometry::PinholeCameraModel &camera_model,
+		pcl::PointCloud<PointT> &in,
+		Projected_Pointclouds<PointT> &out,
+		int image_width,
+		int image_height)
+{
+		out.image_size.width = image_width;
+		out.image_size.height = image_height;
+
+		BOOST_FOREACH (pcl::PointXYZI& pt, in.points){
+			if( pt.z > 1) { // min distance from camera 1m
+
+				cv::Point2f point_image = camera_model.project3dToPixel(cv::Point3d(pt.x, pt.y, pt.z));
+
+				if( between<int>(0, point_image.x, image_width )
+					&& between<int>( 0, point_image.y, image_height )
+				)
+				{
+					out.points.push_back(Projected_Point<PointT>(pt, point_image));
 				}
 			}
 		}
