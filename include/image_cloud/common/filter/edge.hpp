@@ -37,7 +37,6 @@ int max_diff(int cx, int cy, cv::Mat &in){
 void
 edge_max(cv::Mat &in, cv::Mat &out)
 {
-
 		for(int y = 0; y < in.cols; y++)
 		{
 			for(int x = 0; x < in.rows; x++)

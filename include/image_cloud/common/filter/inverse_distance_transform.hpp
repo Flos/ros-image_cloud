@@ -25,79 +25,88 @@ max_edge_neighbors(int i, int j, float psi, cv::Mat &image){
 	return result;
 }
 
-
-inline float calc(int &val, const float &psi, int x, int y, const cv::Mat& in, cv::Mat& out) {
+template <typename Type_in, typename Type_out>
+inline float calc(float &val, const float &psi, int x, int y, const cv::Mat& in, cv::Mat& out) {
 	val = val * psi;
-	if (in.at<uchar>(x, y) > val)
+	if (in.at<Type_in>(x, y) > val)
 	{
-		val = in.at<uchar>(x, y);
+		val = in.at<Type_in>(x, y);
 	}
 	else
 	{
-		if (out.at<uchar>(x, y) < val)
+		if (out.at<Type_out>(x, y) < val)
 		{
-			out.at<uchar>(x, y) = val;
+			out.at<Type_out>(x, y) = val;
 		}
 		else{
-			val = out.at<uchar>(x, y);
+			val = out.at<Type_out>(x, y);
 		}
 	}
 	return val;
 }
 
+template <typename Type_in, typename Type_out>
 inline void
 neighbors_x_pos(cv::Mat &in, cv::Mat &out, float psi, float alpha){
-	int val = 0;
+	float val = 0;
 
 	for(int y = 0; y < in.cols; ++y)
 	{
+		val = 0;
 		for(int x = 0; x < in.rows; ++x)
 		{
-			val = calc(val, psi, x, y, in, out);
+			val = calc<Type_in, Type_out>(val, psi, x, y, in, out);
 		}
 	}
 }
 
+template <typename Type_in, typename Type_out>
 inline void
 neighbors_x_neg(cv::Mat &in, cv::Mat &out, float psi, float alpha){
-	int val = 0;
+	float val = 0;
 
 	for(int y = in.cols-1; y >= 0; --y)
 	{
+		val = 0;
 		for(int x = in.rows -1; x >= 0; --x)
 		{
-			val = calc(val, psi, x, y, in, out);
+			val = calc<Type_in, Type_out>(val, psi, x, y, in, out);
 		}
 	}
 }
 
+template <typename Type_in, typename Type_out>
 inline void
 neighbors_y_pos(cv::Mat &in, cv::Mat &out, float psi, float alpha){
-	int val = 0;
+	float val = 0;
 
 	for(int x = 0; x < in.rows; ++x)
 	{
+		val = 0;
 		for(int y = 0; y < in.cols; ++y)
 		{
-			val = calc(val, psi, x, y, in, out);
+			val = calc<Type_in, Type_out>(val, psi, x, y, in, out);
 		}
 	}
 }
 
+template <typename Type_in, typename Type_out>
 inline void
 neighbors_y_neg(cv::Mat &in, cv::Mat &out, float psi, float alpha){
-	int val = 0;
+	float val = 0;
 
 	for(int x = in.rows -1; x >= 0; --x)
 	{
+		val = 0;
 		for(int y = in.cols -1; y >= 0; --y)
 		{
-			val = calc(val, psi, x, y, in, out);
+			val = calc<Type_in, Type_out>(val, psi, x, y, in, out);
 		}
 	}
 }
 
 
+template <typename Type_in, typename Type_out>
 void
 inverse_distance_transformation(cv::Mat &in, cv::Mat &out, float alpha = 0.333333333, float psi = 0.98)
 {
@@ -106,25 +115,19 @@ inverse_distance_transformation(cv::Mat &in, cv::Mat &out, float alpha = 0.33333
 
 		assert(in.size == out.size);
 
-		out = cv::Mat(cv::Size(in.cols, in.rows), CV_8UC1, cv::Scalar(0));
+		out = cv::Mat(cv::Size(in.cols, in.rows), cv::DataType<Type_out>::type, cv::Scalar(0));
 
-		neighbors_x_pos(in, out, psi, alpha);
-		//printf("2\n");
-		neighbors_x_neg(in, out, psi, alpha);
-		//printf("3\n");
-		neighbors_y_pos(in, out, psi, alpha);
-		//printf("4\n");
-		neighbors_y_neg(in, out, psi, alpha);
-		//printf("5\n");
+		neighbors_x_pos<Type_in, Type_out>(in, out, psi, alpha);
+		neighbors_x_neg<Type_in, Type_out>(in, out, psi, alpha);
+		neighbors_y_pos<Type_in, Type_out>(in, out, psi, alpha);
+		neighbors_y_neg<Type_in, Type_out>(in, out, psi, alpha);
 
 		for(int y = 0; y < in.cols; y++)
 		{
 			for(int x = 0; x < in.rows; x++)
 			{
-				//printf("values: in %d, out %d", in.at<uchar>(x,y), (int)((1 - alpha)* out.at<uchar>(x,y)));
-				out.at<uchar>(x,y) = alpha * ((int)in.at<uchar>(x,y)) + (1 - alpha)* out.at<uchar>(x,y);
-				//printf(",result: %d \n", out.at<uchar>(x,y));
-
+				int val = alpha * in.at<Type_in>(x,y) + (1 - alpha)*(float)out.at<Type_out>(x,y);
+				out.at<Type_out>(x,y) = val;
 			}
 		}
 		//printf("6\n");
