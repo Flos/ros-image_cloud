@@ -1,7 +1,8 @@
 #include <image_cloud/common/small_helpers.hpp>
 #include <image_cloud/common/type.hpp>
-#include <image_cloud/common/calibration/structs.hpp>
 #include <image_cloud/common/transform.hpp>
+#include <image_cloud/common/calibration/structs.hpp>
+#include <image_cloud/common/calibration/score.hpp>
 
 #include <math.h>
 #include <opencv2/core/core.hpp>
@@ -37,25 +38,24 @@ template <typename PointT, typename ImageT>
 inline void
 multi_score(
 		const image_geometry::PinholeCameraModel &camera_model,
-		std::vector<pcl::PointCloud<PointT> > pointclouds,
-		std::vector<cv::Mat> &edge_images,
+		const std::vector<pcl::PointCloud<PointT> >& pointclouds,
+		const std::vector<cv::Mat> &edge_images,
 		search::Search_value &search
 		)
 {
 	assert(pointclouds.size() == edge_images.size());
 
+
 	for(int i = 0; i< pointclouds.size(); ++i){
 		long unsigned score_temp;
+		pcl::PointCloud<PointT> transformed;
 
-		image_cloud::transform_pointcloud(pointclouds.at(i), search.x, search.y, search.z, search.roll, search.pitch, search.yaw);
+		image_cloud::transform_pointcloud<PointT>(pointclouds.at(i), transformed, search.x, search.y, search.z, search.roll, search.pitch, search.yaw);
 
 		Projected_pointcloud<PointT> p;
-		p.image_size.heigh = edge_images.at(i).rows;
-		p.image_size.width = edge_images.at(i).cols;
 
-		project2d::project_2d( camera_model, pointclouds.at(i), p);
-
-		objective_function( pointclouds.at(i).at(i), edge_images.at(i), score_temp);
+		project2d::project_2d<PointT>( camera_model, transformed, p, edge_images.at(i).cols, edge_images.at(i).rows );
+		objective_function<PointT, ImageT>( p, edge_images.at(i), score_temp);
 
 		search.result += score_temp;
 	}
