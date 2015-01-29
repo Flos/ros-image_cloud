@@ -130,7 +130,7 @@ filter_depth_discontinuity(
 				float current_distance = in.points.at(k_indices.at(i)).z;
 
 				// 1. Is one of the neighbors closer than selected?
-				if(distance > current_distance){
+				if(distance -.3 > current_distance){
 					// YES
 					out.push_back(pt);
 					break;
