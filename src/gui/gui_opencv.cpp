@@ -409,7 +409,7 @@ Gui_opencv::filter2d(){
 					datasets.filter2d.edge_values.at(image_filter::edge::LAPLACE)[2].get_value() );
 			break;
 		case image_filter::edge::MAX:
-			filter_2d::edge_max( images[image_filter::IMAGE_BLUR], images[image_filter::IMAGE_EDGE]);
+			filter_2d::edge_max<uchar>( images[image_filter::IMAGE_BLUR], images[image_filter::IMAGE_EDGE]);
 			break;
 	}
 
