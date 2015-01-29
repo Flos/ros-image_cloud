@@ -3,6 +3,8 @@
 #include <image_cloud/common/calibration/multi_score.hpp>
 #include <image_cloud/common/calibration/structs.hpp>
 
+#include <deque>
+
 #include <opencv2/core/core.hpp>
 #include <math.h>
 
@@ -32,6 +34,49 @@ namespace search
 			}
 		}
 	}
+
+	template <typename PointT, typename ImageT>
+	void get_best_tf(	tf::Transform in,
+						tf::Transform &out,
+						const image_geometry::PinholeCameraModel &camera_model,
+						const std::deque<pcl::PointCloud<PointT> > &pointclouds,
+						const std::deque<cv::Mat> &images,
+						float range = 0.5,
+						int steps = 3)
+	{
+		Search_setup search_range;
+		std::vector<Search_value> results;
+
+		double r,p,y;
+		in.getBasis().getRPY(r, p, y, 1);
+		search_range.x.init_range(in.getOrigin()[0], range, steps);
+		search_range.y.init_range(in.getOrigin()[1], range, steps);
+		search_range.z.init_range(in.getOrigin()[2], range, steps);
+		search_range.roll.init_range(r, range, steps);
+		search_range.pitch.init_range(p, range, steps);
+		search_range.yaw.init_range(y, range, steps);
+
+		grid_setup(search_range, results);
+
+		calculate( camera_model, pointclouds, images, results );
+
+		int best_result_idx = 0;
+		long unsigned int best_result = 0;
+		for(int i=0; i< results.size(); ++i){
+			if(results.at(i).result > best_result){
+				best_result_idx = i;
+				best_result = results.at(i).result;
+			}
+		}
+		//printf("%d: \t%s\n", best_result_idx, results.at(best_result_idx).to_string().c_str());
+
+		out.setOrigin( tf::Vector3(results.at(best_result_idx).x, results.at(best_result_idx).y, results.at(best_result_idx).z ) );
+
+		tf::Quaternion q;
+		q.setRPY(results.at(best_result_idx).roll, results.at(best_result_idx).pitch, results.at(best_result_idx).yaw );
+		out.setRotation( q);
+	}
+
 
 	template <typename PointT, typename ImageT>
 	inline void calculate(const image_geometry::PinholeCameraModel &camera_model, const std::vector<pcl::PointCloud<PointT> > &pointclouds, const std::vector<cv::Mat> &edge_images, std::vector<Search_value>& results){
