@@ -9,41 +9,52 @@ namespace filter_2d
 {
 
 
+template <typename ImageT>
 inline
-void get_diff(int x, int y, int cx, int cy, int &result, cv::Mat& in) {
-	if (between(-1, x, in.rows) && between(-1, y, in.cols)) {
+void get_diff(int col, int row, int col_c, int row_c, int &result, cv::Mat& in) {
+	if (between(-1, col, in.cols) && between(-1, row, in.rows)) {
 		// hit upper left
-		result = std::max(abs(in.at<uchar>(x, y) - in.at<uchar>(cx, cy)),	result);
+		result = std::max(abs(in.at<ImageT>(row, col) - in.at<ImageT>(row_c, col_c)),	result);
 	}
 }
 
+template <typename ImageT>
 inline
-int max_diff(int cx, int cy, cv::Mat &in){
+int max_diff_neighbors(int row_c, int col_c, cv::Mat &in){
 	//Check
 	int result = 0;
 
-	get_diff(cx -1, cy -1, cx, cy, result, in);
-	get_diff(cx	  , cy -1, cx, cy, result, in);
-	get_diff(cx +1, cy -1, cx, cy, result, in);
-	get_diff(cx -1, cy   , cx, cy, result, in);
-	get_diff(cx +1, cy   , cx, cy, result, in);
-	get_diff(cx -1, cy +1, cx, cy, result, in);
-	get_diff(cx   , cy +1, cx, cy, result, in);
-	get_diff(cx +1, cy +1, cx, cy, result, in);
+	get_diff<ImageT>(col_c -1, row_c -1, col_c, row_c, result, in);
+	get_diff<ImageT>(col_c	  , row_c -1, col_c, row_c, result, in);
+	get_diff<ImageT>(col_c +1, row_c -1, col_c, row_c, result, in);
+	get_diff<ImageT>(col_c -1, row_c   , col_c, row_c, result, in);
+	get_diff<ImageT>(col_c +1, row_c   , col_c, row_c, result, in);
+	get_diff<ImageT>(col_c -1, row_c +1, col_c, row_c, result, in);
+	get_diff<ImageT>(col_c   , row_c +1, col_c, row_c, result, in);
+	get_diff<ImageT>(col_c +1, row_c +1, col_c, row_c, result, in);
 
 	return result;
 }
 
+template <typename ImageT>
 void
 edge_max(cv::Mat &in, cv::Mat &out)
 {
-		for(int y = 0; y < in.cols; y++)
+
+	printf("rows: %d, cols: %d\n", in.rows, in.cols);
+	printf("rows: %d, cols: %d\n", out.rows, out.cols);
+	assert(in.rows == out.rows);
+	assert(in.cols == out.cols);
+	assert(in.depth() == out.depth());
+	assert(in.channels() == out.channels());
+
+	for(int r = 0; r < in.rows; r++)
+	{
+		for(int c = 0; c < in.cols; c++)
 		{
-			for(int x = 0; x < in.rows; x++)
-			{
-				out.at<uchar>(x,y) = max_diff(x, y, in);
-			}
+			out.at<ImageT>(r,c) = max_diff_neighbors<ImageT>(r, c, in);
 		}
+	}
 }
 
 
