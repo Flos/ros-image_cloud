@@ -23,7 +23,7 @@ hit_image_plane(
 		BOOST_FOREACH (PointT &pt, in.points){
 			if( pt.z > 1) { // min distance from camera 1m
 
-				cv::Point2f point_image = camera_model.project3dToPixel(cv::Point3d(pt.x, pt.y, pt.z));
+				cv::Point2i point_image = camera_model.project3dToPixel(cv::Point3d(pt.x, pt.y, pt.z));
 
 				if( between<int>(0, point_image.x, image_width )
 					&& between<int>( 0, point_image.y, image_height )

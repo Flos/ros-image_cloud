@@ -25,7 +25,7 @@ project_2d(
 	{
 		if( pt.z > 1) { // min distance from camera 1m
 
-			cv::Point2f point_image = camera_model.project3dToPixel(cv::Point3d(pt.x, pt.y, pt.z));
+			cv::Point2i point_image = camera_model.project3dToPixel(cv::Point3d(pt.x, pt.y, pt.z));
 
 			if( between<int>(0, point_image.x, camera_width )
 				&& between<int>( 0, point_image.y, camera_height )
@@ -65,7 +65,7 @@ project_2d(
 	{
 		if( pt.z > min_distance) { // min distance from camera 1m
 
-			cv::Point2f point_image = camera_model.project3dToPixel(cv::Point3d(pt.x, pt.y, pt.z));
+			cv::Point2i point_image = camera_model.project3dToPixel(cv::Point3d(pt.x, pt.y, pt.z));
 
 			if( between<int>(0, point_image.x, image.cols )
 				&& between<int>( 0, point_image.y, image.rows )
@@ -97,7 +97,7 @@ project_2d(
 		BOOST_FOREACH (pcl::PointXYZI& pt, in.points){
 			if( pt.z > 1) { // min distance from camera 1m
 
-				cv::Point2f point_image = camera_model.project3dToPixel(cv::Point3d(pt.x, pt.y, pt.z));
+				cv::Point2i point_image = camera_model.project3dToPixel(cv::Point3d(pt.x, pt.y, pt.z));
 
 				if( between<int>(0, point_image.x, image_width )
 					&& between<int>( 0, point_image.y, image_height )
@@ -120,13 +120,15 @@ project_2d(
 		int image_width,
 		int image_height)
 {
+		assert(out_vector.size() == image_width);
+		assert(out_vector[0].size() == image_height);
 		out.image_size.width = image_width;
 		out.image_size.height = image_height;
 
 		BOOST_FOREACH (pcl::PointXYZI& pt, in.points){
 			if( pt.z > 1) { // min distance from camera 1m
 
-				cv::Point2f point_image = camera_model.project3dToPixel(cv::Point3d(pt.x, pt.y, pt.z));
+				cv::Point2i point_image = camera_model.project3dToPixel(cv::Point3d(pt.x, pt.y, pt.z));
 
 				if( between<int>(0, point_image.x, image_width )
 					&& between<int>( 0, point_image.y, image_height )
@@ -155,7 +157,7 @@ project_2d(
 		BOOST_FOREACH (pcl::PointXYZI& pt, in.points){
 			if( pt.z > 1) { // min distance from camera 1m
 
-				cv::Point2f point_image = camera_model.project3dToPixel(cv::Point3d(pt.x, pt.y, pt.z));
+				cv::Point2i point_image = camera_model.project3dToPixel(cv::Point3d(pt.x, pt.y, pt.z));
 
 				if( between<int>(0, point_image.x, image_width )
 					&& between<int>( 0, point_image.y, image_height )
