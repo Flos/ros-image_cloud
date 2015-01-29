@@ -10,37 +10,50 @@
 #ifndef INCLUDE_IMAGE_CLOUD_COMMON_CALIBRATION_STRUCTS_H_
 #define INCLUDE_IMAGE_CLOUD_COMMON_CALIBRATION_STRUCTS_H_
 
-
-
 namespace search
 {
 
 struct Value{
 	float min;
 	float max;
-	int step_count;
+	int steps_max;
 	float step_width;
 
-	Value( float value, float range, int step_count = 3){
-		init_min_max(value - range/2, value + range/2, step_count);
+	Value(){
+		init_range(0, 0, 1);
+	};
+
+	Value( float value, float range, int steps_max = 3){
+		init_min_max(value - range/2, value + range/2, steps_max);
 	}
 
-	void init_range( float value, float range, int step_count = 3){
-		init_min_max(value - range/2, value + range/2, step_count);
+	void init_range( float value, float range, int steps_max = 3){
+		init_min_max(value - range/2, value + range/2, steps_max);
 	}
 
-	void init_min_max(float min, float max, int step_count = 3){
-		assert(min < max);
-		assert(step_count > 1);
+	void init_min_max(float min, float max, int steps_max = 3){
+		assert(min <= max);
+		assert(steps_max > 0);
 		this->min = min;
 		this->max = max;
-		this->step_count = step_count;
-		step_width = (max - min)/step_count;
+		this->steps_max = steps_max;
+		if(steps_max != 1){
+			step_width = (max - min)/(steps_max-1); // First step = min, last step = max
+		}
+		else{
+			step_width = 0;
+		}
 	}
 
 	float at(int step){
-		assert(step < step_count);
+		assert(step < steps_max);
 		return min + (step_width*step);
+	}
+
+	std::string to_string(){
+		std::stringstream ss;
+		ss << "min: " << min << " max: " << max << " steps: " << steps_max << " step_width: " << step_width << "\n";
+		return ss.str();
 	}
 };
 
@@ -51,6 +64,16 @@ struct Search_setup{
 	Value roll;
 	Value pitch;
 	Value yaw;
+	std::string to_string(){
+		std::stringstream ss;
+		ss << "x: " << x.to_string();
+		ss << "y: " << y.to_string();
+		ss << "z: " << z.to_string();
+		ss << "roll: " << roll.to_string();
+		ss << "pitch: " << pitch.to_string();
+		ss << "yaw: " << yaw.to_string();
+		return ss.str();
+	}
 };
 
 struct Search_value{
@@ -77,7 +100,7 @@ struct Search_value{
 		std::stringstream ss;
 		ss << "x: " << x << " y: " << y <<" z: " << z;
 		ss << " roll: " << roll << " pitch: " << pitch << " yaw: " << yaw;
-		ss << "result: " << result << "\n";
+		ss << " result: " << result << "\n";
 		return ss.str();
 	}
 
