@@ -36,22 +36,6 @@ bool inline transform_pointcloud(tf::TransformListener &transform_listener, pcl:
 	return true;
 }
 
-template <typename PointT>
-void inline transform_pointcloud(pcl::PointCloud<PointT> &cloud, float tx, float ty, float tz, float roll, float pitch, float yaw){
-   tf::Quaternion q;
-   q.setRPY(roll, pitch, yaw);
-
-   tf::Transform tf;
-   tf.setOrigin(tf::Vector3( tx, ty, tz));
-   tf.setRotation(q);
-
-   pcl_ros::transformPointCloud(cloud, cloud, tf);
-}
-
-template <typename PointT>
-void inline transform_pointcloud(pcl::PointCloud<PointT> &cloud, tf::Transform tf){
-   pcl_ros::transformPointCloud(cloud, cloud, tf);
-}
 
 template <typename PointT>
 void inline create_transform(tf::Transform &tf, float tx, float ty, float tz, float roll, float pitch, float yaw){
@@ -60,6 +44,29 @@ void inline create_transform(tf::Transform &tf, float tx, float ty, float tz, fl
 
    tf.setOrigin(tf::Vector3( tx, ty, tz));
    tf.setRotation(q);
+}
+
+template <typename PointT>
+void inline transform_pointcloud(const pcl::PointCloud<PointT> &in, pcl::PointCloud<PointT> &out, tf::Transform tf){
+   pcl_ros::transformPointCloud(in, out, tf);
+}
+
+template <typename PointT>
+void inline transform_pointcloud(pcl::PointCloud<PointT> &cloud, tf::Transform tf){
+	transform_pointcloud<PointT>(cloud, cloud, tf);
+}
+
+template <typename PointT>
+void inline transform_pointcloud(const pcl::PointCloud<PointT> &in, pcl::PointCloud<PointT> &out, float tx, float ty, float tz, float roll, float pitch, float yaw){
+   tf::Transform tf;
+   create_transform<PointT>(tf, tx, ty, tz, roll, pitch, yaw);
+
+   transform_pointcloud(in, out, tf);
+}
+
+template <typename PointT>
+void inline transform_pointcloud(pcl::PointCloud<PointT> &cloud, float tx, float ty, float tz, float roll, float pitch, float yaw){
+   transform_pointcloud(cloud, cloud, tx, ty, tz, roll, pitch, yaw);
 }
 
 }
