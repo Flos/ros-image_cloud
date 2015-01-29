@@ -13,11 +13,11 @@ float
 max_edge_neighbors(int i, int j, float psi, cv::Mat &image){
 	float result = 0;
 
-	for(int y = 0; y < image.cols; y++)
+	for(int row = 0; row < image.rows; ++row)
 	{
-		for(int x = 0; x < image.rows; x++)
+		for(int col = 0; col < image.cols; ++col)
 		{
-			 float value =  image.at<char>(x,y) * pow(psi, std::max( abs(x - i), abs( y - j)));
+			 float value =  image.at<char>(row, col) * pow(psi, std::max( abs(col - i), abs( row - j)));
 			 result = std::max( result, value );
 		}
 	}
@@ -26,22 +26,23 @@ max_edge_neighbors(int i, int j, float psi, cv::Mat &image){
 }
 
 template <typename Type_in, typename Type_out>
-inline float calc(float &val, const float &psi, int x, int y, const cv::Mat& in, cv::Mat& out) {
-	val = val * psi;
-	if (in.at<Type_in>(x, y) > val)
+inline float calc(float &val, const float &psi, int row, int col, const cv::Mat& in, cv::Mat& out) {
+
+	val = val * psi; /* Fade out the value */
+
+	if (in.at<Type_in>(row, col) > val) /* In Value in the image bigger than the current value */
 	{
-		val = in.at<Type_in>(x, y);
+		val = in.at<Type_in>(row, col); /* yes, get the bigger value */
 	}
-	else
+
+	if (out.at<Type_out>(row, col) < val) /* is the calculated value bigger then the value in the filtered image? */
 	{
-		if (out.at<Type_out>(x, y) < val)
-		{
-			out.at<Type_out>(x, y) = val;
-		}
-		else{
-			val = out.at<Type_out>(x, y);
-		}
+		out.at<Type_out>(row, col) = val; /* yes, store the calculated value in the filtered image */
 	}
+	else{
+		val = out.at<Type_out>(row, col); /* no, the value of the filtered image is bigger use it */
+	}
+
 	return val;
 }
 
@@ -50,12 +51,12 @@ inline void
 neighbors_x_pos(cv::Mat &in, cv::Mat &out, float psi, float alpha){
 	float val = 0;
 
-	for(int y = 0; y < in.cols; ++y)
+	for(int row = 0; row < in.rows; ++row)
 	{
 		val = 0;
-		for(int x = 0; x < in.rows; ++x)
+		for(int col = 0; col < in.cols; ++col)
 		{
-			val = calc<Type_in, Type_out>(val, psi, x, y, in, out);
+			val = calc<Type_in, Type_out>(val, psi, row, col, in, out);
 		}
 	}
 }
@@ -65,12 +66,12 @@ inline void
 neighbors_x_neg(cv::Mat &in, cv::Mat &out, float psi, float alpha){
 	float val = 0;
 
-	for(int y = in.cols-1; y >= 0; --y)
+	for(int row = 0; row < in.rows; ++row)
 	{
 		val = 0;
-		for(int x = in.rows -1; x >= 0; --x)
+		for(int col = in.cols -1; col >= 0; --col)
 		{
-			val = calc<Type_in, Type_out>(val, psi, x, y, in, out);
+			val = calc<Type_in, Type_out>(val, psi, row, col, in, out);
 		}
 	}
 }
@@ -80,12 +81,12 @@ inline void
 neighbors_y_pos(cv::Mat &in, cv::Mat &out, float psi, float alpha){
 	float val = 0;
 
-	for(int x = 0; x < in.rows; ++x)
+	for(int col = 0; col < in.cols; ++col)
 	{
 		val = 0;
-		for(int y = 0; y < in.cols; ++y)
+		for(int row = 0; row < in.rows; ++row)
 		{
-			val = calc<Type_in, Type_out>(val, psi, x, y, in, out);
+			val = calc<Type_in, Type_out>(val, psi, row, col, in, out);
 		}
 	}
 }
@@ -95,42 +96,40 @@ inline void
 neighbors_y_neg(cv::Mat &in, cv::Mat &out, float psi, float alpha){
 	float val = 0;
 
-	for(int x = in.rows -1; x >= 0; --x)
+	for(int col = 0;  col < in.cols; ++col)
 	{
 		val = 0;
-		for(int y = in.cols -1; y >= 0; --y)
+		for(int row = in.rows -1; row >= 0; --row)
 		{
-			val = calc<Type_in, Type_out>(val, psi, x, y, in, out);
+			val = calc<Type_in, Type_out>(val, psi, row, col, in, out);
 		}
 	}
 }
-
 
 template <typename Type_in, typename Type_out>
 void
 inverse_distance_transformation(cv::Mat &in, cv::Mat &out, float alpha = 0.333333333, float psi = 0.98)
 {
-		assert(in.channels() == 1);
-		assert(in.depth() == CV_8U);
+	assert(in.channels() == 1);
+	assert(in.depth() == CV_8U);
 
-		assert(in.size == out.size);
+	assert(in.size == out.size);
+	assert(in.rows == out.rows);
+	assert(in.cols == out.cols);
 
-		out = cv::Mat(cv::Size(in.cols, in.rows), cv::DataType<Type_out>::type, cv::Scalar(0));
+	neighbors_x_pos<Type_in, Type_out>(in, out, psi, alpha);
+	neighbors_x_neg<Type_in, Type_out>(in, out, psi, alpha);
+	neighbors_y_pos<Type_in, Type_out>(in, out, psi, alpha);
+	neighbors_y_neg<Type_in, Type_out>(in, out, psi, alpha);
 
-		neighbors_x_pos<Type_in, Type_out>(in, out, psi, alpha);
-		neighbors_x_neg<Type_in, Type_out>(in, out, psi, alpha);
-		neighbors_y_pos<Type_in, Type_out>(in, out, psi, alpha);
-		neighbors_y_neg<Type_in, Type_out>(in, out, psi, alpha);
-
-		for(int y = 0; y < in.cols; y++)
+	for(int row = 0; row < in.rows; row++)
+	{
+		for(int col = 0; col < in.cols; col++)
 		{
-			for(int x = 0; x < in.rows; x++)
-			{
-				int val = alpha * in.at<Type_in>(x,y) + (1 - alpha)*(float)out.at<Type_out>(x,y);
-				out.at<Type_out>(x,y) = val;
-			}
+			int val = alpha * in.at<Type_in>(row,col) + (1 - alpha)*(float)out.at<Type_out>(row,col);
+			out.at<Type_out>(row, col) = val;
 		}
-		//printf("6\n");
+	}
 }
 
 
