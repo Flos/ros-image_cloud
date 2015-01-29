@@ -37,8 +37,8 @@ inline score(
 template <typename PointT>
 inline void
 score(
-		std::vector<std::vector<boost::shared_ptr<PointT> > > &idx,
-		cv::Mat &image_edge,
+		const std::vector<std::vector<boost::shared_ptr<PointT> > > &idx,
+		const cv::Mat &image_edge,
 		float &score,
 		int threshold = 30
 		)
@@ -87,21 +87,18 @@ score(
 template <typename PointT, typename ImageT>
 inline void
 objective_function(
-		Projected_pointcloud<PointT> &idx,
-		cv::Mat &image_edge,
+		const Projected_pointcloud<PointT> &idx,
+		const cv::Mat &image_edge,
 		long unsigned &score)
 {
-
 		assert(cv::DataType<ImageT>::channels == 1);
 		assert(image_edge.cols == idx.image_size.width);
 		assert(image_edge.rows == idx.image_size.height);
 
 		score = 0;
-		unsigned int hits = 0;
 		for(int i = 0; i < idx.points.size(); i++)
 		{
 			score += image_edge.at<ImageT>(idx.points.at(i).cv);
-			++hits;
 		}
 }
 
