@@ -40,6 +40,39 @@ int main(){
 	// Load kitti dataset
 	kitti::Dataset data("/media/Daten/kitti/config_kitti_0005.txt");
 
+	std::vector<cv::Mat> images;
+	std::vector<pcl::PointCloud<pcl::PointXYZI> > pointclouds;
+
+	int window_size = 5;
+	int camera = 0;
+
+	//Load and prepare data files;
+	for(int i=0; i< window_size; ++i){
+		// Load image
+		cv::Mat load;
+		data.camera_file_list.at(camera).load_image(load,i);
+
+		// Convert Greyscale
+		// Edge filter
+		//images.push_back();
+
+
+		// Load pointcloud
+		pcl::PointCloud<pcl::PointXYZI> p;
+		data.pointcloud_file_list.load_pointcloud(p, i);
+		// Transform to camera
+		// Filter Depth
+		//
+		pointclouds.push_back(p);
+	}
+
+	//Transform Pointcloud to image
+
+
+
+
+
+
 
 	//image_cloud::Gui_opencv gui;
 	//gui.init();
