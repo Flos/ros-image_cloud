@@ -12,6 +12,12 @@ struct Projected_Point{
 	}
 	PointT pcl;
 	cv::Point2i cv;
+
+	std::string to_string(){
+		std::stringstream ss;
+			ss << "pcl: " << pcl << "cv: " << cv;
+		return ss.str();
+	}
 };
 
 struct Image_size{
@@ -22,6 +28,15 @@ template <typename PointT>
 struct Projected_pointcloud{
 	std::vector<Projected_Point<PointT> > points;
 	Image_size image_size;
+
+	std::string to_string(){
+		std::stringstream ss;
+		ss << "width: " << image_size.width << " height: " << image_size.height << "\n";
+		for(int i = 0; i < points.size(); ++i){
+			ss << "i: " << i << " " << points.at(i).to_string() << "\n";
+		}
+		return ss.str();
+	}
 };
 
 #endif /* MY_TEMPLATE_TYPES_H_ */
