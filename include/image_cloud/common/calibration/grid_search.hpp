@@ -36,6 +36,20 @@ namespace search
 	}
 
 	template <typename PointT, typename ImageT>
+	inline void calculate(const image_geometry::PinholeCameraModel &camera_model, const std::vector<pcl::PointCloud<PointT> > &pointclouds, const std::vector<cv::Mat> &edge_images, std::vector<Search_value>& results){
+		for(int i=0; i < results.size(); ++i){
+			score::multi_score<PointT, ImageT>(camera_model, pointclouds, edge_images, results.at(i));
+		}
+	}
+
+	template <typename PointT, typename ImageT>
+	inline void calculate(const image_geometry::PinholeCameraModel &camera_model, const std::deque<pcl::PointCloud<PointT> > &pointclouds, const std::deque<cv::Mat> &edge_images, std::vector<Search_value>& results){
+		for(int i=0; i < results.size(); ++i){
+			score::multi_score<PointT, ImageT>(camera_model, pointclouds, edge_images, results.at(i));
+		}
+	}
+
+	template <typename PointT, typename ImageT>
 	inline void get_best_tf(	tf::Transform in,
 						tf::Transform &out,
 						const image_geometry::PinholeCameraModel &camera_model,
@@ -48,7 +62,7 @@ namespace search
 		std::vector<Search_value> results;
 
 		double r,p,y;
-		in.getBasis().getRPY(r, p, y, 1);
+		in.getBasis().getRPY(r, p, y);
 		search_range.x.init_range(in.getOrigin()[0], range, steps);
 		search_range.y.init_range(in.getOrigin()[1], range, steps);
 		search_range.z.init_range(in.getOrigin()[2], range, steps);
@@ -58,7 +72,7 @@ namespace search
 
 		grid_setup(search_range, results);
 
-		calculate( camera_model, pointclouds, images, results );
+		calculate<PointT, ImageT>( camera_model, pointclouds, images, results );
 
 		int best_result_idx = 0;
 		long unsigned int best_result = 0;
@@ -73,12 +87,6 @@ namespace search
 		results.at(best_result_idx).get_transform(out);
 	}
 
-	template <typename PointT, typename ImageT>
-	inline void calculate(const image_geometry::PinholeCameraModel &camera_model, const std::vector<pcl::PointCloud<PointT> > &pointclouds, const std::vector<cv::Mat> &edge_images, std::vector<Search_value>& results){
-		for(int i=0; i < results.size(); ++i){
-			score::multi_score<PointT, ImageT>(camera_model, pointclouds, edge_images, results.at(i));
-		}
-	}
 }
 
 #endif
