@@ -9,7 +9,7 @@
 namespace filter_2d
 {
 
-float
+inline float
 max_edge_neighbors(int i, int j, float psi, cv::Mat &image){
 	float result = 0;
 

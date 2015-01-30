@@ -37,7 +37,7 @@ int max_diff_neighbors(int row_c, int col_c, cv::Mat &in){
 }
 
 template <typename ImageT>
-void
+inline void
 edge_max(cv::Mat &in, cv::Mat &out)
 {
 
