@@ -1,0 +1,50 @@
+<launch>
+	<arg name="camera"								default="default" />
+	<arg name="name"								default="continous_calibration_$(arg camera)" />
+
+	<arg name="subscribe_topic_pcl"	 />
+	<arg name="subscribe_topic_image"	 />
+	<arg name="subscribe_topic_image_info"	 />
+							
+	<arg name="publish_pointcloud_topic"			default="" />
+	<arg name="publish_pointcloud_color_topic"	 	default="" />
+	
+	<arg name="frame_id_image"						default="" />
+	<arg name="frame_id_calibration"				default="" />
+	
+	<arg name="publish_topic_pcl"					default="" />
+	<arg name="publish_topic_pcl_color"				default="" />
+	
+	<arg name="windows_size"						default="0" />
+	<arg name="queue_size"							default="1" />
+	<arg name="tf_buffer_length"					default="30" />
+	
+	<arg name="grid_search_radius"					default="0.01"  />
+	<arg name="grid_search_steps"					default="3"  />
+	
+	<arg name="fusion_min_color"					default="15"  />
+
+  <node pkg="image_cloud" type="continous_calibration_node" name="$(arg name)" output="screen">
+  	<param name="subscribe_pcl_topic" 					value="$(arg subscribe_topic_pcl)" />
+  	<param name="subscribe_image_topic" 				value="$(arg subscribe_topic_image)" />
+  	<param name="subscribe_image_info_topic"			value="$(arg subscribe_topic_image_info)" />
+  	
+  	<param name="publish_pointcloud_topic"				value="$(arg publish_pointcloud_topic)" />
+  	<param name="publish_pointcloud_color_topic"  		value="$(arg publish_pointcloud_color_topic)" />
+  	
+  	<param name="frame_id_image"  						value="$(arg frame_id_image)" />
+  	<param name="frame_id_calibration"  				value="$(arg frame_id_calibration)" />
+  	
+  	<param name="queue_size"							value="$(arg publish_topic_pcl)" />
+  	<param name="reference_frame"						value="$(arg publish_topic_pcl_color)" />
+  	
+  	<param name="windows_size"							value="$(arg windows_size)" />
+  	<param name="queue_size"							value="$(arg queue_size)" />
+  	<param name="tf_buffer_length"						value="$(arg tf_buffer_length)" />
+  	
+  	<param name="grid_search_radius"					value="$(arg grid_search_radius)" />
+  	<param name="grid_search_steps"						value="$(arg grid_search_steps)" />
+  	
+  	<param name="fusion_min_color"						value="$(arg fusion_min_color)" />
+  </node>  
+</launch>

@@ -26,6 +26,13 @@
   </description>
   </class>
 </library>
+<library path="lib/libcontinuous_calibration">
+  <class name="image_cloud/Continuous_calibration_nodelet" type="image_cloud::Continuous_calibration_nodelet" base_class_type="nodelet::Nodelet">
+  <description>
+  		Continuous calibration and fusion nodelet
+  </description>
+  </class>
+</library>
 <library path="lib/libsync_remap">
   <class name="image_cloud/Remap" type="image_cloud::Remap" base_class_type="nodelet::Nodelet">
   <description>

@@ -29,6 +29,7 @@ find_package(catkin REQUIRED COMPONENTS
 #add dynamic reconfigure api
 #find_package(catkin REQUIRED dynamic_reconfigure)
 generate_dynamic_reconfigure_options(
+  cfg/continuous_calibration.cfg
   cfg/edge_detector.cfg
   cfg/fusion.cfg
   cfg/harris3d.cfg
@@ -169,21 +170,41 @@ add_dependencies(gui
 )
 
 
-add_executable(calibration_standalone
-  src/calibration/calibration_standalone.cpp
+add_executable(benchmark_standalone
+  src/calibration/benchmark_standalone.cpp
 )
 
-target_link_libraries(calibration_standalone
+target_link_libraries(benchmark_standalone
   ${catkin_LIBRARIES}
   kitti
 )
 
-add_dependencies(calibration_standalone 
+add_dependencies(benchmark_standalone 
+  ${PROJECT_NAME}_gencfg
+)
+
+# Continuous calibration
+add_executable(continuous_calibration
+  src/calibration/continuous_calibration_node.cpp
+  src/calibration/continuous_calibration.cpp
+)
+
+add_library(continous_calibration
+	src/calibration/continuous_calibration_nodelet.cpp
+	src/calibration/continuous_calibration.cpp
+)
+
+target_link_libraries(continuous_calibration
+  ${catkin_LIBRARIES}
+  kitti
+)
+
+add_dependencies(continuous_calibration 
   ${PROJECT_NAME}_gencfg
 )
 
 
-
+#### Move into own project
 ## Sync Nodelets
 add_library(sync_remap
   src/sync/remap.cpp
