@@ -13,7 +13,7 @@
 
 namespace search
 {
-	void grid_setup(Search_setup setup, std::vector<Search_value>& results){
+	inline void grid_setup(Search_setup setup, std::vector<Search_value>& results){
 		for(int x=0; x < setup.x.steps_max; ++x)
 		{
 			for(int y=0; y < setup.y.steps_max; ++y)
@@ -36,7 +36,7 @@ namespace search
 	}
 
 	template <typename PointT, typename ImageT>
-	void get_best_tf(	tf::Transform in,
+	inline void get_best_tf(	tf::Transform in,
 						tf::Transform &out,
 						const image_geometry::PinholeCameraModel &camera_model,
 						const std::deque<pcl::PointCloud<PointT> > &pointclouds,
@@ -70,13 +70,8 @@ namespace search
 		}
 		//printf("%d: \t%s\n", best_result_idx, results.at(best_result_idx).to_string().c_str());
 
-		out.setOrigin( tf::Vector3(results.at(best_result_idx).x, results.at(best_result_idx).y, results.at(best_result_idx).z ) );
-
-		tf::Quaternion q;
-		q.setRPY(results.at(best_result_idx).roll, results.at(best_result_idx).pitch, results.at(best_result_idx).yaw );
-		out.setRotation( q);
+		results.at(best_result_idx).get_transform(out);
 	}
-
 
 	template <typename PointT, typename ImageT>
 	inline void calculate(const image_geometry::PinholeCameraModel &camera_model, const std::vector<pcl::PointCloud<PointT> > &pointclouds, const std::vector<cv::Mat> &edge_images, std::vector<Search_value>& results){
