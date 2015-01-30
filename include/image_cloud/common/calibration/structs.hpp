@@ -139,5 +139,38 @@ struct Search_value{
 	long unsigned int result;
 };
 
+struct Window{
+	int window_size;
+	std::deque<cv::Mat> images;
+	std::deque<pcl::PointCloud<pcl::PointXYZI> > pointclouds;
+
+	void check(){
+		assert(images.size() == pointclouds.size());
+
+		if(size() > window_size){
+			pop_front();
+		}
+	}
+
+	size_t size(){
+		check();
+		return images.size();
+	}
+
+	void pop_front(){
+		images.pop_front();
+		pointclouds.pop_front();
+
+		check();
+	}
+
+	void push_back(cv::Mat image, pcl::PointCloud<pcl::PointXYZI> pointcloud){
+		images.push_back(image);
+		pointclouds.push_back(pointcloud);
+
+		check();
+	}
+};
+
 }
 #endif /* INCLUDE_IMAGE_CLOUD_COMMON_CALIBRATION_STRUCTS_H_ */
