@@ -51,7 +51,7 @@ enum Field{
 
 
 template <typename PointT>
-void
+inline void
 project_2d(
 		const image_geometry::PinholeCameraModel &camera_model,
 		const pcl::PointCloud<PointT> &in,
@@ -86,7 +86,7 @@ project_2d(
 }
 
 template <typename PointT>
-void
+inline void
 project_2d(
 		const image_geometry::PinholeCameraModel &camera_model,
 		pcl::PointCloud<PointT> &in,
@@ -111,7 +111,7 @@ project_2d(
 }
 
 template <typename PointT>
-void
+inline void
 project_2d(
 		const image_geometry::PinholeCameraModel &camera_model,
 		pcl::PointCloud<PointT> &in,
@@ -171,7 +171,7 @@ project_2d(
 
 
 template <typename PointT>
-void
+inline void
 project_2d(
 		std::vector<std::vector<boost::shared_ptr<PointT> > > &in,
 		cv::Mat &out,
