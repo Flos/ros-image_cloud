@@ -24,6 +24,7 @@ struct Image_size{
 	int width;
 	int height;
 };
+
 template <typename PointT>
 struct Projected_pointcloud{
 	std::vector<Projected_Point<PointT> > points;
@@ -37,6 +38,24 @@ struct Projected_pointcloud{
 		}
 		return ss.str();
 	}
+
+	size_t size(){
+		return points.size();
+	}
+
+	Projected_Point<PointT> at(long unsigned int i){
+		return points.at(i);
+	}
+
+	void get_pointcloud(pcl::PointCloud<PointT> &out){
+		assert(out.points.empty());
+
+		for(int i = 0; i < size(); ++i){
+			out.push_back(points.at(i).pcl);
+		}
+	}
+
+
 };
 
 #endif /* MY_TEMPLATE_TYPES_H_ */
