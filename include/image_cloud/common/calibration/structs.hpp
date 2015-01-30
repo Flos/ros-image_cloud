@@ -81,6 +81,10 @@ struct Search_value{
 		init(0, 0, 0, 0, 0, 0, 0);
 	}
 
+	Search_value(tf::Transform tf, long unsigned int result = 0){
+			init(tf, result);
+		}
+
 	Search_value( float x, float y, float z, float roll, float pitch, float yaw, long unsigned int result = 0){
 		init(x, y, z, roll, pitch, yaw, result);
 	}
@@ -96,12 +100,34 @@ struct Search_value{
 		this->result = result;
 	}
 
+	void init(tf::Transform tf, long unsigned int result = 0)
+		{
+
+			this->x = tf.getOrigin()[0];
+			this->y = tf.getOrigin()[1];
+			this->z = tf.getOrigin()[2];
+			double r,p,y;
+			tf.getBasis().getRPY(r, p, y);
+			this->roll = r;
+			this->pitch = p;
+			this->yaw = y;
+			this->result = result;
+		}
+
 	std::string to_string(){
 		std::stringstream ss;
 		ss << "x: " << x << " y: " << y <<" z: " << z;
 		ss << " roll: " << roll << " pitch: " << pitch << " yaw: " << yaw;
 		ss << " result: " << result << "\n";
 		return ss.str();
+	}
+
+	void get_transform(tf::Transform &tf){
+		tf.setOrigin( tf::Vector3( x, y, z ) );
+
+		tf::Quaternion q;
+		q.setRPY(roll, pitch, yaw );
+		tf.setRotation( q );
 	}
 
 	float x;
