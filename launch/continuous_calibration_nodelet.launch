@@ -20,7 +20,8 @@
 	<arg name="queue_size"							default="1" />
 	<arg name="tf_buffer_length"					default="30" />
 	
-	<arg name="grid_search_radius"					default="0.01"  />
+	<arg name="grid_search_radius_axis"				default="0.01"  />
+	<arg name="grid_search_radius_rotation"			default="0.01"  />
 	<arg name="grid_search_steps"					default="3"  />
 	
 	<arg name="fusion_min_color"					default="15"  />
@@ -43,7 +44,8 @@
   	<param name="queue_size"							value="$(arg queue_size)" />
   	<param name="tf_buffer_length"						value="$(arg tf_buffer_length)" />
   	
-  	<param name="grid_search_radius"					value="$(arg grid_search_radius)" />
+  	<param name="grid_search_radius_axis"				value="$(arg grid_search_radius)" />
+  	<param name="grid_search_radius_rotation"			value="$(arg grid_search_radius)" />
   	<param name="grid_search_steps"						value="$(arg grid_search_steps)" />
   	
   	<param name="fusion_min_color"						value="$(arg fusion_min_color)" />
