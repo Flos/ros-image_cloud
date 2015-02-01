@@ -17,6 +17,7 @@ namespace image_cloud{
 
 	inline void create_empty_grey_mat(cv::Mat &image, int rows, int cols){
 		image.create(rows, cols, CV_8U);
+		image = cv::Mat::zeros(rows, cols, CV_8U);
 	}
 
 	/**	Create inverse transformed image
