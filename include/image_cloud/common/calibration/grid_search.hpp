@@ -36,16 +36,29 @@ namespace search
 	}
 
 	template <typename PointT, typename ImageT>
-	inline void calculate(const image_geometry::PinholeCameraModel &camera_model, const std::vector<pcl::PointCloud<PointT> > &pointclouds, const std::vector<cv::Mat> &edge_images, std::vector<Search_value>& results){
+	inline void calculate(const image_geometry::PinholeCameraModel &camera_model, const std::vector<pcl::PointCloud<PointT> > &pointclouds, const std::vector<cv::Mat> &edge_images, std::vector<Search_value>& results, bool pre_filtred=true){
 		for(int i=0; i < results.size(); ++i){
-			score::multi_score<PointT, ImageT>(camera_model, pointclouds, edge_images, results.at(i));
+			if(pre_filtred)
+			{
+				score::multi_score<PointT, ImageT>(camera_model, pointclouds, edge_images, results.at(i));
+
+			}
+			else{
+				score::multi_score_filter_depth<PointT, ImageT>(camera_model, pointclouds, edge_images, results.at(i));
+			}
 		}
 	}
 
 	template <typename PointT, typename ImageT>
-	inline void calculate(const image_geometry::PinholeCameraModel &camera_model, const std::deque<pcl::PointCloud<PointT> > &pointclouds, const std::deque<cv::Mat> &edge_images, std::vector<Search_value>& results){
+	inline void calculate(const image_geometry::PinholeCameraModel &camera_model, const std::deque<pcl::PointCloud<PointT> > &pointclouds, const std::deque<cv::Mat> &edge_images, std::vector<Search_value>& results, bool pre_filtred=true){
 		for(int i=0; i < results.size(); ++i){
-			score::multi_score<PointT, ImageT>(camera_model, pointclouds, edge_images, results.at(i));
+			if(pre_filtred)
+			{
+				score::multi_score<PointT, ImageT>(camera_model, pointclouds, edge_images, results.at(i));
+			}
+			else{
+				score::multi_score_filter_depth<PointT, ImageT>(camera_model, pointclouds, edge_images, results.at(i));
+			}
 		}
 	}
 
@@ -55,36 +68,72 @@ namespace search
 						const image_geometry::PinholeCameraModel &camera_model,
 						const std::deque<pcl::PointCloud<PointT> > &pointclouds,
 						const std::deque<cv::Mat> &images,
-						float range = 0.5,
-						int steps = 3)
+						float range_axis = 0.5,
+						float range_rot = 0.5,
+						int steps = 3,
+						bool pre_filtred = true,
+						Multi_search_result *multi_result = NULL)
 	{
 		Search_setup search_range;
-		std::vector<Search_value> results;
+		std::vector<Search_value> result_list;
+
 
 		double r,p,y;
 		in.getBasis().getRPY(r, p, y);
-		search_range.x.init_range(in.getOrigin()[0], range, steps);
-		search_range.y.init_range(in.getOrigin()[1], range, steps);
-		search_range.z.init_range(in.getOrigin()[2], range, steps);
-		search_range.roll.init_range(r, range, steps);
-		search_range.pitch.init_range(p, range, steps);
-		search_range.yaw.init_range(y, range, steps);
+		search_range.x.init_range(in.getOrigin()[0], range_axis, steps);
+		search_range.y.init_range(in.getOrigin()[1], range_axis, steps);
+		search_range.z.init_range(in.getOrigin()[2], range_axis, steps);
+		search_range.roll.init_range(r, range_rot, steps);
+		search_range.pitch.init_range(p, range_rot, steps);
+		search_range.yaw.init_range(y, range_rot, steps);
 
-		grid_setup(search_range, results);
+		grid_setup(search_range, result_list);
 
-		calculate<PointT, ImageT>( camera_model, pointclouds, images, results );
+		Search_value origin_empty;
+		origin_empty.init(in);
 
-		int best_result_idx = 0;
+		// Add origin
+		if(result_list.size() %2 == 0){
+			result_list.insert(result_list.begin()+(result_list.size()/2), origin_empty);
+		}
+
+		calculate<PointT, ImageT>( camera_model, pointclouds, images, result_list, pre_filtred);
+
+		// get origin
+		Search_value origin = result_list.at( (result_list.size()) / 2);
+		std::cout << "center"<< spacer << origin.to_string() << "\n";
+		std::cout << "empty" << spacer << origin_empty.to_string() << "\n";
+//
+		assert(origin.x == origin_empty.x);
+		assert(origin.y == origin_empty.y);
+		assert(origin.z == origin_empty.z);
+		assert(origin.roll == origin_empty.roll);
+		assert(origin.pitch == origin_empty.pitch);
+		assert(origin.yaw == origin_empty.yaw);
+		assert(origin.result != origin_empty.result);
+
+		long unsigned int worse = 0;
 		long unsigned int best_result = 0;
-		for(int i=0; i< results.size(); ++i){
-			if(results.at(i).result > best_result){
+		long unsigned int best_result_idx = 0;
+
+		for(int i=0; i< result_list.size(); ++i){
+			if(result_list.at(i).result > best_result){
 				best_result_idx = i;
-				best_result = results.at(i).result;
+				best_result = result_list.at(i).result;
+			}
+			if( origin.result > result_list.at(i).result ){
+				++worse;
 			}
 		}
-		//printf("%d: \t%s\n", best_result_idx, results.at(best_result_idx).to_string().c_str());
 
-		results.at(best_result_idx).get_transform(out);
+		result_list.at(best_result_idx).get_transform(out);
+
+		if(multi_result != NULL){
+			multi_result->best = result_list.at(best_result_idx);
+			multi_result->in = origin;
+			multi_result->nr_worse = worse;
+			multi_result->nr_total = result_list.size();
+		}
 	}
 
 }
