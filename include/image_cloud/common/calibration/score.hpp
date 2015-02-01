@@ -102,7 +102,29 @@ objective_function(
 		}
 }
 
+template <typename PointT, typename ImageT>
+inline void
+objective_function(
+		const image_geometry::PinholeCameraModel &camera_model,
+		pcl::PointCloud<PointT> &in,
+		const cv::Mat &image_edge,
+		long unsigned &score)
+{
+		score = 0;
+		for(int i = 0; i < in.size(); ++i ){
+			if( in.points.at(i).z > 1) { // min distance from camera 1m
 
+				cv::Point2i point_image = camera_model.project3dToPixel(cv::Point3d(in.points.at(i).x, in.points.at(i).y, in.points.at(i).z));
+
+				if( between<int>(0, point_image.x, image_edge.cols )
+					&& between<int>( 0, point_image.y, image_edge.rows )
+				)
+				{
+					score += image_edge.at<ImageT>(point_image);
+				}
+			}
+		}
+}
 
 }
 #endif
