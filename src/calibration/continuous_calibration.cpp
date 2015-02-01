@@ -29,6 +29,9 @@ Continuous_calibration::callback_info(const sensor_msgs::CameraInfoConstPtr &inp
 
 void
 Continuous_calibration::callback(const sensor_msgs::ImageConstPtr &image_msg, const sensor_msgs::PointCloud2ConstPtr &cloud_msg){
+	if(!lock_callback.try_lock()){
+		return; // skip callbacks while processing (will take more time than the usual frequency of images/velodyne)
+	}
 	// pipeline..
 	// 1. Image processing
 	cv_bridge::CvImagePtr cv_ptr;
@@ -38,6 +41,7 @@ Continuous_calibration::callback(const sensor_msgs::ImageConstPtr &image_msg, co
 	catch (cv_bridge::Exception& e)
 	{
 	   ROS_ERROR("cv_bridge exception: %s", e.what());
+	   lock_callback.unlock();
 	   return;
 	}
 
@@ -67,6 +71,7 @@ Continuous_calibration::callback(const sensor_msgs::ImageConstPtr &image_msg, co
 												error_string
 												)){
 		ROS_WARN("Auto_calibration: %s", error_string.c_str());
+		lock_callback.unlock();
 		return;
 	}
 
@@ -84,8 +89,10 @@ Continuous_calibration::callback(const sensor_msgs::ImageConstPtr &image_msg, co
 								data.camera_model, // camera model
 								data.window.pointclouds, // pointclouds
 								data.window.images, // images
-								config.grid_search_radius, // radious of the search
-								config.grid_search_steps); // steps
+								config.grid_search_radius_axis, // radious of the search
+								config.grid_search_radius_rotation,
+								config.grid_search_steps,
+								false); // steps
 
 		// Transform to current best calibration
 		transform_pointcloud<pcl::PointXYZI>(cloud, data.calibration);
@@ -129,6 +136,7 @@ Continuous_calibration::callback(const sensor_msgs::ImageConstPtr &image_msg, co
 			pub_cloud.publish(msg_cloud_color);
 		}
 	}
+	lock_callback.unlock();
 }
 
 void
@@ -230,7 +238,8 @@ Continuous_calibration::print_params(){
 	ROS_INFO("Auto_calibration: queue_size:  \t %d", config.queue_size);
 	ROS_INFO("Auto_calibration: tf_buffer_length:\t %d", config.tf_buffer_length);
 
-	ROS_INFO("Auto_calibration: grid_search_radius:\t %f", config.grid_search_radius);
+	ROS_INFO("Auto_calibration: grid_search_radius_axis:\t %f", config.grid_search_radius_axis);
+	ROS_INFO("Auto_calibration: grid_search_radius_rotation:\t %f deg: %f", config.grid_search_radius_rotation, (config.grid_search_radius_rotation*180)/M_PI);
 	ROS_INFO("Auto_calibration: grid_search_steps: \t %d", config.grid_search_steps);
 
 	ROS_INFO("Auto_calibration: fusion_min_color: \t %d", config.fusion_min_color);

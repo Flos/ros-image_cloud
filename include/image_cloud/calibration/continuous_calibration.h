@@ -57,7 +57,7 @@
 #include <image_cloud/common/calibration/pipeline/pointcloud.hpp>
 
 #include <dynamic_reconfigure/server.h>
-#include <image_cloud/auto_calibrationConfig.h>
+#include <image_cloud/continuous_calibrationConfig.h>
 
 
 namespace image_cloud {
@@ -67,7 +67,7 @@ class Continuous_calibration {
 	typedef sensor_msgs::PointCloud2 PointCloud2_msg;
 	typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloudColor;
 	typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, PointCloud2_msg> Sync_filter;
-	typedef image_cloud::auto_calibrationConfig Config;
+	typedef image_cloud::continuous_calibrationConfig Config;
 	typedef dynamic_reconfigure::Server<Config> ReconfigureServer;
 
 
@@ -103,7 +103,7 @@ private:
 	ros::Publisher pub_cloud_color;
 	Transform_publisher pub_tf;
 
-	boost::mutex config_lock;
+	boost::mutex lock_callback;
 	Config config;
 	Temp_data data;
 
