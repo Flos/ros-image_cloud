@@ -74,14 +74,18 @@ Gui_opencv::init(){
 	config_files.push_back("/media/Daten/kitti/config_barney_0001.txt");
 	config_files.push_back("/media/Daten/kitti/config_kitti_0005.txt");
 	config_files.push_back("/media/Daten/kitti/config_kitti_0048.txt");
+	config_files.push_back("/media/Daten/kitti/hit_0006.txt");
+	config_files.push_back("/media/Daten/kitti/hit_0006_mod.txt");
 	config_files.push_back("/media/Daten/kitti/barney/graz/0001.txt");
 	config_files.push_back("/media/Daten/kitti/barney/graz/0001_add.txt");
 
 	init_datasets();
 
-
-	window_name = "manual calibration";
-	window_name_general_conf = window_name + " image control";
+	window_names.resize(4);
+	window_names[window_name::MAIN] = "selector";
+	window_names[window_name::IMAGE] = "image";
+	window_names[window_name::TRANSFORM] = "manual tf";
+	window_names[window_name::CONFIG] = "settings";
 
 	// Default slider values
 	datasets.pos_dataset.init("set", 1, datasets.list_datasets.size() -1);
@@ -89,18 +93,19 @@ Gui_opencv::init(){
 	datasets.filter2d.blur.init("blur filter", image_filter::blur::OFF, filter2d_blur_names.size() -1);
 	datasets.filter2d.edge.init("edge filter", image_filter::edge::MAX, filter2d_edge_names.size() -1);
 	datasets.projection.init("0 = intensity | depth = 1", 0, 1);
-	datasets.pcl_filter.init("pcl filter", 1, filter3d_names.size() -1);
+	datasets.pcl_filter.init("pcl filter", pcl_filter::DEPTH_INTENSITY ,filter3d_names.size() -1);
 
 	load_pcl();
 	load_image();
 	load_projection();
 
-	cv::namedWindow(window_name.c_str(), CV_GUI_EXPANDED);
+	cv::namedWindow(window_names.at(window_name::IMAGE).c_str(), CV_GUI_EXPANDED);
 
 	create_gui_general_conf();
 	create_gui_manual_tf();
 	create_gui_filter3d();
 	create_gui_filter2d();
+	create_static_gui();
 
 	update_view();
 	loop();
@@ -286,12 +291,12 @@ Gui_opencv::update_values()
 		load_projection();
 		load_image();
 		load_pcl();
-		cv::destroyWindow(filter3d_names[datasets.pcl_filter.value]);
-		cv::destroyWindow(window_name_general_conf);
-		cv::destroyWindow(window_name_transform);
+		//cv::destroyWindow(filter3d_names[datasets.pcl_filter.value]);
+		cv::destroyWindow(window_names.at(window_name::CONFIG));
+		//cv::destroyWindow(window_names.at(window_name::TRANSFORM));
 		//cv::destroyWindow(datasets.filter2d.window_name);
 		create_gui_filter3d();
-		create_gui_manual_tf();
+		//create_gui_manual_tf();
 		create_gui_general_conf();
 		//create_gui_filter2d();
 		datasets.pos_dataset.loaded = datasets.pos_dataset.value;
@@ -342,7 +347,7 @@ Gui_opencv::update_view(){
 
 void
 Gui_opencv::update_image(){
-	cv::imshow(window_name.c_str(), images[datasets.processed_image_selector.value]);
+	cv::imshow(window_names.at(window_name::IMAGE).c_str(), images[datasets.processed_image_selector.value]);
 }
 
 void
@@ -413,7 +418,7 @@ Gui_opencv::filter2d(){
 			break;
 	}
 
-
+	images[image_filter::IMAGE_EDGE].copyTo(images[image_filter::IMAGE_INVERSE_TRANSFORMED]);
 	filter_2d::inverse_distance_transformation<uchar,uchar>(images[image_filter::IMAGE_EDGE], images[image_filter::IMAGE_INVERSE_TRANSFORMED]);
 	printf("7");
 
@@ -540,40 +545,41 @@ void Gui_opencv::create_gui_filter2d() {
 }
 
 void Gui_opencv::recreate_config_gui(){
-	cv::destroyWindow(window_name_general_conf);
-	cv::destroyWindow(filter3d_names[datasets.pcl_filter.value]);
-	cv::destroyWindow(window_name_transform.c_str());
+	cv::destroyWindow(window_names.at(window_name::CONFIG));
+	//cv::destroyWindow(filter3d_names[datasets.pcl_filter.value]);
+	//cv::destroyWindow(window_names.at(window_name::TRANSFORM).c_str());
 	create_gui_filter3d();
-	create_gui_manual_tf();
+	//create_gui_manual_tf();
 	create_gui_general_conf();
 }
 
 void Gui_opencv::create_gui_manual_tf() {
-	window_name_transform = window_name+" transform";
-	cv::namedWindow(window_name_transform, CV_GUI_EXPANDED);
-	tf_data[0].create_slider(window_name_transform, &callback, this);
-	tf_data[1].create_slider(window_name_transform, &callback, this);
-	tf_data[2].create_slider(window_name_transform, &callback, this);
-	tf_data[3].create_slider(window_name_transform, &callback, this);
-	tf_data[4].create_slider(window_name_transform, &callback, this);
-	tf_data[5].create_slider(window_name_transform, &callback, this);
+	cv::namedWindow(window_names.at(window_name::TRANSFORM), CV_GUI_EXPANDED);
+	tf_data[0].create_slider(window_names.at(window_name::TRANSFORM), &callback, this);
+	tf_data[1].create_slider(window_names.at(window_name::TRANSFORM), &callback, this);
+	tf_data[2].create_slider(window_names.at(window_name::TRANSFORM), &callback, this);
+	tf_data[3].create_slider(window_names.at(window_name::TRANSFORM), &callback, this);
+	tf_data[4].create_slider(window_names.at(window_name::TRANSFORM), &callback, this);
+	tf_data[5].create_slider(window_names.at(window_name::TRANSFORM), &callback, this);
+}
+
+void
+Gui_opencv::create_static_gui(){
+	cv::namedWindow(window_names.at(window_name::MAIN).c_str(), CV_GUI_EXPANDED);
+	datasets.pcl_filter.create_slider(window_names.at(window_name::MAIN), &callback, this);
+	datasets.filter2d.blur.create_slider(window_names.at(window_name::MAIN), &callback, this);
+	datasets.filter2d.edge.create_slider(window_names.at(window_name::MAIN), &callback, this);
+	datasets.pos_dataset.create_slider(window_names.at(window_name::MAIN), &callback, this);
 }
 
 void
 Gui_opencv::create_gui_general_conf(){
-	cv::namedWindow(window_name_general_conf.c_str(), CV_GUI_EXPANDED);
+	cv::namedWindow(window_names.at(window_name::CONFIG).c_str(), CV_GUI_EXPANDED);
+	datasets.list_config.at(datasets.pos_dataset.value).pos_image.create_slider(window_names.at(window_name::CONFIG), &callback, this);
+	datasets.list_config.at(datasets.pos_dataset.value).pos_camera.create_slider(window_names.at(window_name::CONFIG), &callback, this);
 
-
-	datasets.pcl_filter.create_slider(window_name_general_conf, &callback, this);
-	datasets.filter2d.blur.create_slider(window_name_general_conf, &callback, this);
-	datasets.filter2d.edge.create_slider(window_name_general_conf, &callback, this);
-
-	datasets.list_config.at(datasets.pos_dataset.value).pos_image.create_slider(window_name_general_conf, &callback, this);
-	datasets.list_config.at(datasets.pos_dataset.value).pos_camera.create_slider(window_name_general_conf, &callback, this);
-	datasets.pos_dataset.create_slider(window_name_general_conf, &callback, this);
-
-	datasets.processed_image_selector.create_slider(window_name_general_conf, &callback_image, this);
-	datasets.projection.create_slider(window_name_general_conf, &callback, this);
+	datasets.processed_image_selector.create_slider(window_names.at(window_name::CONFIG), &callback_image, this);
+	datasets.projection.create_slider(window_names.at(window_name::CONFIG), &callback, this);
 }
 
 

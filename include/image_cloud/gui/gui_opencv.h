@@ -93,7 +93,32 @@ struct Set_selector{
 	Slider pos;
 };
 
+namespace window_name{
 
+enum window_name{
+	MAIN = 0,
+	IMAGE = 1,
+	TRANSFORM = 2,
+	CONFIG = 3
+};
+
+}
+
+struct Window_names{
+	std::vector<std::string> names;
+	std::string at(unsigned int i){
+		return names.at(i);
+	}
+
+	void resize(unsigned int i){
+		names.resize(i);
+	}
+
+	std::string& operator[] (const int nIndex)
+	{
+	    return names[nIndex];
+	}
+};
 
 struct Dataset_config{
 	Slider pos_image;
@@ -132,6 +157,7 @@ public:
 	void recreate_config_gui();
 	void create_gui_filter2d();
 	void create_gui_filter3d();
+	void create_static_gui();
 
 	void update_values();
 	void update_image();
@@ -139,11 +165,10 @@ public:
 	void init_menu_options();
 	void init_tf();
 	void create_gui_manual_tf();
+
 	void init_datasets();
 
-	std::string window_name;
-	std::string window_name_transform;
-	std::string window_name_general_conf;
+	Window_names window_names;
 
 	Datasets_list datasets;
 	std::vector<std::string> config_files;
