@@ -14,6 +14,7 @@
 #include <image_cloud/common/filter/pcl/depth_edge.hpp>
 #include <image_cloud/common/filter/pcl/normal_diff_filter.hpp>
 #include <image_cloud/common/filter/pcl/range_borders.hpp>
+#include <image_cloud/common/filter/pcl/depth_filter_radius.hpp>
 #include <image_cloud/common/transform.hpp>
 #include <image_cloud/common/calibration/score.hpp>
 #include <image_cloud/common/filter/cv/inverse_distance_transform.hpp>
@@ -96,7 +97,7 @@ Gui_opencv::init(){
 	datasets.filter2d.blur.init("blur filter", image_filter::blur::OFF, filter2d_blur_names.size() -1);
 	datasets.filter2d.edge.init("edge filter", image_filter::edge::MAX, filter2d_edge_names.size() -1);
 	datasets.projection.init("0 = intensity | depth = 1", 0, 1);
-	datasets.pcl_filter.init("pcl filter", pcl_filter::NORMAL_DIFF ,filter3d_names.size() -1);
+	datasets.pcl_filter.init("pcl filter", pcl_filter::DEPTH_RADIUS ,filter3d_names.size() -1);
 
 	load_pcl();
 	load_image();
@@ -126,6 +127,7 @@ void Gui_opencv::init_menu_options() {
 	filter3d_names.push_back("depth_edge");
 	filter3d_names.push_back("normal_diff");
 	filter3d_names.push_back("range_borders");
+	filter3d_names.push_back("depth_radius");
 	filter3d_names.push_back("other");
 
 	datasets.filter3d_data.resize(filter3d_names.size());
@@ -149,6 +151,12 @@ void Gui_opencv::init_menu_options() {
 	datasets.filter3d_data.at(pcl_filter::NORMAL_DIFF).at(0).init("scale1", 10, 200, 1, 100 );
 	datasets.filter3d_data.at(pcl_filter::NORMAL_DIFF).at(1).init("scale2", 20, 200, 1, 100);
 	datasets.filter3d_data.at(pcl_filter::NORMAL_DIFF).at(2).init("threshold", 20, 200, 1, 100);
+
+	datasets.filter3d_data.at(pcl_filter::DEPTH_RADIUS).resize(4);
+	datasets.filter3d_data.at(pcl_filter::DEPTH_RADIUS).at(0).init("radius", 30, 200, 1, 100 );
+	datasets.filter3d_data.at(pcl_filter::DEPTH_RADIUS).at(1).init("epsilon", 50, 200, 1, 100);
+	datasets.filter3d_data.at(pcl_filter::DEPTH_RADIUS).at(2).init("max distance", 20, 200, 1, 1);
+	datasets.filter3d_data.at(pcl_filter::DEPTH_RADIUS).at(3).init("min neighbors", 2, 50, false);
 
 	datasets.filter3d_data.at(pcl_filter::RANGE_BORDERS).resize(1);
 	datasets.filter3d_data.at(pcl_filter::RANGE_BORDERS).at(0).init("angular_resolution_deg", 4, 200, 1, 100, false, true );
@@ -521,6 +529,15 @@ Gui_opencv::filter3d(){
 										datasets.filter3d_data[pcl_filter::RANGE_BORDERS][0].get_value()); // threshold
 							}
 			break;
+		case pcl_filter::DEPTH_RADIUS:
+							{
+								filter_3d::depth_discontinuity_radius(transformed, filtred,
+										datasets.filter3d_data[pcl_filter::DEPTH_RADIUS][0].get_value(), // Radius
+										datasets.filter3d_data[pcl_filter::DEPTH_RADIUS][1].get_value(), // epsilon (tree search)
+										datasets.filter3d_data[pcl_filter::DEPTH_RADIUS][2].get_value(), // max distance
+										datasets.filter3d_data[pcl_filter::DEPTH_RADIUS][3].get_value()); // min neighbors
+							}
+			break;
 		case pcl_filter::OTHER:
 			{
 				filter::segmentation(transformed, filtred);
@@ -547,6 +564,9 @@ Gui_opencv::filter3d(){
 	score::objective_function<pcl::PointXYZI,uchar>(camera_model, filtred, images[image_filter::IMAGE_INVERSE_TRANSFORMED], score);
 
 	imwrite("objective_function.jpg", images[image_filter::IMAGE_INVERSE_TRANSFORMED]);
+	imwrite("projected.jpg", images[image_filter::IMAGE_FULL]);
+	imwrite("original.jpg", images[image_filter::FILE_READ]);
+	imwrite("edgy.jpg", images[image_filter::IMAGE_EDGE]);
 	printf("filter %d in: %lu out: %lu score: %lu \n", (int)datasets.pcl_filter.value, cloud_file->size(), filtred.size(), score);
 
 	filter_lock.unlock();
