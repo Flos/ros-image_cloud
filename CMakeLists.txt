@@ -163,6 +163,7 @@ add_executable(gui
 
 target_link_libraries(gui
   ${catkin_LIBRARIES}
+   ${PCL_LIBRARIES} libvtkCommon.so libvtkFiltering.so
 )
 
 add_dependencies(gui 
