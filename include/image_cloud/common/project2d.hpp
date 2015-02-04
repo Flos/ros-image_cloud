@@ -74,10 +74,10 @@ project_2d(
 				switch(field){
 					default:
 					case DEPTH:
-							cv::circle(image, point_image, point_size, cv::Scalar(in.points.at(i).z), -1);
+							cv::circle(image, point_image, point_size, cv::Scalar(255 - in.points.at(i).z), -1);
 						break;
 					case INTENSITY:
-							cv::circle(image, point_image, point_size, cv::Scalar(in.points.at(i).intensity), -1);
+							cv::circle(image, point_image, point_size, cv::Scalar(255 - in.points.at(i).intensity), -1);
 						break;
 				}
 			}
