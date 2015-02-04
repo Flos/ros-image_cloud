@@ -122,6 +122,7 @@ namespace filter{
 						out.push_back(*idx[x][y]);
 					}
 					else if( value.z != 0 && range_depth != 0){
+
 						out.push_back(*idx[x][y]);
 					}
 				}
