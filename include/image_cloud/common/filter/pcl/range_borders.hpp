@@ -22,7 +22,7 @@
 #ifndef PCL_RANGE_BORDERS_FILTER_H_
 #define PCL_RANGE_BORDERS_FILTER_H_
 
-#define visual_debug
+//#define visual_debug
 
 namespace filter_3d{
 
