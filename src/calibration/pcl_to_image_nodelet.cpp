@@ -251,7 +251,7 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
 
 					std::vector<std::vector<boost::shared_ptr<pcl::PointXYZI> > > map(image.rows, std::vector<boost::shared_ptr<pcl::PointXYZI> > (image.cols));
 
-					project2d::project_2d(camera_model, cloud, map, image.rows, image.cols);
+					project2d::project_2d(camera_model, cloud, map);
 					filter::filter_depth_intensity(map, cloud3d_filtred,
 							0.3, // depth
 							50, // intensity
