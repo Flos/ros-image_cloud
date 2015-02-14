@@ -130,13 +130,13 @@ Fusion::callback(const sensor_msgs::ImageConstPtr& input_msg_image, const sensor
 	}
 
 	if(config_.reference_frame.empty()){ //set default reference frame id
-		config_.reference_frame = config_.image_tf_frame_id;
+		config_.reference_frame = input_msg_cloud_ptr->header.frame_id;
     }
 
 	pcl::PointCloud<pcl::PointXYZ> cloud;
 	pcl::fromROSMsg(*input_msg_cloud_ptr, cloud);
 
-
+	//NODELET_INFO("TF: image %s, pointcloud: %s, ref: %s", config_.image_tf_frame_id.c_str(), input_msg_cloud_ptr->header.frame_id.c_str(), config_.reference_frame.c_str());
 	//Transform only if not already transformed
 	if( config_.image_tf_frame_id != input_msg_cloud_ptr->header.frame_id )
 	{
@@ -154,25 +154,13 @@ Fusion::callback(const sensor_msgs::ImageConstPtr& input_msg_image, const sensor
 			NODELET_WARN("%s: tf_error %s", node_name_.c_str(), tf_error.c_str());
 			return;
 		}
-	}
-
-
-	if( input_msg_image->header.stamp != input_msg_cloud_ptr->header.stamp)
-	{
-
-		//pcl::transformPointCloud(cloud, cloud,  )
-
-		// Transform to odom
-		// todo: Transform at pcl time to odom
-		if (!boost::equals(config_.reference_frame, input_msg_cloud_ptr->header.frame_id)){
-			if (!pcl_ros::transformPointCloud(config_.reference_frame, cloud, cloud, *listener_pointcloud_transform)) {
-					NODELET_WARN("Cannot transform point cloud to the fixed frame %s.", config_.reference_frame.c_str());
-				 return;
-			}
+		// Transform to camera_frame
+		if (!pcl_ros::transformPointCloud(config_.image_tf_frame_id, cloud, cloud, *listener_pointcloud_transform)) {
+				NODELET_WARN("Cannot transform point cloud to the fixed frame %s.", config_.image_tf_frame_id.c_str());
+			 return;
 		}
 
 	}
-
 
 	//NODELET_INFO("pointcloud2 w: %i \th: %i \t\ttime: %i.%i",input_msg_cloud_ptr->width, input_msg_cloud_ptr->height, input_msg_cloud_ptr->header.stamp.sec, input_msg_cloud_ptr->header.stamp.nsec );
 	//NODELET_DEBUG(node_name_,"pointcloud2 w: %i \th: %i \t\ttime: %lu",input_msg_cloud_ptr->width, input_msg_cloud_ptr->height, input_msg_cloud_ptr->header.stamp );
