@@ -10,7 +10,7 @@
 	<arg name="publish_image"	 			default="$(arg subscribe_topic_image)/fused$(arg subscribe_topic_pcl)/image"/>
 	
 	<arg name="image_frame_id"				default=""/>
-	<arg name="reference_frame_id"			default="/odom"/>
+	<arg name="reference_frame_id"			default="odom"/>
 	<arg name="nodelet_manager" 			default="nodelet_manager"/>
 	<arg name="queue_size" 					default="30" />
 	
@@ -31,7 +31,7 @@
 	</node>
   
    	<include if="$(arg save)" file="$(find fiddle)/launch/extract_image.launch">
-	  	<arg name="name" 	value="ex$(arg camera)_fusion" />
+	  	<arg name="name" 	value="save_image_$(arg name)_fusion" />
 	  	<arg name="image" 	value="$(arg publish_image)" />	  	
 	  	<arg name="path"	value="$(arg save_path)" />
 	</include>
