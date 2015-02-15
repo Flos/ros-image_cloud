@@ -143,19 +143,6 @@ add_dependencies(pcl_to_image
 )
 
 ## Other
-add_executable(benchmark_standalone
-  src/calibration/benchmark_standalone.cpp
-)
-
-target_link_libraries(benchmark_standalone
-  ${catkin_LIBRARIES}
-  kitti
-)
-
-add_dependencies(benchmark_standalone 
-  ${PROJECT_NAME}_gencfg
-)
-
 # Continuous calibration
 add_executable(continuous_calibration
   src/calibration/continuous_calibration_node.cpp
