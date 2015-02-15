@@ -50,7 +50,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES image_cloud
-  CATKIN_DEPENDS image_geometry image_transport pcl_conversions pcl_ros cv_bridge nodelet roscpp rospy rostime sensor_msgs std_msgs tf
+  CATKIN_DEPENDS image_geometry image_transport pcl_conversions pcl_ros cv_bridge nodelet roscpp rospy rostime sensor_msgs std_msgs tf kitti
   DEPENDS system_lib
 )
 
@@ -84,6 +84,10 @@ endif (NOT PCL_FOUND)
 include_directories(
   ${catkin_INCLUDE_DIRS}
   include
+)
+
+set(common
+  src/fusion/fusion.cpp
 )
 
 ## Fusion Nodelets
@@ -139,22 +143,6 @@ add_dependencies(pcl_to_image
 )
 
 ## Other
-add_executable(gui
-  src/gui/node.cpp
-  src/gui/gui_opencv.cpp
-  src/gui/slider.cpp
-)
-
-target_link_libraries(gui
-  ${catkin_LIBRARIES}
-   ${PCL_LIBRARIES} libvtkCommon.so libvtkFiltering.so
-)
-
-add_dependencies(gui 
-  ${PROJECT_NAME}_gencfg
-)
-
-
 add_executable(benchmark_standalone
   src/calibration/benchmark_standalone.cpp
 )
@@ -215,6 +203,21 @@ target_link_libraries(sync_image
 add_dependencies(sync_image 
   ${PROJECT_NAME}_gencfg
 )
+
+## Create lib to share
+add_library(image_cloud
+  ${common}
+)
+
+add_dependencies(image_cloud
+  ${PROJECT_NAME}_gencfg
+  ${PROJECT_NAME}_generate_messages_cpp
+)
+
+target_link_libraries(image_cloud
+  ${catkin_LIBRARIES}
+)
+
 #############
 ## Install ##
 #############
@@ -237,11 +240,10 @@ add_dependencies(sync_image
 # )
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        PATTERN ".svn" EXCLUDE
+)
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
