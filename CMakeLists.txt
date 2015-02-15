@@ -78,20 +78,6 @@ if (NOT PCL_FOUND)
     MESSAGE(FATAL_ERROR "PCL not found.\n")
 endif (NOT PCL_FOUND)
 
-
-set(common
-  src/common/string_list.cpp
-)
-
-
-set(kitti_data
-  src/common/kitti/serializable.cpp
-  src/common/kitti/camera.cpp
-  src/common/kitti/camera_list.cpp
-  src/common/kitti/dataset.cpp
-  src/common/kitti/tf.cpp
-)
-
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
@@ -157,8 +143,6 @@ add_executable(gui
   src/gui/node.cpp
   src/gui/gui_opencv.cpp
   src/gui/slider.cpp
-  ${common}
-  ${kitti_data}
 )
 
 target_link_libraries(gui

@@ -19,10 +19,11 @@
 #include <image_geometry/pinhole_camera_model.h>
 
 // Own
-#include <image_cloud/common/kitti/camera.h>
-#include <image_cloud/common/kitti/tf.h>
-#include <image_cloud/common/string_list.h>
-#include <image_cloud/common/kitti/dataset.h>
+#include <kitti/common/serialization/camera.h>
+#include <kitti/common/serialization/tf.h>
+#include <kitti/common/serialization/dataset.h>
+#include <kitti/common/serialization/file_list.h>
+
 #include <image_cloud/gui/slider.h>
 
 #ifndef SRC_CALIBRATION_SIMPLE_GUI_H_
@@ -40,7 +41,8 @@ namespace pcl_filter{
 		NORMAL_DIFF = 4,
 		RANGE_BORDERS = 5,
 		DEPTH_RADIUS = 6,
-		OTHER = 7
+		DEPTH_NEIGHBORS = 7,
+		OTHER = 8
 	};
 }
 
@@ -92,8 +94,8 @@ namespace image_filter{
 }
 
 struct Set_selector{
-	String_list images;
-	String_list pointclouds;
+	kitti::String_list images;
+	kitti::String_list pointclouds;
 	Slider pos;
 };
 

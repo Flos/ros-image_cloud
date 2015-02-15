@@ -15,6 +15,7 @@
 #include <image_cloud/common/filter/pcl/normal_diff_filter.hpp>
 #include <image_cloud/common/filter/pcl/range_borders.hpp>
 #include <image_cloud/common/filter/pcl/depth_filter_radius.hpp>
+#include <image_cloud/common/filter/pcl/depth_filter_neighbors.hpp>
 #include <image_cloud/common/transform.hpp>
 #include <image_cloud/common/calibration/score.hpp>
 #include <image_cloud/common/filter/cv/inverse_distance_transform.hpp>
@@ -97,7 +98,7 @@ Gui_opencv::init(){
 	datasets.filter2d.blur.init("blur filter", image_filter::blur::OFF, filter2d_blur_names.size() -1);
 	datasets.filter2d.edge.init("edge filter", image_filter::edge::MAX, filter2d_edge_names.size() -1);
 	datasets.projection.init("0 = intensity | depth = 1", 0, 1);
-	datasets.pcl_filter.init("pcl filter", pcl_filter::DEPTH_RADIUS ,filter3d_names.size() -1);
+	datasets.pcl_filter.init("pcl filter", pcl_filter::DEPTH_NEIGHBORS ,filter3d_names.size() -1);
 
 	load_pcl();
 	load_image();
@@ -157,6 +158,12 @@ void Gui_opencv::init_menu_options() {
 	datasets.filter3d_data.at(pcl_filter::DEPTH_RADIUS).at(1).init("epsilon", 50, 200, 1, 100);
 	datasets.filter3d_data.at(pcl_filter::DEPTH_RADIUS).at(2).init("max distance", 20, 200, 1, 1);
 	datasets.filter3d_data.at(pcl_filter::DEPTH_RADIUS).at(3).init("min neighbors", 2, 50, false);
+
+	datasets.filter3d_data.at(pcl_filter::DEPTH_NEIGHBORS).resize(3);
+	datasets.filter3d_data.at(pcl_filter::DEPTH_NEIGHBORS).at(0).init("neighbors", 8, 50, false);
+	datasets.filter3d_data.at(pcl_filter::DEPTH_NEIGHBORS).at(1).init("epsilon", 50, 200, 1, 100);
+	datasets.filter3d_data.at(pcl_filter::DEPTH_NEIGHBORS).at(2).init("max distance", 20, 200, 1, 1);
+
 
 	datasets.filter3d_data.at(pcl_filter::RANGE_BORDERS).resize(1);
 	datasets.filter3d_data.at(pcl_filter::RANGE_BORDERS).at(0).init("angular_resolution_deg", 4, 200, 1, 100, false, true );
@@ -536,6 +543,14 @@ Gui_opencv::filter3d(){
 										datasets.filter3d_data[pcl_filter::DEPTH_RADIUS][1].get_value(), // epsilon (tree search)
 										datasets.filter3d_data[pcl_filter::DEPTH_RADIUS][2].get_value(), // max distance
 										datasets.filter3d_data[pcl_filter::DEPTH_RADIUS][3].get_value()); // min neighbors
+							}
+			break;
+		case pcl_filter::DEPTH_NEIGHBORS:
+							{
+								filter_3d::depth_filter_neighbors(transformed, filtred,
+										datasets.filter3d_data[pcl_filter::DEPTH_NEIGHBORS][0].get_value(), // neighbors
+										datasets.filter3d_data[pcl_filter::DEPTH_NEIGHBORS][1].get_value(), // epsilon (tree search)
+										datasets.filter3d_data[pcl_filter::DEPTH_NEIGHBORS][2].get_value()); // max distance
 							}
 			break;
 		case pcl_filter::OTHER:
