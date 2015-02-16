@@ -21,7 +21,7 @@ depth_filter_neighbors(
 )
 {
 	std::cout << "neigbors " << neighbors << " epsilon " << epsilon << " distance_max " << distance_max <<std::endl;
-	sleep(4);
+
 	boost::shared_ptr<pcl::search::KdTree<PointT> > tree_n( new pcl::search::KdTree<PointT>() );
 	tree_n->setInputCloud(in.makeShared());
 	tree_n->setEpsilon(epsilon);
