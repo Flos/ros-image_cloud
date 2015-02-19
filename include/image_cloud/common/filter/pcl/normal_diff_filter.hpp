@@ -25,9 +25,9 @@ inline void
 normal_diff_filter(
 		const pcl::PointCloud<PointT> &in,
 		pcl::PointCloud<PointT> &out,
-		double scale1, ///The smallest scale to use in the DoN filter.
-		double scale2, ///The largest scale to use in the DoN filter.
-		double threshold ///The minimum DoN magnitude to threshold by
+		double scale1 = 0.01, ///The smallest scale to use in the DoN filter.
+		double scale2 = 0.10, ///The largest scale to use in the DoN filter.
+		double threshold = 0.5 ///The minimum DoN magnitude to threshold by
 )
 {
 
@@ -109,7 +109,7 @@ normal_diff_filter(
 	boost::shared_ptr<pcl::PointIndices> indices(new pcl::PointIndices);
 	condrem.getRemovedIndices(*indices);
 
-	std::cout << "Indices: " << indices->indices.size() << " Filtered: " << doncloud_filtered->size () << " data points." << std::endl;
+	//std::cout << "Indices: " << indices->indices.size() << " Filtered: " << doncloud_filtered->size () << " data points." << std::endl;
 
 	pcl::ExtractIndices<PointT> extract;
 	extract.setInputCloud(in_ptr);
@@ -118,7 +118,7 @@ normal_diff_filter(
 	extract.filter(out);
 
 	// Save filtered output
-	std::cout << "In: " << in.size() << " Filtered: " << out.size () << " data points." << std::endl;
+	//std::cout << "In: " << in.size() << " Filtered: " << out.size () << " data points." << std::endl;
 }
 
 }

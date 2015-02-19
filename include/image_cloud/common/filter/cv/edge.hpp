@@ -41,8 +41,8 @@ inline void
 edge_max(cv::Mat &in, cv::Mat &out)
 {
 
-	printf("rows: %d, cols: %d\n", in.rows, in.cols);
-	printf("rows: %d, cols: %d\n", out.rows, out.cols);
+	//printf("rows: %d, cols: %d\n", in.rows, in.cols);
+	//printf("rows: %d, cols: %d\n", out.rows, out.cols);
 	assert(in.rows == out.rows);
 	assert(in.cols == out.cols);
 	assert(in.depth() == out.depth());

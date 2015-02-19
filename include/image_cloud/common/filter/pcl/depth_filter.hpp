@@ -13,6 +13,8 @@
 #ifndef PCL_DEPTH_FILTER_H_
 #define PCL_DEPTH_FILTER_H_
 
+namespace filter_3d{
+
 inline void
 extract_depth_discontinuity(
 		const image_geometry::PinholeCameraModel &camera_model,
@@ -97,7 +99,7 @@ extract_depth_discontinuity(
 
 inline void
 filter_depth_discontinuity(
-		pcl::PointCloud<pcl::PointXYZI> &in,
+		const pcl::PointCloud<pcl::PointXYZI> &in,
 		pcl::PointCloud<pcl::PointXYZI> &out,
 		int neighbohrs_to_search = 2,
 		float epsilon = 0.5
@@ -211,7 +213,9 @@ inline void filter_depth_edges(
 			hits++;
 		}
 	}
-	printf("depth cloud: %lu, hits: %u imin: %f imax: %f", in_xy.size(), hits, cloud_intensity_min, cloud_intensity_max);
+	//printf("depth cloud: %lu, hits: %u imin: %f imax: %f", in_xy.size(), hits, cloud_intensity_min, cloud_intensity_max);
+}
+
 }
 
 #endif

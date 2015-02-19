@@ -31,7 +31,7 @@ inline void
 range_borders(
 		const pcl::PointCloud<PointT> &in,
 		pcl::PointCloud<PointT> &out,
-		double angular_resolution // Angular resolution for image
+		double angular_resolution = 0.05// Angular resolution for image
 )
 {
 
@@ -137,7 +137,7 @@ range_borders(
 #endif
 
 	// Save filtered output
-	std::cout << "In: " << in.size() << " Filtered: " << out.size () << " data points." << std::endl;
+	//std::cout << "In: " << in.size() << " Filtered: " << out.size () << " data points." << std::endl;
 }
 
 }

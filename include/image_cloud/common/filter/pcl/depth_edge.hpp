@@ -149,7 +149,7 @@ depth_edge(std::vector<std::vector<boost::shared_ptr<PointT> > > &in,
 		}
 	}
 
-	printf("rows: %lu cols: %lu neighbors %d, range: %f\n", in[0].size(), in.size(), neighbors, range);
+	//printf("rows: %lu cols: %lu neighbors %d, range: %f\n", in[0].size(), in.size(), neighbors, range);
 }
 
 

@@ -11,7 +11,7 @@
 
 
 
-namespace filter{
+namespace filter_3d{
 
 /***
  * Returns Point3i
@@ -58,7 +58,6 @@ namespace filter{
 			else if(!direction_x && (y+1) < idx[0].size()){
 				return search(x, y+1, steps_left -1, idx, min_intensity, max_intensity, min_depth, max_depth, direction_x);
 			}
-
 		}
 		return cv::Point3i(0,0,0);
 	}
@@ -146,7 +145,7 @@ namespace filter{
 
 		project2d::project_2d<PointT>(camera_model, in_points, pointcloud_map);
 
-		filter::filter_depth_intensity<PointT>(pointcloud_map, out_points, range_depth, range_intensity);
+		filter_3d::filter_depth_intensity<PointT>(pointcloud_map, out_points, range_depth, range_intensity);
 	}
 }
 #endif

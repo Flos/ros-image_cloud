@@ -3,7 +3,8 @@
 #include <image_cloud/common/transform.hpp>
 #include <image_cloud/common/calibration/structs.hpp>
 #include <image_cloud/common/calibration/score.hpp>
-
+#include <image_cloud/common/filter/pcl/depth_filter_neighbors.hpp>
+#include <image_cloud/common/filter/pcl/filter_depth_intensity.hpp>
 #include <math.h>
 #include <opencv2/core/core.hpp>
 
@@ -12,8 +13,6 @@
 
 namespace score
 {
-
-
 
 template <typename PointT, typename ImageT>
 inline void
@@ -125,7 +124,7 @@ multi_score_filter_depth(
 
 		image_cloud::transform_pointcloud<PointT>(pointclouds.at(i), transformed, search.x, search.y, search.z, search.roll, search.pitch, search.yaw);
 
-		filter::filter_depth_intensity( camera_model, transformed, filtered, edge_images.at(i).rows, edge_images.at(i).cols);
+		filter_3d::filter_depth_intensity( camera_model, transformed, filtered, edge_images.at(i).rows, edge_images.at(i).cols);
 
 		objective_function<PointT, ImageT>( camera_model, filtered, edge_images.at(i), score_temp);
 
@@ -155,7 +154,7 @@ multi_score_filter_depth(
 
 		image_cloud::transform_pointcloud<PointT>(pointclouds.at(i), transformed, search.x, search.y, search.z, search.roll, search.pitch, search.yaw);
 
-		filter::filter_depth_intensity<PointT>( camera_model, transformed, filtered, edge_images.at(i).rows, edge_images.at(i).cols);
+		filter_3d::filter_depth_intensity<PointT>( camera_model, transformed, filtered, edge_images.at(i).rows, edge_images.at(i).cols);
 
 		objective_function<PointT, ImageT>( camera_model, filtered, edge_images.at(i), score_temp);
 

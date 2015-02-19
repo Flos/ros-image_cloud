@@ -13,7 +13,7 @@ namespace filter_3d
 template <typename PointT>
 inline void
 depth_discontinuity_radius(
-		pcl::PointCloud<PointT> &in,
+		const pcl::PointCloud<PointT> &in,
 		pcl::PointCloud<PointT> &out,
 		float radius = 0.3,
 		float epsilon = 0.5,

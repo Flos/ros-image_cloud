@@ -13,10 +13,10 @@
 #ifndef SEGMENTATION_H_
 #define SEGMENTATION_H_
 
-namespace filter{
+namespace filter_3d{
 
 template <typename PointT>
-void segmentation(pcl::PointCloud<PointT> &in, pcl::PointCloud<PointT> &out){
+void segmentation(const pcl::PointCloud<PointT> &in, pcl::PointCloud<PointT> &out){
 
 	pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
 	pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
@@ -46,7 +46,7 @@ void segmentation(pcl::PointCloud<PointT> &in, pcl::PointCloud<PointT> &out){
 
 	// Get the points associated with the planar surface
 	extract.filter (out);
-	std::cout << "PointCloud representing the planar component: " << out.points.size () << " data points." << std::endl;
+	//std::cout << "PointCloud representing the planar component: " << out.points.size () << " data points." << std::endl;
 
 	// Remove the planar inliers, extract the rest
 //	extract.setNegative (true);

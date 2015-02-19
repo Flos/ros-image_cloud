@@ -13,14 +13,14 @@ namespace filter_3d
 template <typename PointT>
 inline void
 depth_filter_neighbors(
-		pcl::PointCloud<PointT> &in,
+		const pcl::PointCloud<PointT> &in,
 		pcl::PointCloud<PointT> &out,
 		int neighbors = 2,
 		float epsilon = 0.5,
 		float distance_max = 20
 )
 {
-	std::cout << "neigbors " << neighbors << " epsilon " << epsilon << " distance_max " << distance_max <<std::endl;
+	//std::cout << "neigbors " << neighbors << " epsilon " << epsilon << " distance_max " << distance_max <<std::endl;
 
 	boost::shared_ptr<pcl::search::KdTree<PointT> > tree_n( new pcl::search::KdTree<PointT>() );
 	tree_n->setInputCloud(in.makeShared());

@@ -252,7 +252,7 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
 					std::vector<std::vector<boost::shared_ptr<pcl::PointXYZI> > > map(image.rows, std::vector<boost::shared_ptr<pcl::PointXYZI> > (image.cols));
 
 					project2d::project_2d(camera_model, cloud, map);
-					filter::filter_depth_intensity(map, cloud3d_filtred,
+					filter_3d::filter_depth_intensity(map, cloud3d_filtred,
 							0.3, // depth
 							50, // intensity
 							2,	// neighbors
@@ -264,10 +264,10 @@ Pcl_to_image_nodelet::callback(const sensor_msgs::CameraInfoConstPtr &input_msg_
 				//extract_intensity_and_normals(camera_model, cloud.makeShared(), image_pcl, image_depth, config_.point_size, config_.normal_search_radius);
 
 				project2d::project_2d(camera_model, cloud, cloud2d, cloud3d_hit_image, image_pcl.image.rows, image_pcl.image.cols );
-				filter_depth_edges(cloud2d, cloud3d_hit_image, cloud3d_filtred, image_pcl );
+				filter_3d::filter_depth_edges(cloud2d, cloud3d_hit_image, cloud3d_filtred, image_pcl );
 				break;
 			case 3: // depth discontinuity
-				extract_depth_discontinuity(camera_model, cloud, image_pcl, config_.point_size);
+				filter_3d::extract_depth_discontinuity(camera_model, cloud, image_pcl, config_.point_size);
 				break;
 		}
 	}catch(std::exception &e){
