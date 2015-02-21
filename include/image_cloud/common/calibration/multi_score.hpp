@@ -70,7 +70,7 @@ multi_score(
 
 		objective_function<PointT, ImageT>( camera_model, transformed, edge_images.at(i), score_temp);
 
-		search.result += score_temp;
+		search.score += score_temp;
 	}
 }
 
@@ -97,7 +97,7 @@ multi_score(
 
 		objective_function<PointT, ImageT>( camera_model, transformed, edge_images.at(i), score_temp);
 
-		search.result += score_temp;
+		search.score += score_temp;
 	}
 }
 
@@ -128,7 +128,7 @@ multi_score_filter_depth(
 
 		objective_function<PointT, ImageT>( camera_model, filtered, edge_images.at(i), score_temp);
 
-		search.result += score_temp;
+		search.score += score_temp;
 	}
 }
 
@@ -158,7 +158,7 @@ multi_score_filter_depth(
 
 		objective_function<PointT, ImageT>( camera_model, filtered, edge_images.at(i), score_temp);
 
-		search.result += score_temp;
+		search.score += score_temp;
 	}
 }
 

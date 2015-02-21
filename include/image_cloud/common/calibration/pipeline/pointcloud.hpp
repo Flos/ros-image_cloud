@@ -10,6 +10,7 @@
 #include <image_cloud/common/filter/pcl/depth_filter_radius.hpp>
 #include <image_cloud/common/filter/pcl/depth_filter_neighbors.hpp>
 #include <image_cloud/common/filter/pcl/filter_depth_projection.hpp>
+#include <image_cloud/common/filter/pcl/hit_same_point.hpp>
 #include <image_cloud/common/project2d.hpp>
 #include <image_cloud/common/calibration/pipeline/enums.h>
 #include <assert.h>
@@ -81,6 +82,11 @@ filter3d_switch(const pcl::PointCloud<PointT> &pcl_in,
 		case pcl_filter::DEPTH_EDGE_PROJECTION:
 		{
 			filter_3d::filter_depth_projection(camera_model, pcl_in, pcl_out, rows, cols); // neighbors); // max distance
+		}
+		break;
+		case pcl_filter::HIT_SAME_POINT:
+		{
+			filter_3d::hit_same_point(camera_model, pcl_in, pcl_out, rows, cols);
 		}
 		break;
 		case pcl_filter::OTHER:
