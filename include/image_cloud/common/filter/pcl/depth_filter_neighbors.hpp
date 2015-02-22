@@ -17,7 +17,8 @@ depth_filter_neighbors(
 		pcl::PointCloud<PointT> &out,
 		int neighbors = 2,
 		float epsilon = 0.5,
-		float distance_max = 20
+		float distance_max = 20,
+		float threshold = 0.2
 )
 {
 	//std::cout << "neigbors " << neighbors << " epsilon " << epsilon << " distance_max " << distance_max <<std::endl;
@@ -78,7 +79,6 @@ depth_filter_neighbors(
 			}
 		}
 
-		float threshold = 0.2;
 		//if( (!inRange(min_y, threshold, in.points.at(i).y)
 			//&& !inRange(max_y, threshold, in.points.at(i).y)
 
