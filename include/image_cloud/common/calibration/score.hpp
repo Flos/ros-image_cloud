@@ -95,10 +95,14 @@ objective_function(
 		assert(image_edge.cols == idx.image_size.width);
 		assert(image_edge.rows == idx.image_size.height);
 
+		cv::Mat temp;
+		image_edge.copyTo(temp);
+
 		score = 0;
 		for(int i = 0; i < idx.points.size(); i++)
 		{
-			score += image_edge.at<ImageT>(idx.points.at(i).cv);
+			score += temp.at<ImageT>(idx.points.at(i).cv);
+			temp.at<ImageT>(idx.points.at(i).cv) = 0; // no higher score if multiple points hit the same edge
 		}
 }
 
@@ -110,6 +114,9 @@ objective_function(
 		const cv::Mat &image_edge,
 		long unsigned &score)
 {
+		cv::Mat temp;
+		image_edge.copyTo(temp);
+
 		score = 0;
 		for(int i = 0; i < in.size(); ++i ){
 			if( in.points.at(i).z > 1) { // min distance from camera 1m
@@ -120,7 +127,8 @@ objective_function(
 					&& between<int>( 0, point_image.y, image_edge.rows )
 				)
 				{
-					score += image_edge.at<ImageT>(point_image);
+					score += temp.at<ImageT>(point_image);
+					temp.at<ImageT>(point_image) = 0; // no higher score if multiple points hit the same edge
 				}
 			}
 		}
