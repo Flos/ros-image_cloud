@@ -63,7 +63,7 @@ struct Value_calculator{
 		ss << "center:" << spacer << center << spacer;
 		ss << "max:" << spacer << max << spacer;
 		ss << "steps:" << spacer << steps_max << spacer;
-		ss << "step_width:"<< spacer << step_width << spacer;
+		ss << "step_width:"<< spacer << step_width;
 		return ss.str();
 	}
 
@@ -73,7 +73,7 @@ struct Value_calculator{
 		ss << "center:" << spacer;
 		ss << "max:" << spacer;
 		ss << "steps:" << spacer;
-		ss << "step_width:"<< spacer;
+		ss << "step_width:";
 		return ss.str();
 	}
 
@@ -83,7 +83,7 @@ struct Value_calculator{
 		ss << center << spacer;
 		ss << max << spacer;
 		ss << steps_max << spacer;
-		ss << step_width << spacer;
+		ss << step_width;
 		return ss.str();
 	}
 };
@@ -128,38 +128,48 @@ struct Search_value{
 
 	std::string to_string(){
 		std::stringstream ss;
+		ss << "score:" << spacer << score << spacer;
 		ss << "x:" << spacer << x << spacer;
 		ss << "y:" << spacer << y << spacer;
 		ss <<" z:" << spacer << z << spacer;
 		ss << "roll:" << spacer << roll << spacer;
 		ss << "pitch:" << spacer << pitch << spacer;
-		ss << "yaw:" << spacer << yaw << spacer;
-		ss << "result:" << spacer << score;
+		ss << "yaw:" << spacer << yaw;
+
 		return ss.str();
 	}
 
 	std::string to_description_string(){
 		std::stringstream ss;
+		ss << "score:" << spacer;
 		ss << "x:" << spacer;
 		ss << "y:" << spacer;
 		ss <<" z:" << spacer;
 		ss << "roll:" << spacer;
 		ss << "pitch:" << spacer;
-		ss << "yaw:" << spacer;
-		ss << "score:" << spacer;
+		ss << "yaw:";
+
 		return ss.str();
 	}
 
 	std::string to_simple_string(){
 		std::stringstream ss;
+		ss << score << spacer;
 		ss << x << spacer;
 		ss << y << spacer;
 		ss << z << spacer;
 		ss << roll << spacer;
 		ss << pitch << spacer;
-		ss << yaw << spacer;
-		ss << score << spacer;
+		ss << yaw;
 		return ss.str();
+	}
+
+	tf::Transform get_transform(){
+		tf::Transform tf;
+
+		get_transform(tf);
+
+		return tf;
 	}
 
 	void get_transform(tf::Transform &tf){
@@ -169,6 +179,35 @@ struct Search_value{
 		q.setRPY(roll, pitch, yaw );
 		tf.setRotation( q );
 	}
+
+	Search_value& operator=(const Search_value& a)
+	{
+		x=a.x;
+		y=a.y;
+		z=a.x;
+		roll=a.roll;
+		pitch=a.pitch;
+		yaw=a.yaw;
+		score=a.score;
+		return *this;
+	}
+
+	Search_value operator+(const Search_value& a) const
+	{
+		return Search_value(a.x+x, a.y+y, a.z+z, a.roll+roll, a.pitch+pitch, a.yaw+yaw, a.score+score);
+	}
+
+	Search_value operator-(const Search_value& a) const
+	{
+		return Search_value( x - a.x, y - a.y, z - a.z, roll - a.roll, pitch - a.pitch, yaw - a.yaw, score - a.score);
+	}
+
+	// equality comparison. doesn't modify object. therefore const.
+	bool operator==(const Search_value& a) const
+	{
+		return (x == a.x && y == a.y && z == a.z && roll == a.roll && pitch == a.pitch && yaw == a.yaw && score == a.score);
+	}
+
 
 	float x;
 	float y;
@@ -262,7 +301,7 @@ struct Search_setup{
 			ss << z.to_description_string() << spacer;
 			ss << roll.to_description_string() << spacer;
 			ss << pitch.to_description_string() << spacer;
-			ss << yaw.to_description_string() << spacer;
+			ss << yaw.to_description_string();
 			return ss.str();
 	}
 
@@ -273,7 +312,7 @@ struct Search_setup{
 		ss << z.to_simple_string() << spacer;
 		ss << roll.to_simple_string() << spacer;
 		ss << pitch.to_simple_string() << spacer;
-		ss << yaw.to_simple_string() << spacer;
+		ss << yaw.to_simple_string();
 		return ss.str();
 	}
 
@@ -284,33 +323,78 @@ struct Search_setup{
 		ss << "z:" << spacer << z.to_string() << spacer;
 		ss << "roll:" << spacer << roll.to_string() << spacer;
 		ss << "pitch:" << spacer << pitch.to_string() << spacer;
-		ss << "yaw:" << spacer << yaw.to_string() << spacer;
+		ss << "yaw:" << spacer << yaw.to_string();
 		return ss.str();
 	}
 };
 
 
+inline bool sort_by_score(const Search_value &lhs, const Search_value &rhs) { return lhs.score > rhs.score; }
+
 struct Multi_search_result{
 	std::vector<Search_value> best_results;
 	Search_value center;
 	Search_value best;
-	long unsigned int nr_total;
+
+	unsigned int size(){
+		return best_results.size();
+	}
+
+	Search_value at(unsigned int idx){
+		return best_results.at(idx);
+	}
+
 	long unsigned int nr_worse;
+	long unsigned int nr_same;
 
 	Multi_search_result(){
 		init();
 	}
 
-	void init(Search_value in, Search_value best, long unsigned int nr_total, long unsigned int nr_worse){
-		this->nr_total = nr_total;
+	Multi_search_result(std::vector<Search_value> &results, Search_value &center){
+		init();
+		evaluate(results);
+		this->center = center;
+	}
+
+	void evaluate(const std::vector<Search_value> &results){
+		//Sort results by score
+		best_results.assign(results.begin(), results.end());
+		std::sort(best_results.begin(), best_results.end(), sort_by_score);
+		best = best_results.at(0);
+
+		assert(best.score >= best_results.at(best_results.size()-1).score);
+		assert(best.score >= best_results.at(0).score);
+		assert(best.score >= center.score);
+
+		nr_same = 0;
+		nr_worse = 0;
+
+		for(int i = 1; i < best_results.size(); ++i){
+			if( best.score == best_results.at(i).score )
+			{
+				++nr_same;
+			}
+			else if( best.score > best_results.at(i).score){
+				nr_worse = size()-i;
+				break;
+			}
+		}
+
+		assert(nr_worse + nr_same + 1 == size());
+	}
+
+	void init(Search_value in, Search_value best, long unsigned int nr_worse, long unsigned int nr_same = 0){
+		this->size();
 		this->nr_worse = nr_worse;
 		this->center = in;
 		this->best = best;
+		this->nr_same = nr_same;
 	}
 
 	void init(){
-		nr_total = 0;
 		nr_worse = 0;
+		nr_same = 0;
 		Search_value empty;
 		empty.init(0,0,0,0,0,0,0);
 		center = empty;
@@ -318,31 +402,25 @@ struct Multi_search_result{
 	}
 
 	float get_fc(){
-		if(nr_total > 0){
-			return (float)nr_worse/(float)nr_total;
+		if(size() > 0){
+			return (float)nr_worse/(float)size();
 		}
 		return 0;
 	}
 
+
 	Search_value get_delta_best(){
-		Search_value delta = center;
-		delta.x-=best.x;
-		delta.y-=best.y;
-		delta.z-=best.z;
-		delta.roll-=best.roll;
-		delta.pitch-=best.pitch;
-		delta.yaw-=best.yaw;
-		delta.score-=best.score;
-		return delta;
+		return best-center;
 	}
 
 	std::string to_description_string(){
 		std::stringstream ss;
 		ss << "total:" << spacer;
 		ss << "worse:" << spacer;
+		ss << "same:" << spacer;
 		ss << "fc:" << spacer;
-		ss << center.to_description_string();
-		ss << best.to_description_string();
+		ss << center.to_description_string() << spacer;
+		ss << best.to_description_string() << spacer;
 		ss << get_delta_best().to_description_string();
 
 		return ss.str();
@@ -350,11 +428,12 @@ struct Multi_search_result{
 
 	std::string to_simple_string(){
 		std::stringstream ss;
-		ss << nr_total << spacer;
+		ss << size() << spacer;
 		ss << nr_worse << spacer;
+		ss << nr_same << spacer;
 		ss << get_fc() << spacer;
-		ss << center.to_simple_string();
-		ss << best.to_simple_string();
+		ss << center.to_simple_string() << spacer;
+		ss << best.to_simple_string()<< spacer;
 		ss << get_delta_best().to_simple_string();
 
 		return ss.str();
@@ -362,12 +441,13 @@ struct Multi_search_result{
 
 	std::string to_string(){
 		std::stringstream ss;
-		ss << "total:" << spacer << nr_total << spacer;
+		ss << "total:" << spacer << size() << spacer;
 		ss << "worse:" << spacer << nr_worse << spacer;
+		ss << "same:" << spacer << nr_same << spacer;
 		ss << "fc:" << spacer << get_fc() << spacer;
 		ss << "in:" <<spacer << center.to_string() << spacer;
 		ss << "out:" << spacer << best.to_string() << spacer;
-		ss << "delta:" << spacer << get_delta_best().to_string() << spacer;
+		ss << "delta:" << spacer << get_delta_best().to_string();
 
 		return ss.str();
 	}
