@@ -83,17 +83,19 @@ Continuous_calibration::callback(const sensor_msgs::ImageConstPtr &image_msg, co
 	if(data.window.size() == config.windows_size){
 		// Do calibration here
 
+		search::Multi_search_result results;
 		search::get_best_tf< pcl::PointXYZI, uchar>(
 								data.calibration,  // tf in
-								data.calibration,  // best tf out
 								data.camera_model, // camera model
 								data.window.pointclouds, // pointclouds
 								data.window.images, // images
+								results,
 								config.grid_search_radius_axis, // radious of the search
 								config.grid_search_radius_rotation,
 								config.grid_search_steps,
 								false); // steps
 
+		results.best.get_transform(data.calibration);
 		// Transform to current best calibration
 		transform_pointcloud<pcl::PointXYZI>(cloud, data.calibration);
 
