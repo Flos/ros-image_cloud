@@ -83,8 +83,8 @@ Continuous_calibration::callback(const sensor_msgs::ImageConstPtr &image_msg, co
 	if(data.window.size() == config.windows_size){
 		// Do calibration here
 
-		search::Multi_search_result results;
-		search::get_best_tf< pcl::PointXYZI, uchar>(
+		search::multi_search_results results;
+		search::setup_and_calculate_best_tf< pcl::PointXYZI, uchar>(
 								data.calibration,  // tf in
 								data.camera_model, // camera model
 								data.window.pointclouds, // pointclouds

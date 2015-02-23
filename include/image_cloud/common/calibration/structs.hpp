@@ -15,28 +15,29 @@ namespace search
 {
 const std::string spacer = "\t";
 
+template <typename type>
 struct Value_calculator{
-	float min;
-	float max;
+	type min;
+	type max;
 	int steps_max;
-	float step_width;
-	float center;
+	type step_width;
+	type center;
 
 	Value_calculator(){
 		init_range(0, 0, 1);
 	};
 
-	Value_calculator( float value, float range, int steps_max = 3){
+	Value_calculator( type value, type range, int steps_max = 3){
 		init_min_max(value - range/2, value + range/2, steps_max);
 		this->center = value;
 	}
 
-	void init_range( float value, float range, int steps_max = 3){
+	void init_range( type value, type range, int steps_max = 3){
 		init_min_max(value - range/2, value + range/2, steps_max);
 		this->center = value;
 	}
 
-	void init_min_max(float min, float max, int steps_max = 3){
+	void init_min_max(type min, type max, int steps_max = 3){
 		assert(min <= max);
 		assert(steps_max > 0);
 
@@ -52,7 +53,7 @@ struct Value_calculator{
 		this->center = (max - min);
 	}
 
-	float at(int step){
+	type at(int step){
 		assert(step < steps_max);
 		return min + (step_width*step);
 	}
@@ -88,20 +89,21 @@ struct Value_calculator{
 	}
 };
 
-struct Search_value{
-	Search_value(){
+template <typename type>
+struct Search_value_6d{
+	Search_value_6d(){
 		init(0, 0, 0, 0, 0, 0, 0);
 	}
 
-	Search_value(tf::Transform tf, long unsigned int result = 0){
+	Search_value_6d(tf::Transform tf, long unsigned int result = 0){
 		init(tf, result);
 	}
 
-	Search_value( float x, float y, float z, float roll, float pitch, float yaw, long unsigned int result = 0){
-		init(x, y, z, roll, pitch, yaw, result);
+	Search_value_6d( type x, type y, type z, type roll, type pitch, type yaw, long unsigned int score = 0){
+		init(x, y, z, roll, pitch, yaw, score);
 	}
 
-	void init(float x, float y, float z, float roll, float pitch, float yaw, long unsigned int result = 0)
+	void init(type x, type y, type z, type roll, type pitch, type yaw, long unsigned int score = 0)
 	{
 		this->x = x;
 		this->y = y;
@@ -109,7 +111,7 @@ struct Search_value{
 		this->roll = roll;
 		this->pitch = pitch;
 		this->yaw = yaw;
-		this->score = result;
+		this->score = score;
 	}
 
 	void init(tf::Transform tf, long unsigned int result = 0)
@@ -180,7 +182,7 @@ struct Search_value{
 		tf.setRotation( q );
 	}
 
-	Search_value& operator=(const Search_value& a)
+	Search_value_6d& operator=(const Search_value_6d& a)
 	{
 		x=a.x;
 		y=a.y;
@@ -192,45 +194,55 @@ struct Search_value{
 		return *this;
 	}
 
-	Search_value operator+(const Search_value& a) const
+	Search_value_6d operator+(const Search_value_6d& a) const
 	{
-		return Search_value(a.x+x, a.y+y, a.z+z, a.roll+roll, a.pitch+pitch, a.yaw+yaw, a.score+score);
+		return Search_value_6d(a.x+x, a.y+y, a.z+z, a.roll+roll, a.pitch+pitch, a.yaw+yaw, a.score+score);
 	}
 
-	Search_value operator-(const Search_value& a) const
+	Search_value_6d operator-(const Search_value_6d& a) const
 	{
-		return Search_value( x - a.x, y - a.y, z - a.z, roll - a.roll, pitch - a.pitch, yaw - a.yaw, score - a.score);
+		return Search_value_6d( x - a.x, y - a.y, z - a.z, roll - a.roll, pitch - a.pitch, yaw - a.yaw, score - a.score);
 	}
 
 	// equality comparison. doesn't modify object. therefore const.
-	bool operator==(const Search_value& a) const
+	bool operator==(const Search_value_6d& a) const
 	{
 		return (x == a.x && y == a.y && z == a.z && roll == a.roll && pitch == a.pitch && yaw == a.yaw && score == a.score);
 	}
 
 
-	float x;
-	float y;
-	float z;
-	float roll;
-	float pitch;
-	float yaw;
+	type x;
+	type y;
+	type z;
+	type roll;
+	type pitch;
+	type yaw;
 	long unsigned int score;
 };
 
+typedef Search_value_6d<double> search_value_d;
+typedef Search_value_6d<float> search_value_f;
+typedef search_value_d search_value;
+
+typedef std::vector<search_value_d> search_value_vector_d;
+typedef std::vector<search_value_f> search_value_vector_f;
+typedef search_value_vector_d search_value_vector;
+
+
+template <typename type>
 struct Search_setup{
-	Value_calculator x;
-	Value_calculator y;
-	Value_calculator z;
-	Value_calculator roll;
-	Value_calculator pitch;
-	Value_calculator yaw;
+	Value_calculator<type> x;
+	Value_calculator<type> y;
+	Value_calculator<type> z;
+	Value_calculator<type> roll;
+	Value_calculator<type> pitch;
+	Value_calculator<type> yaw;
 
 	Search_setup(){
 		init(0,0,0,0,0,0,0,1);
 	}
 
-	Search_setup(tf::Transform center, float *ranges, int *steps){
+	Search_setup(tf::Transform center, type *ranges, int *steps){
 		this->x.init_range(center.getOrigin()[0], ranges[0], steps[0]);
 		this->y.init_range(center.getOrigin()[1], ranges[1], steps[1]);
 		this->z.init_range(center.getOrigin()[2], ranges[2], steps[2]);
@@ -242,7 +254,7 @@ struct Search_setup{
 		this->yaw.init_range(rpy[2], ranges[5], steps[5]);
 	}
 
-	Search_setup(tf::Transform center, std::vector<float> ranges, std::vector<int> steps){
+	Search_setup(tf::Transform center, std::vector<type> ranges, std::vector<int> steps){
 		this->x.init_range(center.getOrigin()[0], ranges[0], steps[0]);
 		this->y.init_range(center.getOrigin()[1], ranges[1], steps[1]);
 		this->z.init_range(center.getOrigin()[2], ranges[2], steps[2]);
@@ -254,7 +266,7 @@ struct Search_setup{
 		this->yaw.init_range(rpy[2], ranges[5], steps[5]);
 	}
 
-	Search_setup(Search_value val, float* ranges, float* steps){
+	Search_setup(Search_value_6d<type> val, type* ranges, type* steps){
 		this->x.init_range(val.x, ranges[0], steps[0]);
 		this->y.init_range(val.y, ranges[1], steps[1]);
 		this->z.init_range(val.z, ranges[2], steps[2]);
@@ -263,7 +275,7 @@ struct Search_setup{
 		this->yaw.init_range(val.yaw, ranges[5], steps[5]);
 	}
 
-	Search_setup(Search_value val, float range, float step){
+	Search_setup(Search_value_6d<type> val, type range, type step){
 			this->x.init_range(val.x, range, step);
 			this->y.init_range(val.y, range, step);
 			this->z.init_range(val.z, range, step);
@@ -272,7 +284,7 @@ struct Search_setup{
 			this->yaw.init_range(val.yaw, range, step);
 	}
 
-	Search_setup(float* pose, float *ranges, float *steps){
+	Search_setup(type* pose, type *ranges, type *steps){
 		this->x.init_range(pose[0], ranges[0], steps[0]);
 		this->y.init_range(pose[1], ranges[1], steps[1]);
 		this->z.init_range(pose[2], ranges[2], steps[2]);
@@ -281,11 +293,11 @@ struct Search_setup{
 		this->yaw.init_range(pose[5], ranges[5], steps[5]);
 	}
 
-	Search_setup(float x, float y, float z, float roll, float pitch, float yaw, float range, int steps){
+	Search_setup(type x, type y, type z, type roll, type pitch, type yaw, type range, int steps){
 			init( x, y, z, roll, pitch, yaw, range, steps);
 		}
 
-	void init(float x, float y, float z, float roll, float pitch, float yaw, float range, int steps){
+	void init(type x, type y, type z, type roll, type pitch, type yaw, type range, int steps){
 		this->x.init_range(x, range, steps);
 		this->y.init_range(y, range, steps);
 		this->z.init_range(z, range, steps);
@@ -328,19 +340,31 @@ struct Search_setup{
 	}
 };
 
+typedef Search_setup<double> search_setup_d;
+typedef Search_setup<float> search_setup_f;
+typedef search_setup_d search_setup;
 
-inline bool sort_by_score(const Search_value &lhs, const Search_value &rhs) { return lhs.score > rhs.score; }
+typedef std::vector<search_setup_d> search_setup_vector_d;
+typedef std::vector<search_setup_f> search_setup_vector_f;
+typedef search_setup_vector_d search_setup_vector;
 
+
+
+template <typename search_value_type>
+inline bool sort_by_score(const search_value_type &lhs, const search_value_type &rhs) { return lhs.score > rhs.score; }
+
+template <typename search_value_type>
 struct Multi_search_result{
-	std::vector<Search_value> best_results;
-	Search_value center;
-	Search_value best;
+
+	std::vector<search_value_type> best_results;
+	search_value_type center;
+	search_value_type best;
 
 	unsigned int size(){
 		return best_results.size();
 	}
 
-	Search_value at(unsigned int idx){
+	search_value_type at(unsigned int idx){
 		return best_results.at(idx);
 	}
 
@@ -351,16 +375,16 @@ struct Multi_search_result{
 		init();
 	}
 
-	Multi_search_result(std::vector<Search_value> &results, Search_value &center){
+	Multi_search_result(std::vector<search_value_type> &results, search_value_type &center){
 		init();
 		evaluate(results);
 		this->center = center;
 	}
 
-	void evaluate(const std::vector<Search_value> &results){
+	void evaluate(const std::vector<search_value_type> &results){
 		//Sort results by score
 		best_results.assign(results.begin(), results.end());
-		std::sort(best_results.begin(), best_results.end(), sort_by_score);
+		std::sort(best_results.begin(), best_results.end(), sort_by_score<search_value_type>);
 		best = best_results.at(0);
 
 		assert(best.score >= best_results.at(best_results.size()-1).score);
@@ -384,7 +408,7 @@ struct Multi_search_result{
 		assert(nr_worse + nr_same + 1 == size());
 	}
 
-	void init(Search_value in, Search_value best, long unsigned int nr_worse, long unsigned int nr_same = 0){
+	void init(search_value_type in, search_value_type best, long unsigned int nr_worse, long unsigned int nr_same = 0){
 		this->size();
 		this->nr_worse = nr_worse;
 		this->center = in;
@@ -395,21 +419,21 @@ struct Multi_search_result{
 	void init(){
 		nr_worse = 0;
 		nr_same = 0;
-		Search_value empty;
+		search_value_type empty;
 		empty.init(0,0,0,0,0,0,0);
 		center = empty;
 		best = empty;
 	}
 
-	float get_fc(){
+	double get_fc(){
 		if(size() > 0){
-			return (float)nr_worse/(float)size();
+			return (double)nr_worse/(double)size();
 		}
 		return 0;
 	}
 
 
-	Search_value get_delta_best(){
+	search_value_type get_delta_best(){
 		return best-center;
 	}
 
@@ -453,6 +477,55 @@ struct Multi_search_result{
 	}
 };
 
+
+typedef Multi_search_result<search_value_d> multi_search_results_d;
+typedef Multi_search_result<search_value_f> multi_search_results_f;
+typedef multi_search_results_d multi_search_results;
+
+
+
+template <typename multi_search_value_type, typename search_value_type>
+struct Multi_search_results_vector{
+	std::vector<multi_search_value_type> data;
+
+
+	multi_search_value_type& at(long unsigned int idx){
+		return data.at(idx);
+	}
+
+	long unsigned int size(){
+		return data.size();
+	}
+
+	void push_back(multi_search_value_type value){
+		data.push_back(value);
+	}
+
+	search_value_type get_best(){
+
+		search_value_type value;
+		get_best_search_value(value);
+
+		return value;
+	}
+
+	void get_best_search_value(search_value_type &best_result){
+
+		for(int i=0; i < size(); ++i){
+			if(best_result.score < at(i).best.score){
+				best_result = at(i).best;
+			}
+		}
+	}
+};
+
+typedef Multi_search_results_vector<multi_search_results_d, search_value_d> multi_search_results_vector_d;
+typedef Multi_search_results_vector<multi_search_results_f, search_value_f> multi_search_results_vector_f;
+typedef multi_search_results_vector_d multi_search_results_vector;
+
+
+
+
 struct Window{
 	int window_size;
 	std::deque<cv::Mat> images;
@@ -485,6 +558,7 @@ struct Window{
 		check();
 	}
 };
+
 
 }
 #endif /* INCLUDE_IMAGE_CLOUD_COMMON_CALIBRATION_STRUCTS_H_ */

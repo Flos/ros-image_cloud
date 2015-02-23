@@ -15,8 +15,8 @@
 //#define debug
 namespace search
 {
-	inline void grid_setup(Search_setup setup, std::vector<Search_value>& results){
-		results.push_back(Search_value(setup.x.center, setup.y.center, setup.z.center, setup.roll.center, setup.pitch.center, setup.yaw.center)); // first value is origin
+	inline void grid_setup(search_setup setup, search_value_vector &results){
+		results.push_back(search_value(setup.x.center, setup.y.center, setup.z.center, setup.roll.center, setup.pitch.center, setup.yaw.center)); // first value is origin
 		for(int x=0; x < setup.x.steps_max; ++x)
 		{
 			for(int y=0; y < setup.y.steps_max; ++y)
@@ -43,7 +43,7 @@ namespace search
 									continue;
 								}
 
-								results.push_back(Search_value(setup.x.at(x), setup.y.at(y), setup.z.at(z), setup.roll.at(roll), setup.pitch.at(pitch), setup.yaw.at(yaw)));
+								results.push_back(search_value(setup.x.at(x), setup.y.at(y), setup.z.at(z), setup.roll.at(roll), setup.pitch.at(pitch), setup.yaw.at(yaw)));
 #ifdef debug
 								std::cout << results.size()-1 << "\t" << results.at(results.size()-1).to_simple_string() << std::endl;
 #endif
@@ -59,7 +59,13 @@ namespace search
 	}
 
 	template <typename PointT, typename ImageT>
-	inline void calculate(const image_geometry::PinholeCameraModel &camera_model, const std::vector<pcl::PointCloud<PointT> > &pointclouds, const std::vector<cv::Mat> &edge_images, std::vector<Search_value>& results, bool pre_filtred=true){
+	inline void calculate(const image_geometry::PinholeCameraModel &camera_model,
+			const std::vector<pcl::PointCloud<PointT> > &pointclouds,
+			const std::vector<cv::Mat> &edge_images,
+			search_value_vector &results,
+			bool pre_filtred=true)
+	{
+
 		#pragma omp parallel for
 		for(int i=0; i < results.size(); ++i){
 			if(pre_filtred)
@@ -74,7 +80,13 @@ namespace search
 	}
 
 	template <typename PointT, typename ImageT>
-	inline void calculate(const image_geometry::PinholeCameraModel &camera_model, const std::deque<pcl::PointCloud<PointT> > &pointclouds, const std::deque<cv::Mat> &edge_images, std::vector<Search_value>& results, bool pre_filtred=true){
+	inline void calculate(const image_geometry::PinholeCameraModel &camera_model,
+			const std::deque<pcl::PointCloud<PointT> > &pointclouds,
+			const std::deque<cv::Mat> &edge_images,
+			search_value_vector &results,
+			bool pre_filtred=true)
+	{
+
 		#pragma omp parallel for
 		for(int i=0; i < results.size(); ++i){
 			if(pre_filtred)
@@ -90,31 +102,30 @@ namespace search
 
 
 	template <typename PointT, typename ImageT>
-	inline void get_best_tf(std::vector<Search_value> result_list,
+	inline void calculate_best_tf(search_value_vector result_list,
 						const image_geometry::PinholeCameraModel &camera_model,
 						const std::deque<pcl::PointCloud<PointT> > &pointclouds,
 						const std::deque<cv::Mat> &images,
-						Multi_search_result &multi_result,
+						multi_search_results &multi_result,
 						bool pre_filtred = true)
 	{
 		calculate<PointT, ImageT>( camera_model, pointclouds, images, result_list, pre_filtred);
-
-		 multi_result.evaluate(result_list);
+		multi_result.evaluate(result_list);
 	}
 
 	template <typename PointT, typename ImageT>
-	inline void get_best_tf(	tf::Transform in,
+	inline void setup_and_calculate_best_tf(	tf::Transform in,
 						const image_geometry::PinholeCameraModel &camera_model,
 						const std::deque<pcl::PointCloud<PointT> > &pointclouds,
 						const std::deque<cv::Mat> &images,
-						Multi_search_result &multi_result,
+						multi_search_results &multi_result,
 						float range_axis = 0.5,
 						float range_rot = 0.5,
 						int steps = 3,
 						bool pre_filtred = true)
 	{
-		Search_setup search_range;
-		std::vector<Search_value> result_list;
+		search_setup search_range;
+		search_value_vector result_list;
 
 		double r,p,y;
 		in.getBasis().getRPY(r, p, y);
@@ -127,7 +138,7 @@ namespace search
 
 		grid_setup(search_range, result_list);
 
-		get_best_tf<PointT,ImageT>(result_list, camera_model, pointclouds, images, multi_result, pre_filtred);
+		calculate_best_tf<PointT,ImageT>(result_list, camera_model, pointclouds, images, multi_result, pre_filtred);
 	}
 
 }

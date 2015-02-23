@@ -50,13 +50,13 @@ multi_score(
 /****
  * Transforms Pointclouds and calculates a result using the objective_function
  */
-template <typename PointT, typename ImageT>
+template <typename PointT, typename ImageT, typename ResultType>
 inline void
 multi_score(
 		const image_geometry::PinholeCameraModel &camera_model,
 		const std::vector<pcl::PointCloud<PointT> >& pointclouds,
 		const std::vector<cv::Mat> &edge_images,
-		search::Search_value &search
+		search::Search_value_6d<ResultType> &search
 		)
 {
 	assert(pointclouds.size() == edge_images.size());
@@ -77,13 +77,13 @@ multi_score(
 /****
  * Transforms Pointclouds and calculates a result using the objective_function
  */
-template <typename PointT, typename ImageT>
+template <typename PointT, typename ImageT, typename ResultType>
 inline void
 multi_score(
 		const image_geometry::PinholeCameraModel &camera_model,
 		const std::deque<pcl::PointCloud<PointT> >& pointclouds,
 		const std::deque<cv::Mat> &edge_images,
-		search::Search_value &search
+		search::Search_value_6d<ResultType> &search
 		)
 {
 	assert(pointclouds.size() == edge_images.size());
@@ -106,13 +106,13 @@ multi_score(
 /****
  * Transforms Pointclouds and calculates a result using the objective_function
  */
-template <typename PointT, typename ImageT>
+template <typename PointT, typename ImageT, typename ResultType>
 inline void
 multi_score_filter_depth(
 		const image_geometry::PinholeCameraModel &camera_model,
 		const std::vector<pcl::PointCloud<PointT> >& pointclouds,
 		const std::vector<cv::Mat> &edge_images,
-		search::Search_value &search
+		search::Search_value_6d<ResultType> &search
 		)
 {
 	assert(pointclouds.size() == edge_images.size());
@@ -136,13 +136,13 @@ multi_score_filter_depth(
 /****
  * Transforms Pointclouds and calculates a result using the objective_function
  */
-template <typename PointT, typename ImageT>
+template <typename PointT, typename ImageT, typename ResultType>
 inline void
 multi_score_filter_depth(
 		const image_geometry::PinholeCameraModel &camera_model,
 		const std::deque<pcl::PointCloud<PointT> >& pointclouds,
 		const std::deque<cv::Mat> &edge_images,
-		search::Search_value &search
+		search::Search_value_6d<ResultType> &search
 		)
 {
 	assert(pointclouds.size() == edge_images.size());
