@@ -1,5 +1,5 @@
-#ifndef FILTER_DEPTH_PROJECTION_H_
-#define FILTER_DEPTH_PROJECTION_H_
+#ifndef REMOVE_CLUSTERS_2D_H_
+#define REMOVE_CLUSTERS_2D_H_
 
 #include <image_cloud/common/filter/pcl/common.hpp>
 #include <image_cloud/common/small_helpers.hpp>
@@ -17,15 +17,32 @@
 namespace filter_3d{
 
 	template <typename PointT>
+	inline bool
+	is_edge_z(const pcl::PointCloud<PointT> &in, int current_idx, std::vector<int> &k_indices, std::vector<float> &square_distance){
+
+		const float point_distance = in.points.at(current_idx).z;
+		float min_z = point_distance;
+
+		for(int n = 0; n < k_indices.size(); ++n){
+
+			float distance_n = in.points.at(k_indices.at((n))).z;
+
+			if(distance_n < point_distance -0.1){
+				return false;
+			}
+		}
+		return true;
+	}
+
+	template <typename PointT>
 	inline void
-	filter_depth_projection(	const image_geometry::PinholeCameraModel &camera_model,
+	remove_cluster_2d(	const image_geometry::PinholeCameraModel &camera_model,
 								const pcl::PointCloud<PointT> &in,
 								pcl::PointCloud<PointT> &out,
 								int rows,
 								int cols,
-								int k_neighbors = 8)
+								int k_neighbors = 4)
 	{
-		std::vector<std::vector<bool> > hit( cols, std::vector<bool>(rows));
 		std::vector<int> points2d_indices;
 		pcl::PointCloud<pcl::PointXY> points2d;
 
@@ -44,18 +61,12 @@ namespace filter_3d{
 					&& between<int>( 0, point_image.y, rows )
 				)
 				{
-					// Point allready at this position?
-					if(!hit[point_image.x][point_image.y]){
-						hit[point_image.x][point_image.y] = true;
+					pcl::PointXY p_image;
+					p_image.x = point_image.x;
+					p_image.y = point_image.y;
 
-						pcl::PointXY p_image;
-						p_image.x = point_image.x;
-						p_image.y = point_image.y;
-
-						points2d.push_back(p_image);
-						points2d_indices.push_back(i);
-					}
-
+					points2d.push_back(p_image);
+					points2d_indices.push_back(i);
 				}
 			}
 		}
@@ -75,9 +86,11 @@ namespace filter_3d{
 			//tree_n.nearestKSearch(points2d.at(i), k_neighbors, k_indices, square_distance);
 			tree_n.radiusSearch(points2d.at(i), k_neighbors, k_indices, square_distance);
 
+			if(k_indices.empty()) continue; // Dont add points without neighbors
+
 			look_up_indices(points2d_indices, k_indices);
 
-			if(is_edge(in, points2d_indices.at(i), k_indices, square_distance)){
+			if(is_edge_z(in, points2d_indices.at(i), k_indices, square_distance)){
 				out.push_back(in.points.at(points2d_indices.at(i)));
 			}
 		}

@@ -143,7 +143,7 @@ namespace filter_3d{
 
 		std::vector<std::vector<boost::shared_ptr<PointT> > > pointcloud_map( cols, std::vector<boost::shared_ptr<PointT> >(rows));
 
-		project2d::project_2d<PointT>(camera_model, in_points, pointcloud_map);
+		project2d::project_2d<PointT>(camera_model, in_points, pointcloud_map, true);
 
 		filter_3d::filter_depth_intensity<PointT>(pointcloud_map, out_points, range_depth, range_intensity);
 	}
