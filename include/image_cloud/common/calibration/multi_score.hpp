@@ -93,7 +93,7 @@ multi_score(
 		long unsigned score_temp;
 		pcl::PointCloud<PointT> transformed;
 
-		image_cloud::transform_pointcloud<PointT>(pointclouds.at(i), transformed, search.x, search.y, search.z, search.roll, search.pitch, search.yaw);
+		image_cloud::transform_pointcloud<PointT>(pointclouds.at(i), transformed, search.get_transform());
 
 		objective_function<PointT, ImageT>( camera_model, transformed, edge_images.at(i), score_temp);
 
@@ -122,7 +122,7 @@ multi_score_filter_depth(
 		long unsigned score_temp;
 		pcl::PointCloud<PointT> transformed, filtered;
 
-		image_cloud::transform_pointcloud<PointT>(pointclouds.at(i), transformed, search.x, search.y, search.z, search.roll, search.pitch, search.yaw);
+		image_cloud::transform_pointcloud<PointT>(pointclouds.at(i), transformed, search.get_transform());
 
 		filter_3d::filter_depth_intensity( camera_model, transformed, filtered, edge_images.at(i).rows, edge_images.at(i).cols);
 
@@ -152,7 +152,7 @@ multi_score_filter_depth(
 		long unsigned score_temp;
 		pcl::PointCloud<PointT> transformed, filtered;
 
-		image_cloud::transform_pointcloud<PointT>(pointclouds.at(i), transformed, search.x, search.y, search.z, search.roll, search.pitch, search.yaw);
+		image_cloud::transform_pointcloud<PointT>(pointclouds.at(i), transformed, search.get_transform());
 
 		filter_3d::filter_depth_intensity<PointT>( camera_model, transformed, filtered, edge_images.at(i).rows, edge_images.at(i).cols);
 
