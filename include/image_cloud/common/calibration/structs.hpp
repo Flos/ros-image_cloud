@@ -186,7 +186,7 @@ struct Search_value_6d{
 	{
 		x=a.x;
 		y=a.y;
-		z=a.x;
+		z=a.z;
 		roll=a.roll;
 		pitch=a.pitch;
 		yaw=a.yaw;
@@ -204,10 +204,25 @@ struct Search_value_6d{
 		return Search_value_6d( x - a.x, y - a.y, z - a.z, roll - a.roll, pitch - a.pitch, yaw - a.yaw, score - a.score);
 	}
 
+	bool operator < (const Search_value_6d& a) const
+	{
+		return (score < a.score);
+	}
+
+	bool operator > (const Search_value_6d& a) const
+	{
+		return (score > a.score);
+	}
+
 	// equality comparison. doesn't modify object. therefore const.
 	bool operator==(const Search_value_6d& a) const
 	{
 		return (x == a.x && y == a.y && z == a.z && roll == a.roll && pitch == a.pitch && yaw == a.yaw && score == a.score);
+	}
+
+	bool operator!=(const Search_value_6d& a) const
+	{
+		return (x != a.x || y != a.y || z != a.z || roll != a.roll || pitch != a.pitch || yaw != a.yaw || score != a.score);
 	}
 
 
@@ -264,6 +279,16 @@ struct Search_setup{
 		this->roll.init_range(rpy[0], ranges[3], steps[3]);
 		this->pitch.init_range(rpy[1], ranges[4], steps[4]);
 		this->yaw.init_range(rpy[2], ranges[5], steps[5]);
+	}
+
+	Search_setup(Search_value_6d<type> val, std::vector<type> ranges, std::vector<int> steps){
+		this->x.init_range(val.x, ranges[0], steps[0]);
+		this->y.init_range(val.y, ranges[1], steps[1]);
+		this->z.init_range(val.z, ranges[2], steps[2]);
+
+		this->roll.init_range(val.roll, ranges[3], steps[3]);
+		this->pitch.init_range(val.pitch, ranges[4], steps[4]);
+		this->yaw.init_range(val.yaw, ranges[5], steps[5]);
 	}
 
 	Search_setup(Search_value_6d<type> val, type* ranges, type* steps){
@@ -349,10 +374,6 @@ typedef std::vector<search_setup_f> search_setup_vector_f;
 typedef search_setup_vector_d search_setup_vector;
 
 
-
-template <typename search_value_type>
-inline bool sort_by_score(const search_value_type &lhs, const search_value_type &rhs) { return lhs.score > rhs.score; }
-
 template <typename search_value_type>
 struct Multi_search_result{
 
@@ -382,9 +403,11 @@ struct Multi_search_result{
 	}
 
 	void evaluate(const std::vector<search_value_type> &results){
-		//Sort results by score
-		best_results.assign(results.begin(), results.end());
-		std::sort(best_results.begin(), best_results.end(), sort_by_score<search_value_type>);
+
+		best_results = results;
+
+		std::sort(best_results.begin(), best_results.end(), std::greater<search_value_type>());
+
 		best = best_results.at(0);
 
 		assert(best.score >= best_results.at(best_results.size()-1).score);
@@ -510,7 +533,6 @@ struct Multi_search_results_vector{
 	}
 
 	void get_best_search_value(search_value_type &best_result){
-
 		for(int i=0; i < size(); ++i){
 			if(best_result.score < at(i).best.score){
 				best_result = at(i).best;
