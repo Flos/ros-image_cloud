@@ -25,9 +25,9 @@ inline void
 normal_diff_filter(
 		const pcl::PointCloud<PointT> &in,
 		pcl::PointCloud<PointT> &out,
-		double scale1 = 0.005, ///The smallest scale to use in the DoN filter.
-		double scale2 = 0.10, ///The largest scale to use in the DoN filter.
-		double threshold = 0.5 ///The minimum DoN magnitude to threshold by
+		double scale1 = 0.40, ///The smallest scale to use in the DoN filter.
+		double scale2 = 0.60, ///The largest scale to use in the DoN filter.
+		double threshold = 0.6 ///The minimum DoN magnitude to threshold by
 )
 {
 
