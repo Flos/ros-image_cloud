@@ -32,65 +32,54 @@ inline const char* ToString(name v)                                       \
 
 namespace pcl_filter{
     DEFINE_ENUM_WITH_STRING_CONVERSIONS(Filter3d,
-    		(OFF)
-			(DEPTH)
-			(DEPTH_INTENSITY)
-			(DEPTH_EDGE)
-			(NORMAL_DIFF)
-			(RANGE_BORDERS)
-			(DEPTH_NEIGHBORS)
-			(DEPTH_EDGE_PROJECTION)
-			(HIT_SAME_POINT)
-			(DEPTH_RADIUS)
-			(OTHER)
-			(REMOVE_CLUSTER_2D)
-			(DEPTH_INTENSITY_AND_REMOVE_CLUSER_2D)
-			(DEPTH_INTENSITY_NORMAL_DIFF)
-			(REMOVE_CLUSER_2D_RADIUS_SEARCH)
-			(EDGE_IMAGE_PLANE)
-			(EDGE_IMAGE_PLANE_2D_RADIUS_SEARCH)
-			(EDGE_IMAGE_PLANE_NORMAL_DIFF)
-			(NR_ENUMS))
-//	enum Filter3d
-//	{
-//		OFF = 0,
-//		DEPTH = 1,
-//		DEPTH_INTENSITY = 2,
-//		DEPTH_EDGE = 3,
-//		NORMAL_DIFF = 4,
-//		RANGE_BORDERS = 5,
-//		DEPTH_RADIUS = 6,
-//		DEPTH_NEIGHBORS = 7,
-//		DEPTH_EDGE_PROJECTION = 8,
-//		OTHER = 9
-//	};
+		(OFF)
+		(DEPTH)
+		(DEPTH_INTENSITY)
+		(DEPTH_EDGE)
+		(NORMAL_DIFF)
+		(RANGE_BORDERS)
+		(DEPTH_NEIGHBORS)
+		(DEPTH_EDGE_PROJECTION)
+		(HIT_SAME_POINT)
+		(DEPTH_RADIUS)
+		(OTHER)
+		(REMOVE_CLUSTER_2D)
+		(DEPTH_INTENSITY_AND_REMOVE_CLUSER_2D)
+		(DEPTH_INTENSITY_NORMAL_DIFF)
+		(REMOVE_CLUSER_2D_RADIUS_SEARCH)
+		(EDGE_IMAGE_PLANE)
+		(EDGE_IMAGE_PLANE_2D_RADIUS_SEARCH)
+		(EDGE_IMAGE_PLANE_NORMAL_DIFF)
+		(DEPTH_EDGE_PROJECTION_AGGREGATED)
+		(NR_ENUMS))
 };
 
 namespace image_filter{
 
 	namespace blur{
-		enum Blur{
-			OFF = 0,
-			BILATERAL = 1,
-			BLUR = 2,
-			GAUSSIAN = 3,
-			MEDIAN = 4
-		};
+		DEFINE_ENUM_WITH_STRING_CONVERSIONS(Blur,
+			(OFF)
+			(BILATERAL)
+			(BLUR)
+			(GAUSSIAN)
+			(MEDIAN)
+			(NR_ENUMS))
 	};
 
 	namespace edge{
-		enum Edge{
-			OFF = 0,
-			CANNY = 1,
-			LAPLACE = 2,
-			MAX = 3
-		};
+		DEFINE_ENUM_WITH_STRING_CONVERSIONS(Edge,
+			(OFF)
+			(CANNY)
+			(LAPLACE)
+			(MAX)
+			(NR_ENUMS))
 	};
 
 	namespace enlight{
-		enum Enlight{
-			OFF = 0
-		};
+		DEFINE_ENUM_WITH_STRING_CONVERSIONS(Enlight,
+			(OFF)
+			(ON)
+			(NR_ENUMS))
 	};
 };
 
