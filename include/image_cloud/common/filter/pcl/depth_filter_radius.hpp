@@ -36,6 +36,7 @@ depth_discontinuity_radius(
 		std::vector<float> square_distance;
 
 		if ( in.points.at(i).z > distance_max) continue;
+		if ( in.points.at(i).z < 1 ) continue;
 
 		//Position in image is known
 		if( tree_n->radiusSearch(i, radius, k_indices, square_distance) < min_neigbors ) continue;
@@ -48,6 +49,7 @@ depth_discontinuity_radius(
 		float max_y = min_y;
 		float min_z = in.points.at(i).z;
 		float max_z = min_z;
+		float avg_z =  in.points.at(i).z;
 
 		for(int n = 0; n < k_indices.size(); ++n){
 			// is current point an edge point?
@@ -75,9 +77,11 @@ depth_discontinuity_radius(
 			{
 				min_z = in.points.at(k_indices.at((n))).z;
 			}
+			avg_z+= in.points.at(k_indices.at(n)).z;
 		}
+		avg_z = avg_z/(k_indices.size()+1);
 
-		float threshold = 0.05;
+		float threshold = 0.1;
 		if( (inRange(min_x, threshold, in.points.at(i).x)
 			|| inRange(max_x, threshold, in.points.at(i).x)
 			|| min_y == in.points.at(i).y
@@ -95,6 +99,7 @@ depth_discontinuity_radius(
 //			|| max_z == in.points.at(i).z )
 //		{
 			out.push_back(in.points.at(i));
+			out.at(out.size()-1).intensity = (avg_z - min_z) * 0.5; // weight edge
 		}
 	}
 }
