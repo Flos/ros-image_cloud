@@ -40,7 +40,6 @@ edge_image_plane(
 
 		point_map.template get_points<ImageT>(depth_map, out, threashold);
 
-
 }
 
 }
