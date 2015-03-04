@@ -63,18 +63,19 @@ namespace search
 			const std::vector<pcl::PointCloud<PointT> > &pointclouds,
 			const std::vector<cv::Mat> &edge_images,
 			search_value_vector &results,
-			bool pre_filtred=true)
+			bool pre_filtred=true,
+			bool use_intensity_field_as_weight = false)
 	{
 
 		#pragma omp parallel for
 		for(int i=0; i < results.size(); ++i){
 			if(pre_filtred)
 			{
-				score::multi_score<PointT, ImageT>(camera_model, pointclouds, edge_images, results.at(i));
+				score::multi_score<PointT, ImageT>(camera_model, pointclouds, edge_images, results.at(i), use_intensity_field_as_weight);
 
 			}
 			else{
-				score::multi_score_filter_depth<PointT, ImageT>(camera_model, pointclouds, edge_images, results.at(i));
+				score::multi_score_filter_depth<PointT, ImageT>(camera_model, pointclouds, edge_images, results.at(i), use_intensity_field_as_weight);
 			}
 		}
 	}
@@ -84,17 +85,18 @@ namespace search
 			const std::deque<pcl::PointCloud<PointT> > &pointclouds,
 			const std::deque<cv::Mat> &edge_images,
 			search_value_vector &results,
-			bool pre_filtred=true)
+			bool pre_filtred=true,
+			bool use_intensity_field_as_weight = false)
 	{
 
 		#pragma omp parallel for
 		for(int i=0; i < results.size(); ++i){
 			if(pre_filtred)
 			{
-				score::multi_score<PointT, ImageT>(camera_model, pointclouds, edge_images, results.at(i));
+				score::multi_score<PointT, ImageT>(camera_model, pointclouds, edge_images, results.at(i), use_intensity_field_as_weight);
 			}
 			else{
-				score::multi_score_filter_depth<PointT, ImageT>(camera_model, pointclouds, edge_images, results.at(i));
+				score::multi_score_filter_depth<PointT, ImageT>(camera_model, pointclouds, edge_images, results.at(i), use_intensity_field_as_weight);
 			}
 		}
 	}
@@ -107,9 +109,10 @@ namespace search
 						const std::deque<pcl::PointCloud<PointT> > &pointclouds,
 						const std::deque<cv::Mat> &images,
 						multi_search_results &multi_result,
-						bool pre_filtred = true)
+						bool pre_filtred = true,
+						bool use_intensity_field_as_weight = false)
 	{
-		calculate<PointT, ImageT>( camera_model, pointclouds, images, result_list, pre_filtred);
+		calculate<PointT, ImageT>( camera_model, pointclouds, images, result_list, pre_filtred, use_intensity_field_as_weight);
 		multi_result.evaluate(result_list);
 	}
 
@@ -122,7 +125,8 @@ namespace search
 						float range_axis = 0.5,
 						float range_rot = 0.5,
 						int steps = 3,
-						bool pre_filtred = true)
+						bool pre_filtred = true,
+						bool use_intensity_field_as_weight = false)
 	{
 		search_setup search_range;
 		search_value_vector result_list;
@@ -138,7 +142,7 @@ namespace search
 
 		grid_setup(search_range, result_list);
 
-		calculate_best_tf<PointT,ImageT>(result_list, camera_model, pointclouds, images, multi_result, pre_filtred);
+		calculate_best_tf<PointT,ImageT>(result_list, camera_model, pointclouds, images, multi_result, pre_filtred, use_intensity_field_as_weight);
 	}
 
 }

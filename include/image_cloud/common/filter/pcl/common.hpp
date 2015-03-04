@@ -3,7 +3,7 @@
 
 //#define DEBUG
 //#define USE_Y_THRESHOLD
-//#define USE_SQUERE_DISTANCE
+#define USE_SQUERE_DISTANCE
 
 namespace filter_3d{
 
@@ -15,17 +15,16 @@ namespace filter_3d{
 
 template <typename PointT>
 inline bool
-	is_depth_step(const PointT &point1, const PointT &point2){
-	float threshold = 0.5;
+	is_depth_step(const PointT &point1, const PointT &point2, float threshold = 2){
 	float distance_x = (point1.x-point2.x) * (point1.x-point2.x);
 	float distance_y = (point1.y-point2.y) * (point1.y-point2.y);
-	float sqr_distance_xy = sqrt(distance_x + distance_y);
+	float sqr_distance_xy = sqrt( distance_x + distance_y);
 
 	float sqr_distance_z = sqrt((point1.z-point2.z) * (point1.z-point2.z));
 
 	// Step into z direction is bigger than in x or y
 	//sqr_distance_xy < 3 &&
-	return sqr_distance_z - threshold > sqr_distance_xy;
+	return sqr_distance_z > sqr_distance_xy * threshold;
 }
 
 template <typename PointT>
@@ -57,7 +56,7 @@ template <typename PointT>
 #endif
 
 			float min_z = point_distance;
-			float max_z = point_distance;
+			float max_z = 0; //point_distance;
 			float max_y = in.points.at(current_idx).y;
 			int best_candidate = current_idx;
 
@@ -82,10 +81,12 @@ template <typename PointT>
 				float distance_n = in.points.at(k_indices.at((n))).z;
 #endif
 
-				if(distance_n > point_distance){
-					max_z = distance_n;
-					best_candidate = k_indices.at(n);
-				}
+//				if(distance_n > point_distance){
+//					max_z = distance_n;
+//					best_candidate = k_indices.at(n);
+//				}
+
+				max_z = MAX(max_z, distance_n -point_distance);
 
 //				if(in.points.at(k_indices.at((n))).x > max_x)
 //				{
@@ -107,7 +108,10 @@ template <typename PointT>
 //				{
 //					min_z = in.points.at(k_indices.at((n))).z;
 //				}
+
 			}
+			if(max_z > z_threshold) return true;
+			return false;
 
 			//if( max_z - threshold > in.points.at(current_idx).z)
 
@@ -125,6 +129,33 @@ template <typename PointT>
 #endif
 			return false;
 	}
-}
 
+
+	template <typename PointT>
+		inline bool
+		is_edge_threshold(const pcl::PointCloud<PointT> &in, int current_idx, std::vector<int> &k_indices, std::vector<float> &square_distance, float &value, float threshold = 0.3){
+
+	#ifdef USE_SQUERE_DISTANCE
+			const float point_distance = distance_to_origin<PointT>(in.points.at(current_idx));
+	#else
+			const float point_distance = in.points.at(current_idx).z;
+	#endif
+			value = 0; //point_distance;
+			unsigned int idx = 0;
+			for(int n = 0; n < k_indices.size(); ++n){
+
+	#ifdef USE_SQUERE_DISTANCE
+				float distance_n = distance_to_origin<PointT>(in.points.at(k_indices.at(n)));
+	#else
+				float distance_n = in.points.at(k_indices.at((n))).z;
+	#endif
+				if(value < distance_n - point_distance){
+					idx = k_indices.at(n);
+					value = distance_n - point_distance;
+				}
+			}
+			if(value > threshold) return is_depth_step(in.points.at(current_idx), in.points.at(idx), 1.3);
+			return false;
+	}
+}
 #endif

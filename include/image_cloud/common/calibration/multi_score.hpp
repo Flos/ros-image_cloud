@@ -19,13 +19,14 @@ inline void
 multi_score(
 		std::vector<Projected_pointcloud<PointT> > &idx,
 		std::vector<cv::Mat> &edge_images,
-		long unsigned &score)
+		long unsigned &score,
+		bool use_intensity_field_as_weight = false)
 {
 	assert(idx.size() == edge_images.size());
 
 	for(int i = 0; i< idx.size(); ++i){
 		long unsigned score_temp;
-		objective_function(idx.at(i), edge_images.at(i), score_temp);
+		objective_function<PointT, ImageT>(idx.at(i), edge_images.at(i), score_temp, use_intensity_field_as_weight);
 		score += score_temp;
 	}
 }
@@ -35,13 +36,14 @@ inline void
 multi_score(
 		std::deque<Projected_pointcloud<PointT> > &idx,
 		std::deque<cv::Mat> &edge_images,
-		long unsigned &score)
+		long unsigned &score,
+		bool use_intensity_field_as_weight = false)
 {
 	assert(idx.size() == edge_images.size());
 
 	for(int i = 0; i< idx.size(); ++i){
 		long unsigned score_temp;
-		objective_function(idx.at(i), edge_images.at(i), score_temp);
+		objective_function<PointT, ImageT>(idx.at(i), edge_images.at(i), score_temp, use_intensity_field_as_weight);
 		score += score_temp;
 	}
 }
@@ -56,7 +58,8 @@ multi_score(
 		const image_geometry::PinholeCameraModel &camera_model,
 		const std::vector<pcl::PointCloud<PointT> >& pointclouds,
 		const std::vector<cv::Mat> &edge_images,
-		search::Search_value_6d<ResultType> &search
+		search::Search_value_6d<ResultType> &search,
+		bool use_intensity_field_as_weight = false
 		)
 {
 	assert(pointclouds.size() == edge_images.size());
@@ -68,9 +71,10 @@ multi_score(
 
 		image_cloud::transform_pointcloud<PointT>(pointclouds.at(i), transformed, search.x, search.y, search.z, search.roll, search.pitch, search.yaw);
 
-		objective_function<PointT, ImageT>( camera_model, transformed, edge_images.at(i), score_temp);
+		objective_function<PointT, ImageT>( camera_model, transformed, edge_images.at(i), score_temp, use_intensity_field_as_weight);
 
 		search.score += score_temp;
+		search.points += pointclouds.at(i).size();
 	}
 }
 
@@ -83,7 +87,8 @@ multi_score(
 		const image_geometry::PinholeCameraModel &camera_model,
 		const std::deque<pcl::PointCloud<PointT> >& pointclouds,
 		const std::deque<cv::Mat> &edge_images,
-		search::Search_value_6d<ResultType> &search
+		search::Search_value_6d<ResultType> &search,
+		bool use_intensity_field_as_weight = false
 		)
 {
 	assert(pointclouds.size() == edge_images.size());
@@ -95,9 +100,10 @@ multi_score(
 
 		image_cloud::transform_pointcloud<PointT>(pointclouds.at(i), transformed, search.get_transform());
 
-		objective_function<PointT, ImageT>( camera_model, transformed, edge_images.at(i), score_temp);
+		objective_function<PointT, ImageT>( camera_model, transformed, edge_images.at(i), score_temp, use_intensity_field_as_weight);
 
 		search.score += score_temp;
+		search.points += pointclouds.at(i).size();
 	}
 }
 
@@ -112,7 +118,8 @@ multi_score_filter_depth(
 		const image_geometry::PinholeCameraModel &camera_model,
 		const std::vector<pcl::PointCloud<PointT> >& pointclouds,
 		const std::vector<cv::Mat> &edge_images,
-		search::Search_value_6d<ResultType> &search
+		search::Search_value_6d<ResultType> &search,
+		bool use_intensity_field_as_weight = false
 		)
 {
 	assert(pointclouds.size() == edge_images.size());
@@ -126,9 +133,10 @@ multi_score_filter_depth(
 
 		filter_3d::filter_depth_intensity( camera_model, transformed, filtered, edge_images.at(i).rows, edge_images.at(i).cols);
 
-		objective_function<PointT, ImageT>( camera_model, filtered, edge_images.at(i), score_temp);
+		objective_function<PointT, ImageT>( camera_model, filtered, edge_images.at(i), score_temp, use_intensity_field_as_weight);
 
 		search.score += score_temp;
+		search.points += pointclouds.at(i).size();
 	}
 }
 
@@ -142,7 +150,8 @@ multi_score_filter_depth(
 		const image_geometry::PinholeCameraModel &camera_model,
 		const std::deque<pcl::PointCloud<PointT> >& pointclouds,
 		const std::deque<cv::Mat> &edge_images,
-		search::Search_value_6d<ResultType> &search
+		search::Search_value_6d<ResultType> &search,
+		bool use_intensity_field_as_weight = false
 		)
 {
 	assert(pointclouds.size() == edge_images.size());
@@ -156,9 +165,10 @@ multi_score_filter_depth(
 
 		filter_3d::filter_depth_intensity<PointT>( camera_model, transformed, filtered, edge_images.at(i).rows, edge_images.at(i).cols);
 
-		objective_function<PointT, ImageT>( camera_model, filtered, edge_images.at(i), score_temp);
+		objective_function<PointT, ImageT>( camera_model, filtered, edge_images.at(i), score_temp, use_intensity_field_as_weight);
 
 		search.score += score_temp;
+		search.points += pointclouds.at(i).size();
 	}
 }
 
