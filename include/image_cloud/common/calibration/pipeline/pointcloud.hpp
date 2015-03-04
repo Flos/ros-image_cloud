@@ -152,6 +152,11 @@ filter3d_switch(const pcl::PointCloud<PointT> &in_points,
 			filter_3d::normal_diff_filter<PointT>(temp_points, out_points, 0.001,0.1);
 		}
 		break;
+		case pcl_filter::DEPTH_EDGE_PROJECTION_AGGREGATED:
+		{
+			filter_3d::filter_depth_projection<PointT>(camera_model, in_points, out_points, rows, cols, 2, 1.5); // neighbors); // max distance
+		}
+		break;
 		default:
 			break;
 	}
