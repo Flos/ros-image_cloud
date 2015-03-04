@@ -239,7 +239,7 @@ template<typename PointT>
 				int cols)
 		{
 			init(cols, rows);
-			project2d(camera_model, in_points, cols, rows);
+			project2d(camera_model, in_points, rows, cols);
 		}
 
 		void init(const image_geometry::PinholeCameraModel& camera_model,
@@ -341,14 +341,27 @@ template<typename PointT>
 		}
 
 		template<typename imageType>
-		void get_points(const cv::Mat &image, pcl::PointCloud<PointT> &out, float threshold = 1)
+		void get_points(const cv::Mat &image, pcl::PointCloud<PointT> &out, float threshold = 1, int remove_border_pixel = 0)
 		{
-			for (int r = 0; r < image.rows; ++r){
-				for(int c = 0; c < image.cols; ++c){
+			for (int r = 0 + remove_border_pixel; r < image.rows - remove_border_pixel; ++r){
+				for(int c = 0 + remove_border_pixel; c < image.cols - remove_border_pixel; ++c){
 
 					if(image.at<imageType>(r,c) > threshold
 							&& indices[c][r] != 0
 							){
+						//std::cout << at(c,r) << "\n";
+						out.push_back( at(c,r) ); // take the point with the shortest distance
+					}
+				}
+			}
+		}
+
+		void get_points(pcl::PointCloud<PointT> &out, int remove_border_pixel = 0)
+		{
+			for (int r = 0 + remove_border_pixel; r < size_y() - remove_border_pixel; ++r){
+				for(int c = 0 + remove_border_pixel; c < size_x() - remove_border_pixel; ++c){
+
+					if (indices[c][r] != 0 ){
 						//std::cout << at(c,r) << "\n";
 						out.push_back( at(c,r) ); // take the point with the shortest distance
 					}
