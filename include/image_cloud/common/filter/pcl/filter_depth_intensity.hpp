@@ -97,7 +97,7 @@ namespace filter_3d{
 				std::vector<std::vector<boost::shared_ptr<PointT> > > &idx,
 				pcl::PointCloud<PointT> &out,
 				float range_depth = 1.4,
-				float range_intensity = 200,
+				float range_intensity = 0,
 				int range_search = 3,
 				bool direction_x = true
 		)
