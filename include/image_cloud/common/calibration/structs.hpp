@@ -92,18 +92,18 @@ struct Value_calculator{
 template <typename type>
 struct Search_value_6d{
 	Search_value_6d(){
-		init(0, 0, 0, 0, 0, 0, 0);
+		init(0, 0, 0, 0, 0, 0, 0, 0);
 	}
 
-	Search_value_6d(tf::Transform tf, long unsigned int result = 0){
-		init(tf, result);
+	Search_value_6d(tf::Transform tf, long unsigned int result = 0, long unsigned int points = 0){
+		init(tf, result, points);
 	}
 
-	Search_value_6d( type x, type y, type z, type roll, type pitch, type yaw, long unsigned int score = 0){
-		init(x, y, z, roll, pitch, yaw, score);
+	Search_value_6d( type x, type y, type z, type roll, type pitch, type yaw, long unsigned int score = 0, long unsigned int points = 0){
+		init(x, y, z, roll, pitch, yaw, score, points);
 	}
 
-	void init(type x, type y, type z, type roll, type pitch, type yaw, long unsigned int score = 0)
+	void init(type x, type y, type z, type roll, type pitch, type yaw, long unsigned int score = 0, long unsigned int points = 0)
 	{
 		this->x = x;
 		this->y = y;
@@ -112,9 +112,10 @@ struct Search_value_6d{
 		this->pitch = pitch;
 		this->yaw = yaw;
 		this->score = score;
+		this->points = points;
 	}
 
-	void init(tf::Transform tf, long unsigned int result = 0)
+	void init(tf::Transform tf, long unsigned int result = 0, long unsigned int points = 0)
 	{
 		this->x = tf.getOrigin()[0];
 		this->y = tf.getOrigin()[1];
@@ -126,11 +127,13 @@ struct Search_value_6d{
 		this->pitch = p;
 		this->yaw = y;
 		this->score = result;
+		this->points = points;
 	}
 
 	std::string to_string(){
 		std::stringstream ss;
 		ss << "score:" << spacer << score << spacer;
+//		ss << "points: " << spacer << points << spacer;
 		ss << "x:" << spacer << x << spacer;
 		ss << "y:" << spacer << y << spacer;
 		ss <<" z:" << spacer << z << spacer;
@@ -144,6 +147,7 @@ struct Search_value_6d{
 	std::string to_description_string(){
 		std::stringstream ss;
 		ss << "score:" << spacer;
+//		ss << "points:" << spacer;
 		ss << "x:" << spacer;
 		ss << "y:" << spacer;
 		ss <<" z:" << spacer;
@@ -157,6 +161,7 @@ struct Search_value_6d{
 	std::string to_simple_string(){
 		std::stringstream ss;
 		ss << score << spacer;
+//		ss << points << spacer;
 		ss << x << spacer;
 		ss << y << spacer;
 		ss << z << spacer;
@@ -172,6 +177,12 @@ struct Search_value_6d{
 		get_transform(tf);
 
 		return tf;
+	}
+
+	double get_score_per_point()
+	{
+		if(points == 0 || score ==0) return 0;
+		return ((double)score)/(double(points));
 	}
 
 	void get_transform(tf::Transform &tf){
@@ -191,17 +202,18 @@ struct Search_value_6d{
 		pitch=a.pitch;
 		yaw=a.yaw;
 		score=a.score;
+		points=a.points;
 		return *this;
 	}
 
 	Search_value_6d operator+(const Search_value_6d& a) const
 	{
-		return Search_value_6d(a.x+x, a.y+y, a.z+z, a.roll+roll, a.pitch+pitch, a.yaw+yaw, a.score+score);
+		return Search_value_6d(a.x+x, a.y+y, a.z+z, a.roll+roll, a.pitch+pitch, a.yaw+yaw, a.score+score, a.points+points);
 	}
 
 	Search_value_6d operator-(const Search_value_6d& a) const
 	{
-		return Search_value_6d( x - a.x, y - a.y, z - a.z, roll - a.roll, pitch - a.pitch, yaw - a.yaw, score - a.score);
+		return Search_value_6d( x - a.x, y - a.y, z - a.z, roll - a.roll, pitch - a.pitch, yaw - a.yaw, score - a.score, a.points - points);
 	}
 
 	bool operator < (const Search_value_6d& a) const
@@ -217,12 +229,12 @@ struct Search_value_6d{
 	// equality comparison. doesn't modify object. therefore const.
 	bool operator==(const Search_value_6d& a) const
 	{
-		return (x == a.x && y == a.y && z == a.z && roll == a.roll && pitch == a.pitch && yaw == a.yaw && score == a.score);
+		return (x == a.x && y == a.y && z == a.z && roll == a.roll && pitch == a.pitch && yaw == a.yaw && score == a.score && points == a.points);
 	}
 
 	bool operator!=(const Search_value_6d& a) const
 	{
-		return (x != a.x || y != a.y || z != a.z || roll != a.roll || pitch != a.pitch || yaw != a.yaw || score != a.score);
+		return (x != a.x || y != a.y || z != a.z || roll != a.roll || pitch != a.pitch || yaw != a.yaw || score != a.score || points != a.points);
 	}
 
 
@@ -233,6 +245,7 @@ struct Search_value_6d{
 	type pitch;
 	type yaw;
 	long unsigned int score;
+	long unsigned int points;
 };
 
 typedef Search_value_6d<double> search_value_d;
