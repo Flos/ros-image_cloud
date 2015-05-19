@@ -11,6 +11,7 @@
 #include <image_cloud/common/filter/pcl/remove_cluster_2d.hpp>
 #include <image_cloud/common/filter/pcl/depth_filter_radius.hpp>
 #include <image_cloud/common/filter/pcl/depth_filter_neighbors.hpp>
+#include <image_cloud/common/filter/pcl/filter_depth_discontinuity.hpp>
 #include <image_cloud/common/filter/pcl/filter_depth_projection.hpp>
 #include <image_cloud/common/filter/pcl/hit_same_point.hpp>
 #include <image_cloud/common/filter/pcl/edge_image_plane.hpp>
@@ -87,6 +88,11 @@ filter3d_switch(const pcl::PointCloud<PointT> &in_points,
 		case pcl_filter::DEPTH_EDGE_PROJECTION:
 		{
 			filter_3d::filter_depth_projection<PointT>(camera_model, in_points, out_points, rows, cols); // neighbors); // max distance
+		}
+		break;
+		case pcl_filter::DEPTH_NEIGHBOR_DISONTINUITY:
+		{
+			filter_3d::filter_depth_discontinuity<PointT>(in_points, out_points, 2, 0.3, 1, 300); // neighbors, min, max, epsilon); // max distance
 		}
 		break;
 		case pcl_filter::HIT_SAME_POINT:

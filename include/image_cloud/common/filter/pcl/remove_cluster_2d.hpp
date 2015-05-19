@@ -16,23 +16,7 @@
 
 namespace filter_3d{
 
-	template <typename PointT>
-	inline bool
-	is_edge_z(const pcl::PointCloud<PointT> &in, int current_idx, std::vector<int> &k_indices, std::vector<float> &square_distance){
 
-		const float point_distance = in.points.at(current_idx).z;
-		float min_z = point_distance;
-
-		for(int n = 0; n < k_indices.size(); ++n){
-
-			float distance_n = in.points.at(k_indices.at((n))).z;
-
-			if(distance_n < point_distance -0.1){
-				return false;
-			}
-		}
-		return true;
-	}
 
 	template <typename PointT>
 	inline void
@@ -41,7 +25,8 @@ namespace filter_3d{
 								pcl::PointCloud<PointT> &out,
 								int rows,
 								int cols,
-								int k_neighbors = 4)
+								int k_neighbors = 4,
+								int border = 25)
 	{
 		std::vector<int> points2d_indices;
 		pcl::PointCloud<pcl::PointXY> points2d;
@@ -57,8 +42,8 @@ namespace filter_3d{
 
 				cv::Point2i point_image = camera_model.project3dToPixel(cv::Point3d(pt->x, pt->y, pt->z));
 
-				if( between<int>(0, point_image.x, cols )
-					&& between<int>( 0, point_image.y, rows )
+				if( between<int>(0+border, point_image.x, cols-border )
+					&& between<int>( 0+border, point_image.y, rows-border )
 				)
 				{
 					pcl::PointXY p_image;
@@ -90,8 +75,10 @@ namespace filter_3d{
 
 			look_up_indices(points2d_indices, k_indices);
 
-			if(is_edge_z(in, points2d_indices.at(i), k_indices, square_distance)){
+			float edginess = 0;
+			if(is_edge_z(in, points2d_indices.at(i), k_indices, square_distance, edginess, 0.1)){
 				out.push_back(in.points.at(points2d_indices.at(i)));
+				out.at(out.size()-1).intensity = edginess;
 			}
 		}
 

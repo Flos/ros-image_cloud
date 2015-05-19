@@ -8,7 +8,7 @@
 #ifndef SCORE_H_
 #define SCORE_H_
 
-//#define WEIGHT_INTENSITY
+#define NORMALIZE
 
 namespace score
 {
@@ -121,6 +121,8 @@ objective_function(
 		image_edge.copyTo(temp);
 
 		score = 0;
+		long unsigned int hits = 0;
+
 		for(int i = 0; i < in.size(); ++i ){
 			if( in.points.at(i).z > 1) { // min distance from camera 1m
 
@@ -136,10 +138,16 @@ objective_function(
 					else{
 						score += temp.at<ImageT>(point_image);
 					}
-					temp.at<ImageT>(point_image) = 0; // no higher score if multiple points hit the same edge
+					//temp.at<ImageT>(point_image) = 0; // temp.at<ImageT>(point_image)/2; // no higher score if multiple points hit the same edge
+					++hits;
 				}
 			}
 		}
+#ifdef NORMALIZE
+		if(hits > 0){
+			score = score/hits;
+		}
+#endif
 }
 
 }

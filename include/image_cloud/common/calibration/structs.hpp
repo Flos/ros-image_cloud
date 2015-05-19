@@ -418,6 +418,9 @@ struct Multi_search_result{
 	void evaluate(const std::vector<search_value_type> &results){
 
 		best_results = results;
+		if(center.score == 0){
+			center = results.at(0);
+		}
 
 		std::sort(best_results.begin(), best_results.end(), std::greater<search_value_type>());
 
@@ -431,17 +434,16 @@ struct Multi_search_result{
 		nr_worse = 0;
 
 		for(int i = 1; i < best_results.size(); ++i){
-			if( best.score == best_results.at(i).score )
+			if( center.score == best_results.at(i).score )
 			{
 				++nr_same;
 			}
-			else if( best.score > best_results.at(i).score){
+			else if( center.score > best_results.at(i).score){
 				nr_worse = size()-i;
 				break;
 			}
 		}
 
-		assert(nr_worse + nr_same + 1 == size());
 	}
 
 	void init(search_value_type in, search_value_type best, long unsigned int nr_worse, long unsigned int nr_same = 0){

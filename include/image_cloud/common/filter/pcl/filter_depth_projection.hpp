@@ -37,7 +37,7 @@ namespace filter_3d{
 
 		project2d::Points2d<PointT> point_map;
 		point_map.init(camera_model, in, rows, cols);
-		point_map.get_points(z_filtred, 100);
+		point_map.get_points(z_filtred, 25);
 
 		// Project points into image space
 		for(unsigned int i=0; i < z_filtred.size();  ++i){
@@ -93,7 +93,7 @@ namespace filter_3d{
 			float distance_value;
 			if(is_edge_threshold(z_filtred, points2d_indices.at(i), k_indices, square_distance, distance_value, threshold)){
 				out.push_back(z_filtred.points.at(points2d_indices.at(i)));
-				out.at(out.size()-1).intensity = distance_value*0.5;
+				out.at(out.size()-1).intensity = sqrt(distance_value);
 			}
 		}
 

@@ -233,6 +233,24 @@ template<typename PointT>
 			assert(size_y == this->size_y());
 		}
 
+		unsigned int get_nr_neighbors(int x, int y){
+			assert(x > 0);
+			assert(y > 0);
+
+			unsigned int neighbors = 0;
+			if(indices[x-1][y-1] != 0) ++neighbors;
+			if(indices[x  ][y-1] != 0) ++neighbors;
+			if(indices[x+1][y-1] != 0) ++neighbors;
+
+			if(indices[x-1][y-1] != 0) ++neighbors;
+			if(indices[x+1][y+1] != 0) ++neighbors;
+
+			if(indices[x-1][y-1] != 0) ++neighbors;
+			if(indices[x  ][y] != 0) ++neighbors;
+			if(indices[x+1][y+1] != 0) ++neighbors;
+			return neighbors;
+		}
+
 		void init(const image_geometry::PinholeCameraModel& camera_model,
 				const pcl::PointCloud<PointT> &in_points,
 				int rows,

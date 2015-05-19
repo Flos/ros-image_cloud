@@ -27,6 +27,27 @@ inline bool
 	return sqr_distance_z > sqr_distance_xy * threshold;
 }
 
+	template <typename PointT>
+	inline bool
+	is_edge_z(const pcl::PointCloud<PointT> &in, int current_idx, std::vector<int> &k_indices, std::vector<float> &square_distance, float &edginess, float threshold = 0.1){
+
+		const float point_distance = in.points.at(current_idx).z;
+		edginess = 0;
+
+		for(int n = 0; n < k_indices.size(); ++n){
+
+			float distance_n = in.points.at(k_indices.at((n))).z;
+
+			if(distance_n < point_distance - threshold){
+				return false;
+			}
+			else if(edginess < distance_n - point_distance){
+				edginess = distance_n - point_distance;
+			}
+		}
+		return true;
+	}
+
 template <typename PointT>
 	inline float
 	distance_to_origin(const PointT &point){
@@ -157,5 +178,32 @@ template <typename PointT>
 			if(value > threshold) return is_depth_step(in.points.at(current_idx), in.points.at(idx), 1.3);
 			return false;
 	}
+
+	template <typename PointT>
+			inline bool
+			is_light_edge_threshold(const pcl::PointCloud<PointT> &in, int current_idx, std::vector<int> &k_indices, std::vector<float> &square_distance, float &value, float threshold_min = 0.3, float threshold_max = 0.3){
+
+		#ifdef USE_SQUERE_DISTANCE
+				const float point_distance = distance_to_origin<PointT>(in.points.at(current_idx));
+		#else
+				const float point_distance = in.points.at(current_idx).z;
+		#endif
+				value = 0; //point_distance;
+				unsigned int idx = 0;
+				for(int n = 0; n < k_indices.size(); ++n){
+
+		#ifdef USE_SQUERE_DISTANCE
+					float distance_n = distance_to_origin<PointT>(in.points.at(k_indices.at(n)));
+		#else
+					float distance_n = in.points.at(k_indices.at((n))).z;
+		#endif
+					if(value < distance_n - point_distance){
+						idx = k_indices.at(n);
+						value = distance_n - point_distance;
+					}
+				}
+				if(value > threshold_min && value < threshold_max) return is_depth_step(in.points.at(current_idx), in.points.at(idx), 1.3);
+				return false;
+		}
 }
 #endif
